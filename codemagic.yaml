@@ -1,0 +1,26 @@
+workflows:
+  ios-workflow:
+    name: eTar Settings iOS
+    max_build_duration: 60
+    environment:
+      vars:
+        XCODE_PROJECT: "eTarSettings.xcodeproj"
+        XCODE_SCHEME: "eTarSettings"
+    scripts:
+      - name: Build iOS app
+        script: |
+          xcodebuild -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+    artifacts:
+      - build/Build/Products/Release-iphoneos/eTarSettings.app
+    publishing:
+      scripts:
+        - name: Publish app
+          script: echo "Build complete. Configure code signing in Codemagic UI for device/distribution builds."

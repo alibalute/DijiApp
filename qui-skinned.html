@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLE Device Explorer</title>
+  <style>
+    :root {
+      --bg-dark: #0d3b45;
+      --bg-card: #faf8f5;
+      --accent: #e07a5f;
+      --accent-hover: #c96a52;
+      --teal: #1a5f6b;
+      --teal-light: #2d7a87;
+      --text: #2d3436;
+      --text-muted: #636e72;
+      --border: rgba(26, 95, 107, 0.2);
+      --shadow: 0 10px 40px rgba(13, 59, 69, 0.15);
+      --radius: 14px;
+      --radius-sm: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      color: var(--text);
+      background: var(--bg-dark) url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M24 0L24 48M0 24L48 24' stroke='%231a5f6b' stroke-width='.4' opacity='.4' fill='none'/%3E%3C/svg%3E"),
+        linear-gradient(160deg, #0d3b45 0%, #0a2d35 45%, #134a55 100%);
+      background-attachment: fixed;
+      padding: 16px 20px 32px;
+    }
+    .app-shell { width: 100%; max-width: 540px; margin: 0 auto; }
+    .hero {
+      margin-bottom: 16px;
+      padding: 24px 16px;
+    }
+    .hero svg.hero-icon {
+      width: 100px;
+      height: 64px;
+      margin: 0 auto 10px;
+      display: block;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+      letter-spacing: 0.02em;
+    }
+    .hero-tagline {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+      margin: 0;
+    }
+    button {
+      display: block;
+      padding: 12px 16px;
+      margin: 0 auto 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 80%;
+      max-width: 320px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(224, 122, 95, 0.35);
+      transition: transform 0.12s ease, box-shadow 0.2s ease;
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(224, 122, 95, 0.45);
+    }
+    button:active:not(:disabled) { transform: translateY(0); }
+    button:disabled {
+      background: #d5d8dc;
+      color: #7f8c8d;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    input[type="radio"] {
+      margin-right: 6px;
+      margin-bottom: 10px;
+      accent-color: var(--accent);
+    }
+    input[type="range"] {
+      margin: 0 8px 20px;
+      width: 80%;
+      max-width: 280px;
+      height: 8px;
+      border-radius: 4px;
+      accent-color: var(--accent);
+    }
+    fieldset {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      text-align: center;
+      width: 80%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+      background: rgba(255,255,255,0.7);
+    }
+    fieldset legend {
+      font-weight: 600;
+      color: var(--text);
+      padding: 0 8px;
+    }
+    select {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      text-align: center;
+      width: 80%;
+      max-width: 320px;
+      font-size: 15px;
+      background: #fff;
+      color: var(--text);
+    }
+    label {
+      display: inline-block;
+      margin-right: 10px;
+      margin-top: 16px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .tabs-wrap {
+      background: var(--bg-card);
+      border-radius: var(--radius) var(--radius) 0 0;
+      box-shadow: var(--shadow);
+      padding: 0 8px 0 12px;
+      border: 1px solid var(--border);
+      border-bottom: none;
+    }
+    .tabs {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .tab {
+      flex: 1;
+      cursor: pointer;
+      padding: 12px 6px;
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      transition: color 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .tab .tab-icon {
+      width: 22px;
+      height: 22px;
+      opacity: 0.7;
+    }
+    .tab.active .tab-icon { opacity: 1; }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--teal);
+      font-weight: 600;
+      border-bottom-color: var(--accent);
+    }
+    .tab-content { display: none; }
+    .tab-content.active {
+      font-family: inherit;
+      margin: 0;
+      padding: 24px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      box-shadow: var(--shadow);
+      min-height: 300px;
+    }
+    .progress {
+      width: 80%;
+      max-width: 280px;
+      height: 10px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 5px;
+      margin: 8px auto 20px;
+    }
+    .bar {
+      width: 80%;
+      max-width: 280px;
+      height: 10px;
+      background: linear-gradient(90deg, #1a5f6b, #2d7a87);
+      border-radius: 5px;
+      margin: 0 auto 20px;
+      padding: 0;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+    #battery-bar { min-height: 10px; }
+    h3 {
+      color: var(--text);
+      margin: 20px 0 12px;
+      font-size: 1.1rem;
+    }
+  </style>
+  <script>
+  (function(){
+    if (typeof window.AndroidBLE === 'undefined') return;
+    window._blePromises = {};
+    window._bleNextId = 0;
+    window._bleResolve = function(id, resultJson) {
+      var p = window._blePromises[id];
+      if (!p) return;
+      try {
+        var obj = typeof resultJson === 'string' ? JSON.parse(resultJson) : resultJson;
+        if (obj.id !== undefined && obj.name !== undefined && typeof obj.getPrimaryService === 'undefined') {
+          var deviceId = obj.id;
+          var device = { id: deviceId, name: obj.name, gatt: {
+            connect: function() {
+              var cid = window._bleNextId++;
+              window._blePromises[cid] = {};
+              var prom = new Promise(function(res, rej) {
+                window._blePromises[cid].resolve = res;
+                window._blePromises[cid].reject = rej;
+              });
+              window.AndroidBLE.connect(deviceId, cid);
+              return prom;
+            }
+          }};
+          p.resolve(device);
+        } else {
+          p.resolve(obj);
+        }
+      } catch (e) { if (p.reject) p.reject(e); }
+      delete window._blePromises[id];
+    };
+    window._bleReject = function(id, err) {
+      var p = window._blePromises[id];
+      if (p && p.reject) p.reject(new Error(err));
+      delete window._blePromises[id];
+    };
+    window._bleOnConnect = function(callbackId) {
+      var p = window._blePromises[callbackId];
+      if (!p || !p.resolve) return;
+      var server = {
+        getPrimaryService: function() {
+          return Promise.resolve({
+            getCharacteristic: function() {
+              return Promise.resolve({
+                writeValue: function(buffer) {
+                  var bytes = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : new Uint8Array(buffer.buffer || buffer);
+                  var binary = '';
+                  for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+                  window.AndroidBLE.writeValueBase64(btoa(binary));
+                  return Promise.resolve();
+                },
+                startNotifications: function() {
+                  window.AndroidBLE.startNotifications();
+                  return Promise.resolve();
+                },
+                addEventListener: function(ev, handler) {
+                  window._bleOnNotificationHandler = function(base64) {
+                    var binary = atob(base64);
+                    var arr = new Uint8Array(binary.length);
+                    for (var i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+                    handler({ target: { value: arr } });
+                  };
+                }
+              });
+            }
+          });
+        }
+      };
+      p.resolve(server);
+      delete window._blePromises[callbackId];
+    };
+    window._bleOnNotification = function(base64) {
+      if (window._bleOnNotificationHandler) window._bleOnNotificationHandler(base64);
+    };
+    window._bleOnError = function(errJson) { try { console.error('BLE', errJson); } catch(e) {} };
+    navigator.bluetooth = {
+      requestDevice: function() {
+        var id = window._bleNextId++;
+        window._blePromises[id] = {};
+        var prom = new Promise(function(resolve, reject) {
+          window._blePromises[id].resolve = resolve;
+          window._blePromises[id].reject = reject;
+        });
+        window.AndroidBLE.requestDevice(id);
+        return prom;
+      }
+    };
+  })();
+  </script>
+</head>
+
+<body>
+
+  <div class="app-shell">
+    <header class="hero">
+      <svg class="hero-icon" viewBox="0 0 100 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="skinWood" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#e07a5f;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#1a5f6b;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#0d3b45;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <ellipse cx="50" cy="42" rx="36" ry="14" fill="url(#skinWood)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+        <path d="M18 42 L82 42" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="30" y1="24" x2="30" y2="42" stroke="rgba(255,255,255,0.85)" stroke-width="1"/>
+        <line x1="44" y1="18" x2="44" y2="42" stroke="rgba(255,255,255,0.85)" stroke-width="1"/>
+        <line x1="56" y1="18" x2="56" y2="42" stroke="rgba(255,255,255,0.85)" stroke-width="1"/>
+        <line x1="70" y1="24" x2="70" y2="42" stroke="rgba(255,255,255,0.85)" stroke-width="1"/>
+        <rect x="44" y="14" width="12" height="28" rx="2" fill="url(#skinWood)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+      </svg>
+      <h1>eTar Settings</h1>
+      <p class="hero-tagline">Connect, tune, and play</p>
+    </header>
+
+    <div class="tabs-wrap">
+      <ul class="tabs" role="tablist">
+        <li id="tab1" class="tab active" role="tab" onclick="openTab(0)">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 3-2 6-2 6H8s-2-3-2-6"/><path d="M12 2v2"/><path d="M9 5l1 1"/><path d="M15 5l-1 1"/></svg>
+          Device
+        </li>
+        <li id="tab2" class="tab" role="tab" onclick="openTab(1)">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4M12 9v6M17 11v2"/></svg>
+          Performance
+        </li>
+        <li id="tab3" class="tab" role="tab" onclick="openTab(2)">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Playback
+        </li>
+        <li id="tab4" class="tab" role="tab" onclick="openTab(3)">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 8h16M4 12h16M4 16h16"/></svg>
+          Strings
+        </li>
+      </ul>
+    </div>
+
+  <div id="tab-content1" class="tab-content active">
+    <button id="scanButton">Find eTars</button>
+
+    <label for="deviceListLabel">Select your eTar:</label>
+    <select id="deviceListDropdown"></select>
+
+    <button id="connectButton" disabled>Connect</button>
+
+    <button id="disconnectButton" disabled>Disconnect</button>
+
+    <label id="batteryLabel" disabled>Battery: 0</label>
+    <div class="bar" id="battery-bar">‌</div>
+  
+
+    <label for="instrumentsLabel" disabled>Instrument:</label>
+    <select id="instrumentsDropdown" disabled></select>
+
+    <label for="tuningsLabel" disabled>Tuning:</label>
+    <select id="tuningsDropdown" disabled></select>
+
+
+    <label id="transposeLabel" disabled>Transpose: 0</label>
+    <input type="range" id="transposeSlider" min="-12" max="12" value="0" step="1" disabled>
+
+    <label id="vibratoLabel" disabled>Vibrato: 0</label>
+    <input type="range" id="vibratoSlider" min="0" max="10" value="0" step="1" disabled>
+
+
+    <fieldset>
+      <legend>Sustain Pedal:</legend>
+      <label><input type="radio" name="sustainRadioGroup" value="on" checked disabled> On</label>
+      <label><input type="radio" name="sustainRadioGroup" value="off" disabled> Off</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Chords Mode:</legend>
+      <label><input type="radio" name="chordsRadioGroup" value="on" disabled> On</label>
+      <label><input type="radio" name="chordsRadioGroup" value="off" checked disabled> Off</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Quarter Tones:</legend>
+      <label><input type="radio" name="quarterTonesRadioGroup" value="on" checked disabled> On</label>
+      <label><input type="radio" name="quarterTonesRadioGroup" value="off" disabled> Off</label>
+    </fieldset>
+
+  </div>
+
+
+
+
+
+  <div id="tab-content2" class="tab-content">
+
+
+
+    <label id="pitchLabel" disabled>Pitch offset: 0</label>
+    <input type="range" id="pitchSlider" min="-100" max="100" value="0" step="1" disabled>
+
+    <label for="pitchSystemsLabel" disabled>Pitch System:</label>
+    <select id="pitchSystemsDropdown" disabled></select>
+
+    <label for="midiChannelsLabel" disabled>Midi Channels:</label>
+    <select id="midiChannelsDropdown" disabled></select>
+
+    <fieldset>
+      <legend>Left Hand Mode:</legend>
+      <label><input type="radio" name="leftHandRadioGroup" value="on" disabled> On</label>
+      <label><input type="radio" name="leftHandRadioGroup" value="off" checked disabled> Off</label>
+    </fieldset>
+
+
+
+    <fieldset>
+      <legend>Dynamics:</legend>
+      <label><input type="radio" name="dynamicsRadioGroup" value="on"  disabled> On</label>
+      <label><input type="radio" name="dynamicsRadioGroup" value="off" checked disabled> Off</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Staccato:</legend>
+      <label><input type="radio" name="staccatoRadioGroup" value="on"  disabled> On</label>
+      <label><input type="radio" name="staccatoRadioGroup" value="off" checked disabled> Off</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tapping (Hammering):</legend>
+      <label><input type="radio" name="tappingRadioGroup" value="on" disabled> On</label>
+      <label><input type="radio" name="tappingRadioGroup" value="off" checked disabled> Off</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tapping Without Strumming:</legend>
+      <label><input type="radio" name="tapWithoutStrumRadioGroup" value="on" disabled> On</label>
+      <label><input type="radio" name="tapWithoutStrumRadioGroup" value="off" checked disabled> Off</label>
+    </fieldset>
+
+
+  </div>
+
+
+  <div id="tab-content3" class="tab-content">
+
+    <fieldset>
+      <legend>Metronome:</legend>
+      <label><input type="radio" name="metronomeRadioGroup" value="on" disabled> On</label>
+      <label><input type="radio" name="metronomeRadioGroup" value="off" checked disabled> Off</label>
+    </fieldset>
+
+    <label id="tempoLabel" disabled>Tempo: 60</label>
+    <input type="range" id="tempoSlider" min="30" max="250" value="60" step="1" disabled>
+
+    <label id="metronomeVolLabel" disabled>Metronome Volume: 60</label>
+    <input type="range" id="metronomeVolSlider" min="30" max="127" value="60" step="1" disabled>
+
+    <label id="metronomeNumBeatsLabel" disabled>Metronome Number of Beats : 1</label>
+    <input type="range" id="metronomeNumBeatsSlider" min="1" max="17" value="1" step="1" disabled>
+
+    <label for="midiFileLabel">Select MIDI File:</label>
+    <select id="midiFileDropdown" disabled></select>
+
+    <button id="playButton">Play</button>
+    <button id="pauseButton" onclick="pause()" disabled>Pause</button>
+    <button id="stopButton" onclick="stop()" disabled>Stop</button>
+
+
+
+
+  </div>
+
+
+
+
+  <div id="tab-content4" class="tab-content ">
+
+    <h3 >Individual String Tuning</h3>
+    <label id="string1TuningLabel" disabled>String 1 Note Number: 120</label>
+    <input type="range" id="string1TuningSlider" min="48" max="192" value="120" step="1" disabled> 
+
+    <label id="string2TuningLabel" disabled>String 2 Note Number: 120</label>
+    <input type="range" id="string2TuningSlider" min="48" max="192" value="120" step="1" disabled>
+
+    <label id="string3TuningLabel" disabled>String 3 Note Number: 120</label>
+    <input type="range" id="string3TuningSlider" min="48" max="192" value="120" step="1" disabled>
+
+    <label id="string4TuningLabel" disabled>String 4 Note Number: 120</label>
+    <input type="range" id="string4TuningSlider" min="48" max="192" value="120" step="1" disabled> 
+
+    <h3 >Individual String on/off</h3>
+
+    <fieldset>
+      <legend>String 1:</legend>
+      <label><input type="radio" name="string1RadioGroup" value="on"checked disabled> On</label>
+      <label><input type="radio" name="string1RadioGroup" value="off"  disabled> Off</label>
+    </fieldset>
+    <fieldset>
+      <legend>String 2:</legend>
+      <label><input type="radio" name="string2RadioGroup" value="on" checked disabled> On</label>
+      <label><input type="radio" name="string2RadioGroup" value="off"  disabled> Off</label>
+    </fieldset>
+    <fieldset>
+      <legend>String 3:</legend>
+      <label><input type="radio" name="string3RadioGroup" value="on" checked disabled> On</label>
+      <label><input type="radio" name="string3RadioGroup" value="off"  disabled> Off</label>
+    </fieldset>
+    <fieldset>
+      <legend>String 4:</legend>
+      <label><input type="radio" name="string4RadioGroup" value="on" checked disabled> On</label>
+      <label><input type="radio" name="string4RadioGroup" value="off"  disabled> Off</label>
+    </fieldset>        
+
+    <h3>Turn the eTar Off</h3>
+
+    <button id="turnoffButton" disabled>Turn Off</button>
+
+
+
+  </div>
+
+
+  <script>
+
+
+
+    function openTab(index) {
+      var tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => tab.classList.remove('active'));
+
+      //var activeTab = document.getElementById(tabId);
+      tabs[index].classList.add('active');
+
+
+      var tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(content => content.classList.remove('active'));
+
+      //var activeContent = document.getElementById(tabId);
+      tabContents[index].classList.add('active');
+
+
+
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      let deviceListDropdown = document.getElementById('deviceListDropdown');
+      let instrumentsDropdown = document.getElementById('instrumentsDropdown');
+      let tuningsDropdown = document.getElementById('tuningsDropdown');
+      let pitchSystemsDropdown = document.getElementById('pitchSystemsDropdown');
+      let midiChannelsDropdown = document.getElementById('midiChannelsDropdown');
+      let midiFileDropdown = document.getElementById('midiFileDropdown');
+
+
+      let transposeLabel = document.getElementById('transposeLabel');
+      let transposeSlider = document.getElementById('transposeSlider');
+      let pitchLabel = document.getElementById('pitchLabel');
+      let pitchSlider = document.getElementById('pitchSlider');
+      let vibratoLabel = document.getElementById('vibratoLabel');
+      let vibratoSlider = document.getElementById('vibratoSlider');
+      let sustainRadioButtons = document.getElementsByName('sustainRadioGroup');
+      let chordsRadioButtons = document.getElementsByName('chordsRadioGroup');
+      let leftHandRadioButtons = document.getElementsByName('leftHandRadioGroup');
+      let quarterTonesRadioButtons = document.getElementsByName('quarterTonesRadioGroup');
+      let dynamicsRadioButtons = document.getElementsByName('dynamicsRadioGroup');
+      let staccatoRadioButtons = document.getElementsByName('staccatoRadioGroup');
+      let tappingRadioButtons = document.getElementsByName('tappingRadioGroup');
+      let tapWithoutStrumRadioButtons = document.getElementsByName('tapWithoutStrumRadioGroup');
+      let metronomeRadioButtons = document.getElementsByName('metronomeRadioGroup');
+      let tempoLabel = document.getElementById('tempoLabel');
+      let tempoSlider = document.getElementById('tempoSlider');
+      let metronomeVolLabel = document.getElementById('metronomeVolLabel');
+      let metronomeVolSlider = document.getElementById('metronomeVolSlider');
+      let metronomeNumBeatsLabel = document.getElementById('metronomeNumBeatsLabel');
+      let metronomeNumBeatsSlider = document.getElementById('metronomeNumBeatsSlider');
+      let playButton = document.getElementById('playButton');
+      let stopButton = document.getElementById('stopButton');
+      let pauseButton = document.getElementById('pauseButton');
+      let string1TuningLabel = document.getElementById('string1TuningLabel');
+      let string1TuningSlider = document.getElementById('string1TuningSlider');
+      let string2TuningLabel = document.getElementById('string2TuningLabel');
+      let string2TuningSlider = document.getElementById('string2TuningSlider');
+      let string3TuningLabel = document.getElementById('string3TuningLabel');
+      let string3TuningSlider = document.getElementById('string3TuningSlider');
+      let string4TuningLabel = document.getElementById('string4TuningLabel');
+      let string4TuningSlider = document.getElementById('string4TuningSlider');
+
+      let string1RadioButtons = document.getElementsByName('string1RadioGroup');
+      let string2RadioButtons = document.getElementsByName('string2RadioGroup');
+      let string3RadioButtons = document.getElementsByName('string3RadioGroup');
+      let string4RadioButtons = document.getElementsByName('string4RadioGroup');
+
+      let turnoffButton = document.getElementById('turnoffButton');
+
+      let batteryLabel = document.getElementById('batteryLabel');
+
+
+
+
+
+
+
+
+
+
+
+      let percussionRadioButtons = document.getElementsByName('percussionRadioGroup');
+
+
+      let dropdown2 = document.getElementById('dropdown2');
+      let dropdown3 = document.getElementById('dropdown3');
+      let connectButton = document.getElementById('connectButton');
+      let disconnectButton = document.getElementById('disconnectButton');
+      let connectedDevice = null;
+      let device = null;
+
+      // List of instrument names
+      const instrumentNames = [
+        "1. Acoustic Grand Piano",
+        "2. Bright Acoustic Piano",
+        "3. Electric Grand Piano",
+        "4. Honky-tonk Piano",
+        "5. Electric Piano 1",
+        "6. Electric Piano 2",
+        "7. Harpsichord",
+        "8. Clavi",
+        "9. Celesta",
+        "10. Glockenspiel",
+        "11. Music Box",
+        "12. Vibraphone",
+        "13. Marimba",
+        "14. Xylophone",
+        "15. Tubular Bells",
+        "16. Dulcimer",
+        "17. Drawbar Organ",
+        "18. Percussive Organ",
+        "19. Rock Organ",
+        "20. Church Organ",
+        "21. Reed Organ",
+        "22. Accordion",
+        "23. Harmonica",
+        "24. Tango Accordion",
+        "25. Acoustic Guitar (nylon)",
+        "26. Acoustic Guitar (steel)",
+        "27. Electric Guitar (jazz)",
+        "28. Electric Guitar (clean)",
+        "29. Electric Guitar (muted)",
+        "30. Overdriven Guitar",
+        "31. Distortion Guitar",
+        "32. Guitar harmonics",
+        "33. Acoustic Bass",
+        "34. Electric Bass (finger)",
+        "35. Electric Bass (pick)",
+        "36. Fretless Bass",
+        "37. Slap Bass 1",
+        "38. Slap Bass 2",
+        "39. Synth Bass 1",
+        "40. Synth Bass 2",
+        "41. Violin",
+        "42. Viola",
+        "43. Cello",
+        "44. Contrabass",
+        "45. Tremolo Strings",
+        "46. Pizzicato Strings",
+        "47. Orchestral Harp",
+        "48. Timpani",
+        "49. String Ensemble 1",
+        "50. String Ensemble 2",
+        "51. SynthStrings 1",
+        "52. SynthStrings 2",
+        "53. Choir Aahs",
+        "54. Voice Oohs",
+        "55. Synth Voice",
+        "56. Orchestra Hit",
+        "57. Trumpet",
+        "58. Trombone",
+        "59. Tuba",
+        "60. Muted Trumpet",
+        "61. French Horn",
+        "62. Brass Section",
+        "63. SynthBrass 1",
+        "64. SynthBrass 2",
+        "65. Soprano Sax",
+        "66. Alto Sax",
+        "67. Tenor Sax",
+        "68. Baritone Sax",
+        "69. Oboe",
+        "70. English Horn",
+        "71. Bassoon",
+        "72. Clarinet",
+        "73. Piccolo",
+        "74. Flute",
+        "75. Recorder",
+        "76. Pan Flute",
+        "77. Blown Bottle",
+        "78. Shakuhachi",
+        "79. Whistle",
+        "80. Ocarina",
+        "81. Lead 1 (square)",
+        "82. Lead 2 (sawtooth)",
+        "83. Lead 3 (calliope)",
+        "84. Lead 4 (chiff)",
+        "85. Lead 5 (charang)",
+        "86. Lead 6 (voice)",
+        "87. Lead 7 (fifths)",
+        "88. Lead 8 (bass + lead)",
+        "89. Pad 1 (new age)",
+        "90. Pad 2 (warm)",
+        "91. Pad 3 (polysynth)",
+        "92. Pad 4 (choir)",
+        "93. Pad 5 (bowed)",
+        "94. Pad 6 (metallic)",
+        "95. Pad 7 (halo)",
+        "96. Pad 8 (sweep)",
+        "97. FX 1 (rain)",
+        "98. FX 2 (soundtrack)",
+        "99. FX 3 (crystal)",
+        "100. FX 4 (atmosphere)",
+        "101. FX 5 (brightness)",
+        "102. FX 6 (goblins)",
+        "103. FX 7 (echoes)",
+        "104. FX 8 (sci-fi)",
+        "105. Sitar",
+        "106. Banjo",
+        "107. Shamisen",
+        "108. Koto",
+        "109. Kalimba",
+        "110. Bag pipe",
+        "111. Fiddle",
+        "112. Shanai",
+        "113. Tinkle Bell",
+        "114. Agogo",
+        "115. Steel Drums",
+        "116. Woodblock",
+        "117. Taiko Drum",
+        "118. Melodic Tom",
+        "119. Synth Drum",
+        "120. Reverse Cymbal",
+        "121. Guitar Fret Noise",
+        "122. Breath Noise",
+        "123. Seashore",
+        "124. Bird Tweet",
+        "125. Telephone Ring",
+        "126. Helicopter",
+        "127. Applause",
+        "128. Gunshot"
+      ];
+
+      // List of tunings
+      const tuningNames = [
+
+        "C4,  G3,  C4,  C3",
+        "C4,  G3,  C4,  F3",
+        "C4,  G3,  D4,  D3",
+        "C4,  F3,  C4,  C3",
+        "C4,  G3,  A3,  D3",
+        "C4,  F3,  AS4, AS3",
+        "C4,  G3,  AS4,  F3",
+        "C4,  F3,  DS4,  DS3",
+        "C4,  G3,  Ak3,  D3",
+        "C4,  F3,  G3,  C3",
+        "C4,  F3,  Gk3,  DS3",
+        "C4,  C4,  G3,  G3",
+        "C4,  C4,  F3,  F3",
+        "D4,  A3,  E3,  B2",
+        "A4,  E4,  C4,  G4",
+        "A4,  E4,  D4,  A3",
+        "A4,  E4,  C4,  G3",
+        "A4,  D4,  G3,  C3",
+        "E4,  B3,  G3,  D3",
+        "D4,  B3,  G3,  C3",
+        "C4,  C4,  G3,  C3",
+        "D4,  A3,  FS3,  D3",
+        "E4,  CS4,  A3,  DS3",
+        "D4,  B3,  G3,  D3",
+        "E4,  A3,  D3,  G2",
+        "G4,  D3,  A4,  E3",
+        "E5,  A4,  D4,  G3",
+        "A4,  D4,  G3,  C3",
+        "A3,  D3,  G2,  G2",
+        "A4,  D4,  G3,  G3",
+        "A4,  D4,  E3,  E3",
+        "A4,  D4,  FS3,  FS3",
+        "D4,  G3,  A2,  A2",
+        "F4,  D4,  A3,  A3",
+        "G4,  A3,  A2,  A2",
+        "A4,  D4,  D3,  D3",
+        "E4,  A3,  A2,  A2",
+        "F4,  A3,  A2,  A2",
+        "FS4,  A3,  A2,  A2",
+        "C4,  G3,  D3,  D3"
+
+      ];
+
+      // List of pitch systems
+      const pitchSystemsNames = [
+        "Equal 24",
+        "equal 51",
+        "Persian 1",
+        "persian 2"
+      ];
+
+      // List of midi channels
+      const midiChannelsNames = [
+        "1,2",
+        "3,4",
+        "5,6",
+        "7,8",
+        "9,10",
+        "11,12",
+        "13,14",
+        "15,16"
+      ];
+
+      const midiFilesNames = [
+        "MIDI File 1",
+        "MIDI File 2",
+        "MIDI File 3",
+        "MIDI File 4"
+      ];
+
+
+
+      // Add the instrument names to the dropdown
+      instrumentNames.forEach((instrument, index) => {
+        // Create an option element
+        let option = document.createElement('option');
+
+        // Set the value and text content for the option
+        option.value = index + 1; // Values start from 1
+        option.textContent = instrument;
+
+        // Append the option to the dropdown
+        instrumentsDropdown.appendChild(option);
+      });
+      // Add the instrument names to the dropdown
+      midiFilesNames.forEach((midiFile, index) => {
+        // Create an option element
+        let option = document.createElement('option');
+
+        // Set the value and text content for the option
+        option.value = index + 1; // Values start from 1
+        option.textContent = midiFile;
+
+        // Append the option to the dropdown
+        midiFileDropdown.appendChild(option);
+      });
+
+      // Add the tuning names to the dropdown
+      tuningNames.forEach((tuning, index) => {
+        // Create an option element
+        let option = document.createElement('option');
+
+        // Set the value and text content for the option
+        option.value = index + 1; // Values start from 1
+        option.textContent = tuning;
+
+        // Append the option to the dropdown
+        tuningsDropdown.appendChild(option);
+      });
+
+      // Add the pitch systems names to the dropdown
+      pitchSystemsNames.forEach((tuning, index) => {
+        // Create an option element
+        let option = document.createElement('option');
+
+        // Set the value and text content for the option
+        option.value = index + 1; // Values start from 1
+        option.textContent = tuning;
+
+        // Append the option to the dropdown
+        pitchSystemsDropdown.appendChild(option);
+      });
+
+      // Add the midi channels names to the dropdown
+      midiChannelsNames.forEach((tuning, index) => {
+        // Create an option element
+        let option = document.createElement('option');
+
+        // Set the value and text content for the option
+        option.value = index + 1; // Values start from 1
+        option.textContent = tuning;
+
+        // Append the option to the dropdown
+        midiChannelsDropdown.appendChild(option);
+      });
+
+
+
+
+      // Check if the Web Bluetooth API is supported
+      if ('bluetooth' in navigator) {
+        // Add event listener to the scan button
+        document.getElementById('scanButton').addEventListener('click', async () => {
+          try {
+            // Request Bluetooth device
+            device = await navigator.bluetooth.requestDevice({
+              filters: [{ services: ['03b80e5a-ede8-4b33-a751-6ce34ec4c700'] }],
+            });
+
+            // Add discovered device to the list
+            const option = document.createElement('option');
+            option.value = device.id;
+            option.textContent = device.name || 'Unknown Device';
+            deviceListDropdown.appendChild(option);
+            // Enable the connectButton 
+            connectButton.disabled = false;
+          } catch (error) {
+            console.error('Error requesting Bluetooth device:', error);
+          }
+        });
+
+        // Add event listener to the connectButton
+        connectButton.addEventListener('click', async () => {
+          const deviceId = deviceListDropdown.value;
+
+          if (deviceId) {
+            try {
+              // Connect to the selected device
+
+              const server = await device.gatt.connect();
+
+              // Get the MIDI service
+              const midiService = await server.getPrimaryService('03b80e5a-ede8-4b33-a751-6ce34ec4c700');
+
+              // Get the MIDI characteristic
+              const midiCharacteristic = await midiService.getCharacteristic('7772e5db-3868-4112-a1a9-f2669d106bf3');
+
+              // Keep track of connected device
+              connectedDevice = { device, server, midiService, midiCharacteristic };
+
+              // Set up event listener for receiving data
+              midiCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+              const receivedData  = event.target.value;
+              const byteLength = receivedData.byteLength;
+              const dataArray = new Uint8Array(receivedData.buffer); 
+              // Process received data here
+              if (dataArray[1] == 0x56){  //battery level data is received
+                var level = dataArray[2]  ; //dataArray[2] contains the battery level from 0-100 , multiplied by .8 because width of elements is 80%
+
+                document.getElementById('battery-bar').style.width = level * 0.8 + '%';
+                if (level > 70 && level <= 100){
+                  document.getElementById('battery-bar').style.backgroundColor = '#33cc33' ; 
+                }else if (level > 50 && level <= 70) {
+                  document.getElementById('battery-bar').style.backgroundColor = '#ffff00' ; 
+                }else if (level > 30 && level <= 50) {
+                  document.getElementById('battery-bar').style.backgroundColor = '#ff9900' ; 
+                }else if (level > 0 && level <= 30) {
+                  document.getElementById('battery-bar').style.backgroundColor = '#ff0000' ; 
+                }
+
+                batteryLabel.textContent = `Battery: ${dataArray[2]} `;
+              
+              }});
+
+
+                // Start receiving notifications/indications
+                await midiCharacteristic.startNotifications(); // Use startIndications() if your device uses indications instead
+
+
+              // Enable the disconnect button
+              disconnectButton.disabled = false;
+              instrumentsDropdown.disabled = false;
+              tuningsDropdown.disabled = false;
+              pitchSystemsDropdown.disabled = false;
+              midiChannelsDropdown.disabled = false;
+              midiFileDropdown.disabled = false;
+
+
+              transposeSlider.disabled = false;
+              pitchSlider.disabled = false;
+              tempoSlider.disabled = false;
+              string1TuningSlider.disabled = false;
+              string2TuningSlider.disabled = false;
+              string3TuningSlider.disabled = false;
+              string4TuningSlider.disabled = false;
+
+
+              metronomeVolSlider.disabled = false;
+              metronomeNumBeatsSlider.disabled = false;
+
+              playButton.disabled = false;
+              turnoffButton.disabled = false;
+
+
+
+              vibratoSlider.disabled = false;
+              for (let i = 0; i < sustainRadioButtons.length; i++)
+                sustainRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < chordsRadioButtons.length; i++)
+                chordsRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < leftHandRadioButtons.length; i++)
+                leftHandRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < quarterTonesRadioButtons.length; i++)
+                quarterTonesRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < dynamicsRadioButtons.length; i++)
+                dynamicsRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < staccatoRadioButtons.length; i++)
+                staccatoRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < percussionRadioButtons.length; i++)
+                percussionRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < tappingRadioButtons.length; i++)
+                tappingRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
+                tapWithoutStrumRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < metronomeRadioButtons.length; i++)
+                metronomeRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < string1RadioButtons.length; i++)
+              string1RadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < string2RadioButtons.length; i++)
+              string2RadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < string3RadioButtons.length; i++)
+              string3RadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < string4RadioButtons.length; i++)
+              string4RadioButtons[i].removeAttribute('disabled');
+
+
+              // Perform actions with the connected device
+              console.log('Connected to MIDI device:', device.name);
+              // You can interact with the device here
+              // For example, discover services
+              // For more detailed interactions, you can explore characteristics, descriptors, etc.
+
+            } catch (error) {
+              console.error('Error connecting to device:', error);
+            }
+          } else {
+            alert('Please select a BLE device');
+          }
+        });
+
+
+
+        // Add event listener to the disconnect button
+        disconnectButton.addEventListener('click', async () => {
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              await connectedDevice.server.disconnect();
+              console.log('Disconnected from MIDI device:', connectedDevice.device.name);
+            }
+
+            // Disable the disconnect button
+            disconnectButton.disabled = true;
+            instrumentsDropdown.disabled = true;
+            transposeSlider.disabled = true;
+            pitchSlider.disabled = true;
+            tempoSlider.disabled = true;
+            metronomeVolSlider.disabled = true;
+            midiFileDropdown.disabled = true;
+            playButton.disabled = true;
+            pauseButton.disabled = true;
+            stopButton.disabled = true;
+            string1TuningSlider.disabled = true;
+            string2TuningSlider.disabled = true;
+            string3TuningSlider.disabled = true;
+            string4TuningSlider.disabled = true;
+            turnoffButton.disabled = true;
+
+
+
+
+            vibratoSlider.disabled = true;
+            for (let i = 0; i < sustainRadioButtons.length; i++)
+              sustainRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < chordsRadioButtons.length; i++)
+              chordsRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < leftHandRadioButtons.length; i++)
+              leftHandRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < quarterTonesRadioButtons.length; i++)
+              quarterTonesRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < dynamicsRadioButtons.length; i++)
+              dynamicsRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < staccatoRadioButtons.length; i++)
+              staccatoRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < tappingRadioButtons.length; i++)
+              tappingRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
+              tapWithoutStrumRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < metronomeRadioButtons.length; i++)
+              metronomeRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < percussionRadioButtons.length; i++)
+              percussionRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < string1RadioButtons.length; i++)
+            string1RadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < string2RadioButtons.length; i++)
+            string2RadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < string3RadioButtons.length; i++)
+            string3RadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < string4RadioButtons.length; i++)
+            string4RadioButtons[i].setAttribute('disabled', 'disabled');
+
+              
+            tuningsDropdown.disabled = true;
+            pitchSystemsDropdown.disabled = true;
+            midiChannelsDropdown.disabled = true;
+
+
+            connectedDevice = null; // Reset connected device
+          } catch (error) {
+            console.error('Error disconnecting from device:', error);
+          }
+        });
+
+
+
+
+        // Add an event listener to the 'instruments' dropdown
+        instrumentsDropdown.addEventListener('change', async () => {
+          // Get the selected index
+          const index = instrumentsDropdown.selectedIndex;
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x16;   //instrument change
+              data[4] = index; //instrument index
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the 'midiFile' dropdown
+        midiFileDropdown.addEventListener('change', async () => {
+
+          playButton.disabled = false; //when a midi file is selected, make the play button available
+
+          // Get the selected index
+          const index = midiFileDropdown.selectedIndex;
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x53;   //midi file selection
+              data[4] = index + 1; //midi file index. Since index starts from zero, but file names start from 1.mid ...
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+        // Add an event listener to the 'tunings' dropdown
+        tuningsDropdown.addEventListener('change', async () => {
+          // Get the selected index
+          const index = tuningsDropdown.selectedIndex;
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x0e;   //tuning change
+              data[4] = index; //tuning index
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the 'pitchSystems' dropdown
+        pitchSystemsDropdown.addEventListener('change', async () => {
+          // Get the selected index
+          const index = pitchSystemsDropdown.selectedIndex;
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x34;   //pitch system 
+              data[4] = index; //pitch system index
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the 'midiChannels' dropdown
+        midiChannelsDropdown.addEventListener('change', async () => {
+          // Get the selected index
+          const index = midiChannelsDropdown.selectedIndex;
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x47;   //midi channels
+              data[4] = index; //midi channels index
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+
+
+        // Add an event listener to the transposeSlider
+        transposeSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = transposeSlider.value;
+          transposeLabel.textContent = `Transpose: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x19;   //transpose 
+              data[4] = value; //value
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the pitchSlider
+        pitchSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = pitchSlider.value;
+          pitchLabel.textContent = `Pitch Offset: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x4d;   //Pitch Offset: 
+              data[4] = value; //value
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the tempoSlider
+        tempoSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = tempoSlider.value;
+          tempoLabel.textContent = `Tempo: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x4f;   //metronome tempo value: 
+              data[4] = value; //value
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the string1TuningSlider
+        string1TuningSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = string1TuningSlider.value;
+          string1TuningLabel.textContent = `Note Number: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x0f;   //string 1 tuning 
+              data[4] = value; // note number
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+        // Add an event listener to the string1TuningSlider
+        string2TuningSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = string2TuningSlider.value;
+          string1TuningLabel.textContent = `Note Number: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x11;   //string 2 tuning 
+              data[4] = value; // note number
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+      // Add an event listener to the string1TuningSlider
+      string3TuningSlider.addEventListener('input', async () => {
+        // Get the value of the slider
+        const value = string3TuningSlider.value;
+        string1TuningLabel.textContent = `Note Number: ${value}`;
+
+        try {
+          // Disconnect from the connected device
+          if (connectedDevice) {
+            //make a  MIDI message as a Uint8Array
+            let data = new Uint8Array(5);
+            data[0] = 0xbf; //dummy timestamp 1st byte
+            data[1] = 0x8c; //dummy timestamp 2nd byte
+            data[2] = 0xfe; //custom midi status byte for controling etar through ble
+            data[3] = 0x12;   //string 3 tuning 
+            data[4] = value; // note number
+
+            await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+          }
+
+        } catch (error) {
+          console.error('Error sending note to the device:', error);
+        }
+      });
+
+      // Add an event listener to the string1TuningSlider
+      string1TuningSlider.addEventListener('input', async () => {
+        // Get the value of the slider
+        const value = string1TuningSlider.value;
+        string1TuningLabel.textContent = `Note Number: ${value}`;
+
+        try {
+          // Disconnect from the connected device
+          if (connectedDevice) {
+            //make a  MIDI message as a Uint8Array
+            let data = new Uint8Array(5);
+            data[0] = 0xbf; //dummy timestamp 1st byte
+            data[1] = 0x8c; //dummy timestamp 2nd byte
+            data[2] = 0xfe; //custom midi status byte for controling etar through ble
+            data[3] = 0x13;   //string 4 tuning 
+            data[4] = value; // note number
+
+            await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+          }
+
+        } catch (error) {
+          console.error('Error sending note to the device:', error);
+        }
+      });
+
+
+        // Add an event listener to the metronomeVolSlider
+        metronomeVolSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = metronomeVolSlider.value;
+          metronomeVolLabel.textContent = `Metronome Volume: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x51;   //metronome volume value: 
+              data[4] = value; //value
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the metronomeNumBeatsSlider
+        metronomeNumBeatsSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = metronomeNumBeatsSlider.value;
+          metronomeNumBeatsLabel.textContent = `Metronome Volume: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x50;   //metronome number of beats 
+              data[4] = value; //value
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+        // Add an event listener to the vibratoSlider
+        vibratoSlider.addEventListener('input', async () => {
+          // Get the value of the slider
+          const value = vibratoSlider.value;
+          vibratoLabel.textContent = `Vibrato: ${value}`;
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x0d;   //Vibrato: 
+              data[4] = value; //value
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+        });
+
+
+        // Add an event listener to the sustainRadioButtons
+
+        for (let i = 0; i < sustainRadioButtons.length; i++) {
+          sustainRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x01;   //sustain
+                if (this.value == 'on')
+                  data[4] = 1; //enable sustain
+                else
+                  data[4] = 0; //disable sustain
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+        // Add an event listener to the chordsRadioButtons
+
+        for (let i = 0; i < chordsRadioButtons.length; i++) {
+          chordsRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x35;   //chords mode
+                if (this.value == 'on')
+                  data[4] = 1; //enable chords mode
+                else
+                  data[4] = 0; //disable chords mode
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+
+        // Add an event listener to the leftHandRadioButtons
+
+        for (let i = 0; i < leftHandRadioButtons.length; i++) {
+          leftHandRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x14;   //left hand mode
+                if (this.value == 'on')
+                  data[4] = 1; //enable left hand mode
+                else
+                  data[4] = 0; //disable left hand mode
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+        // Add an event listener to the quarterTonesRadioButtons
+
+        for (let i = 0; i < quarterTonesRadioButtons.length; i++) {
+          quarterTonesRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x15;   //quarter tone mode
+                if (this.value == 'on')
+                  data[4] = 1; //enable quarter tone mode
+                else
+                  data[4] = 0; //disable quarter tone mode
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+        // Add an event listener to the metronomeRadioButtons
+
+        for (let i = 0; i < metronomeRadioButtons.length; i++) {
+          metronomeRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x4e;   //metronome
+                if (this.value == 'on')
+                  data[4] = 1; //metronome on (default is 60 bpm)
+                else
+                  data[4] = 0; //metronome off
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+
+
+        // Add an event listener to the dynamicsRadioButtons
+
+        for (let i = 0; i < dynamicsRadioButtons.length; i++) {
+          dynamicsRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x45;   //dynamics
+                if (this.value == 'on')
+                  data[4] = 1; //enable dynamics
+                else
+                  data[4] = 0; //disable dynamics
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+
+        // Add an event listener to the staccatoRadioButtons
+
+        for (let i = 0; i < staccatoRadioButtons.length; i++) {
+          staccatoRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x09;   //dynamics
+                if (this.value == 'on')
+                  data[4] = 1; //enable dynamics
+                else
+                  data[4] = 0; //disable dynamics
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+        // Add an event listener to the tappingRadioButtons
+
+        for (let i = 0; i < tappingRadioButtons.length; i++) {
+          tappingRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x06;   //tapping
+                if (this.value == 'on')
+                  data[4] = 1; //enable tapping
+                else
+                  data[4] = 0; //disable tapping
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+        // Add an event listener to the tapWithoutStrumRadioButtons
+
+        for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++) {
+          tapWithoutStrumRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x33;
+                if (this.value == 'on')
+                  data[4] = 1; //enable tapWithoutStrum
+                else
+                  data[4] = 0; //disable tapWithoutStrum
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+
+        // Add an event listener to the string1RadioButtons
+
+        for (let i = 0; i < string1RadioButtons.length; i++) {
+          string1RadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x49;
+                if (this.value == 'on')
+                  data[4] = 1; //enable string 1
+                else
+                  data[4] = 0; //disable string 1
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+
+        // Add an event listener to the string2RadioButtons
+
+        for (let i = 0; i < string2RadioButtons.length; i++) {
+          string2RadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x4a;
+                if (this.value == 'on')
+                  data[4] = 1; //enable string 2
+                else
+                  data[4] = 0; //disable string 2
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+        // Add an event listener to the string3RadioButtons
+
+        for (let i = 0; i < string3RadioButtons.length; i++) {
+          string3RadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x4b;
+                if (this.value == 'on')
+                  data[4] = 1; //enable string 3
+                else
+                  data[4] = 0; //disable string 3
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+        // Add an event listener to the string4RadioButtons
+
+        for (let i = 0; i < string4RadioButtons.length; i++) {
+          string4RadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x4c;
+                if (this.value == 'on')
+                  data[4] = 1; //enable string 4
+                else
+                  data[4] = 0; //disable string 4
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+
+
+
+
+        // Add an event listener to the percussionRadioButtons
+
+        for (let i = 0; i < percussionRadioButtons.length; i++) {
+          percussionRadioButtons[i].addEventListener('change', async function () {
+
+            try {
+              // Disconnect from the connected device
+              if (connectedDevice) {
+
+                //make a  MIDI message as a Uint8Array
+                let data = new Uint8Array(5);
+                data[0] = 0xbf; //dummy timestamp 1st byte
+                data[1] = 0x8c; //dummy timestamp 2nd byte
+                data[2] = 0xfe; //custom midi status byte for controling etar through ble
+                data[3] = 0x32;   //percussion
+                if (this.value == 'on')
+                  data[4] = 1; //enable percussion
+                else
+                  data[4] = 0; //disable percussion
+
+
+                await connectedDevice.midiCharacteristic.writeValue(data);
+
+              }
+
+            } catch (error) {
+              console.error('Error sending note to the device:', error);
+            }
+
+          });
+        }
+
+        document.getElementById('playButton').addEventListener('click', async () => {
+
+          // Enable/disable buttons based on the context
+          playButton.disabled = true;
+          pauseButton.disabled = false;
+          stopButton.disabled = false;
+
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x52;   //rec/play/pause/stop control
+              data[4] = 2; //play index
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+
+
+        });
+
+        document.getElementById('stopButton').addEventListener('click', async () => {
+
+          // Enable/disable buttons based on the context
+          playButton.disabled = false;
+          pauseButton.disabled = true;
+          stopButton.disabled = true;
+
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x52;   //rec/play/pause/stop control
+              data[4] = 1; //stop index
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+
+
+        });
+        
+        document.getElementById('pauseButton').addEventListener('click', async () => {
+
+          // Enable/disable buttons based on the context
+          playButton.disabled = false;
+          pauseButton.disabled = true;
+          stopButton.disabled = true;
+
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x52;   //rec/play/pause/stop control
+              data[4] = 3; //pause index
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+
+
+        });
+
+        document.getElementById('turnoffButton').addEventListener('click', async () => {
+
+          try {
+            // Disconnect from the connected device
+            if (connectedDevice) {
+
+              //make a  MIDI message as a Uint8Array
+              let data = new Uint8Array(5);
+              data[0] = 0xbf; //dummy timestamp 1st byte
+              data[1] = 0x8c; //dummy timestamp 2nd byte
+              data[2] = 0xfe; //custom midi status byte for controling etar through ble
+              data[3] = 0x55;   //turn off eTar
+              data[4] = 0; // doesnt matter
+
+              await connectedDevice.midiCharacteristic.writeValue(data);
+
+            }
+
+          } catch (error) {
+            console.error('Error sending note to the device:', error);
+          }
+
+
+        });
+
+      } else {
+        alert('Web Bluetooth API is not supported in this browser');
+      }
+
+
+
+
+
+
+      // Rest of your code...
+
+    });
+
+
+
+
+
+
+
+
+  </script>
+
+  </div><!-- .app-shell -->
+
+</body>
+
+</html>
