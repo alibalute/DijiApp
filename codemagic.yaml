@@ -1,13 +1,13 @@
 workflows:
-  ios-workflow:
-    name: eTar Settings iOS
+  ios-device:
+    name: eTar Settings (device)
     max_build_duration: 60
     environment:
       vars:
         XCODE_PROJECT: "eTarSettings.xcodeproj"
         XCODE_SCHEME: "eTarSettings"
     scripts:
-      - name: Build iOS app
+      - name: Build iOS app (device)
         script: |
           xcodebuild -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
@@ -20,7 +20,30 @@ workflows:
             clean build
     artifacts:
       - build/Build/Products/Release-iphoneos/eTarSettings.app
-    publishing:
-      scripts:
-        - name: Publish app
-          script: echo "Build complete. Configure code signing in Codemagic UI for device/distribution builds."
+
+  ios-simulator:
+    name: eTar Settings (simulator → Appetize)
+    max_build_duration: 60
+    environment:
+      vars:
+        XCODE_PROJECT: "eTarSettings.xcodeproj"
+        XCODE_SCHEME: "eTarSettings"
+    scripts:
+      - name: Build iOS app (simulator)
+        script: |
+          xcodebuild -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+      - name: Zip app for Appetize.io
+        script: |
+          cd build/Build/Products/Release-iphonesimulator
+          zip -r ../../../eTarSettings-simulator.zip eTarSettings.app
+    artifacts:
+      - build/eTarSettings-simulator.zip
