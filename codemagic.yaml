@@ -7,7 +7,7 @@ workflows:
         XCODE_PROJECT: "eTarSettings.xcodeproj"
         XCODE_SCHEME: "eTarSettings"
     scripts:
-      - name: Build iOS app (device)
+      - name: Build iOS app (device, unsigned)
         script: |
           xcodebuild -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
@@ -20,6 +20,34 @@ workflows:
             clean build
     artifacts:
       - build/Build/Products/Release-iphoneos/eTarSettings.app
+
+  ios-adhoc:
+    name: eTar Settings (Ad Hoc IPA)
+    max_build_duration: 90
+    environment:
+      ios_signing:
+        distribution_type: ad_hoc
+        bundle_identifier: com.dijilele.eTarSettings
+      vars:
+        XCODE_PROJECT: "eTarSettings.xcodeproj"
+        XCODE_SCHEME: "eTarSettings"
+    scripts:
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Archive and export IPA
+        script: |
+          xcodebuild -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath build/eTarSettings.xcarchive \
+            archive
+          xcodebuild -exportArchive \
+            -archivePath build/eTarSettings.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist exportOptions-adhoc.plist
+    artifacts:
+      - build/export/*.ipa
 
   ios-simulator:
     name: eTar Settings (simulator → Appetize)

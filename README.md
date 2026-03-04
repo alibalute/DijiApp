@@ -22,11 +22,38 @@ iOS app that wraps the eTar Settings web UI (`qui-skinned.html`) in a native she
 ## Building on Codemagic
 
 1. Push the repo to GitHub/GitLab/Bitbucket and connect it in [Codemagic](https://codemagic.io).
-2. The default workflow in `codemagic.yaml` builds the app without code signing (for verification).
-3. To produce an installable or App Store build:
-   - In Codemagic: **App settings → Code signing**.
-   - Add your Apple Developer account, certificates, and provisioning profiles (or use the automatic option).
-   - In `codemagic.yaml`, remove the `CODE_SIGN_IDENTITY=""` / `CODE_SIGNING_REQUIRED=NO` / `CODE_SIGNING_ALLOWED=NO` lines so the build uses your signing setup.
+2. The **eTar Settings (device)** workflow builds the app without code signing (for verification).
+3. To produce an installable or Ad Hoc IPA, use the **eTar Settings (Ad Hoc IPA)** workflow and set up code signing below.
+
+---
+
+## Ad Hoc build on Codemagic (IPA for iPad)
+
+To build a signed IPA and install it on your iPad without Xcode, use the **device workflow with code signing** and the **Ad Hoc** profile.
+
+### Where to set it in Codemagic
+
+**1. Upload certificate and Ad Hoc profile (one-time)**
+
+- In Codemagic, open **Team settings** (gear icon or your team name).
+- Go to **Code signing identities** (or **codemagic.yaml** → **Code signing**).
+- **iOS certificates:** Click **Add certificate** → upload your **Apple Distribution** `.p12` file, set a password if needed, and give it a **Reference name** (e.g. `ios_distribution`).
+- **iOS provisioning profiles:** Click **Add profile** → upload your **Ad Hoc** `.mobileprovision` file and give it a **Reference name** (e.g. `etar_ad_hoc`).
+
+**2. Tell the workflow to use Ad Hoc**
+
+- In your **application** (not Team), open **Workflows** and select the workflow that should produce the IPA (e.g. **eTar Settings (Ad Hoc IPA)**).
+- The workflow is already set in `codemagic.yaml` to use **Ad Hoc** and your app’s bundle ID:
+  - `environment.ios_signing.distribution_type: ad_hoc`
+  - `environment.ios_signing.bundle_identifier: com.dijilele.eTarSettings`
+- Codemagic will match the uploaded Ad Hoc profile and distribution certificate to this bundle ID when you run the workflow. You don’t select the profile in the UI per run; the **workflow** is configured in YAML and the **files** are in Team → Code signing identities.
+
+**3. Run the workflow**
+
+- Start the **eTar Settings (Ad Hoc IPA)** workflow.
+- After the build, download the **IPA** from **Artifacts** and install it on your iPad (e.g. via Diawi, or by copying to a Mac and installing via Finder).
+
+**Summary:** Upload the **certificate** and **Ad Hoc provisioning profile** under **Team settings → Code signing identities**. The **eTar Settings (Ad Hoc IPA)** workflow in `codemagic.yaml` uses `distribution_type: ad_hoc` and `bundle_identifier: com.dijilele.eTarSettings`, so Codemagic will pick the matching profile and certificate and produce an IPA. The IPA is in the build **Artifacts**.
 
 ---
 
