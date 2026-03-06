@@ -1,0 +1,104 @@
+# CodeMagic CI/CD for diji_app_flutter
+# See CODEMAGIC_IOS_SETUP.md for code signing setup (required for iOS builds).
+
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    integrations:
+      app_store_connect: DigiApp api key  # Use the integration you create in CodeMagic Team settings
+    environment:
+      ios_signing:
+        # Manual: use the exact reference names from CodeMagic Team settings → Code signing identities → iOS.
+        # Certificate and profile must match (profile must include this cert in Apple Developer).
+        provisioning_profiles:
+          - FlutterProfile
+        certificates:
+          - apple distribution certificate
+      vars:
+        # Apple Developer Team ID (10 chars). Find at developer.apple.com/account → Membership. Required for IPA export.
+        TEAM_ID: "84FK4F273J"
+        # Optional: for automatic TestFlight build number. Create app in App Store Connect and set APP_ID.
+        APP_ID: "6760035267"
+        # Optional: set if export fails. Use the profile Name from your .mobileprovision (open in TextEdit or run: security cms -D -i YourProfile.mobileprovision).
+        # EXPORT_PROFILE_NAME: "App Store com.example.dijiAppFlutter"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Create export options plist (teamID + provisioningProfiles; no signingCertificate)
+        script: |
+          set -e
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          PROFILE_NAME=""
+          DETECTED_TEAM_ID=""
+          for f in "$PROFILES_DIR"/*.mobileprovision; do
+            [ -f "$f" ] || continue
+            TMP_PLIST=$(mktemp)
+            security cms -D -i "$f" -o "$TMP_PLIST" 2>/dev/null || true
+            if [ -f "$TMP_PLIST" ]; then
+              PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$TMP_PLIST" 2>/dev/null || true)
+              DETECTED_TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" "$TMP_PLIST" 2>/dev/null || true)
+              rm -f "$TMP_PLIST"
+              [ -n "$PROFILE_NAME" ] && [ -n "$DETECTED_TEAM_ID" ] && break
+            fi
+          done
+          [ -z "$PROFILE_NAME" ] && PROFILE_NAME="${EXPORT_PROFILE_NAME:-App Store com.example.dijiAppFlutter}"
+          TEAM_ID_FINAL="${TEAM_ID:-$DETECTED_TEAM_ID}"
+          if [ -z "$TEAM_ID_FINAL" ]; then
+            echo "Error: No Team ID. Set TEAM_ID in workflow vars (developer.apple.com/account → Membership)."
+            exit 1
+          fi
+          echo "Using provisioning profile name: $PROFILE_NAME, teamID: $TEAM_ID_FINAL"
+          EXPORT_PLIST="/Users/builder/export_options.plist"
+          rm -f "$EXPORT_PLIST"
+          /usr/libexec/PlistBuddy "$EXPORT_PLIST" -c "Add :method string app-store-connect"
+          /usr/libexec/PlistBuddy "$EXPORT_PLIST" -c "Add :teamID string $TEAM_ID_FINAL"
+          /usr/libexec/PlistBuddy "$EXPORT_PLIST" -c "Add :provisioningProfiles dict"
+          /usr/libexec/PlistBuddy "$EXPORT_PLIST" -c "Add :provisioningProfiles:com.example.dijiAppFlutter string $PROFILE_NAME"
+          echo "Contents of $EXPORT_PLIST:"
+          plutil -p "$EXPORT_PLIST"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install CocoaPods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+      - name: Build IPA
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # submit_to_app_store: false
+
+  # Optional: build for iOS simulator (no code signing required)
+  ios-simulator-workflow:
+    name: iOS Simulator
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: flutter packages pub get
+      - name: Install CocoaPods
+        script: find . -name "Podfile" -execdir pod install \;
+      - name: Build for simulator
+        script: flutter build ios --simulator --no-codesign
+    artifacts:
+      - build/ios/iphonesimulator/*.app
