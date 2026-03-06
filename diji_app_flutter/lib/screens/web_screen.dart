@@ -16,6 +16,8 @@ class _WebScreenState extends State<WebScreen> {
   InAppWebViewController? _webViewController;
   final BleBridge _bleBridge = BleBridge();
   bool _loading = true;
+  /// Never show spinner longer than this; onLoadStop is unreliable on Android.
+  static const Duration _maxSpinnerDuration = Duration(milliseconds: 2500);
 
   static const String _bridgeScript = r'''
 (function() {
@@ -76,11 +78,16 @@ class _WebScreenState extends State<WebScreen> {
           final rawCid = map['callbackId'];
           final callbackId = rawCid is int ? rawCid : (rawCid is num ? rawCid.toInt() : null);
           if (deviceId != null && callbackId != null) {
-            final ok = await _bleBridge.connect(deviceId);
-            if (ok) {
-              _runJs(controller, "window._bleOnConnect($callbackId);");
-            } else {
-              _runJs(controller, "window._bleReject($callbackId, 'Connection failed');");
+            try {
+              final ok = await _bleBridge.connect(deviceId);
+              if (ok) {
+                _runJs(controller, "window._bleOnConnect($callbackId);");
+              } else {
+                _runJs(controller, "window._bleReject($callbackId, 'Service or characteristic not found');");
+              }
+            } catch (e) {
+              final msg = e.toString().replaceAll(r'\', r'\\').replaceAll("'", r"\'");
+              _runJs(controller, "window._bleReject($callbackId, '$msg');");
             }
           }
           break;
@@ -107,6 +114,21 @@ class _WebScreenState extends State<WebScreen> {
     c.evaluateJavascript(source: js);
   }
 
+  void _stopLoading() {
+    if (_loading && mounted) {
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // On Android, onLoadStop often never fires for local content. Always hide spinner after max duration.
+    Future.delayed(_maxSpinnerDuration, () {
+      if (mounted) _stopLoading();
+    });
+  }
+
   @override
   void dispose() {
     _bleBridge.dispose();
@@ -118,19 +140,22 @@ class _WebScreenState extends State<WebScreen> {
     return Scaffold(
       body: SafeArea(
         child: Stack(
+          fit: StackFit.expand,
           children: [
-            InAppWebView(
+            Positioned.fill(
+              child: InAppWebView(
+              // Used for web and iOS (Android uses AndroidWebViewScreen).
               initialFile: kIsWeb ? null : 'assets/qui-skinned.html',
               initialUrlRequest: kIsWeb
                   ? URLRequest(
-                      url: WebUri(
-                        Uri.base.resolve('assets/qui-skinned.html').toString(),
-                      ),
+                      url: WebUri(Uri.base.resolve('assets/qui-skinned.html').toString()),
                     )
                   : null,
               initialSettings: InAppWebViewSettings(
                 transparentBackground: false,
                 javaScriptEnabled: true,
+                allowFileAccess: true,
+                allowContentAccess: true,
               ),
               initialUserScripts: UnmodifiableListView<UserScript>([
                 UserScript(
@@ -154,12 +179,13 @@ class _WebScreenState extends State<WebScreen> {
                 }
               },
               onLoadStop: (controller, url) {
-                setState(() => _loading = false);
+                _stopLoading();
               },
               onReceivedError: (controller, request, error) {
-                setState(() => _loading = false);
+                _stopLoading();
                 debugPrint('WebView load error: ${error.description}');
               },
+            ),
             ),
             if (_loading)
               const Center(

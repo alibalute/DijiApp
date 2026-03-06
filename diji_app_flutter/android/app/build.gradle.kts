@@ -24,10 +24,12 @@ android {
         applicationId = "com.example.diji_app_flutter"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Support Android 7.0+ (API 24). Do not use flutter.minSdkVersion — it can be 26+ and blocks Android 7.
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true  // Required for older Android (e.g. Android 7) when method count is high
     }
 
     buildTypes {

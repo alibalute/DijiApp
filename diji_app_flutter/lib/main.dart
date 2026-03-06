@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:diji_app_flutter/screens/android_webview_screen.dart';
 import 'package:diji_app_flutter/screens/web_screen.dart';
 
 // Brand colors
@@ -43,7 +45,9 @@ class DijiApp extends StatelessWidget {
           circularTrackColor: _brandTeal,
         ),
       ),
-      home: const WebScreen(),
+      home: defaultTargetPlatform == TargetPlatform.android
+          ? const AndroidWebViewScreen()
+          : const WebScreen(),
     );
   }
 }

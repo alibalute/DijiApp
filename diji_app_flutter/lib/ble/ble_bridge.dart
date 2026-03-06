@@ -17,9 +17,14 @@ class BleBridge {
   void Function(String base64)? _onNotification;
   final Map<String, BluetoothDevice> _scannedDevices = {};
 
-  /// Request Bluetooth permission. On iOS the system dialog may appear when BLE is first used.
+  /// Request Bluetooth permission. Android 12+ needs BLUETOOTH_SCAN/CONNECT; Android 6–11 needs BLUETOOTH + location.
   Future<void> _requestBluetoothPermission() async {
+    // Android 12+ (API 31+): BLUETOOTH_SCAN and BLUETOOTH_CONNECT (no-op on Android 7 / API 24)
+    await Permission.bluetoothScan.request();
+    await Permission.bluetoothConnect.request();
+    // Android 6–11 and Android 7: BLUETOOTH + ACCESS_FINE_LOCATION for BLE scan
     await Permission.bluetooth.request();
+    await Permission.locationWhenInUse.request();
   }
 
   Future<DeviceResult?> requestDevice() async {
@@ -60,21 +65,39 @@ class BleBridge {
     return null;
   }
 
+  /// Normalize BLE device id for lookup (lowercase, no separators).
+  static String _normalizeId(String id) {
+    return id.toLowerCase().replaceAll(RegExp(r'[-:]'), '');
+  }
+
   Future<bool> connect(String deviceId) async {
     try {
+      await _requestBluetoothPermission();
+
       BluetoothDevice? target = _scannedDevices[deviceId];
+      if (target == null) {
+        final normalized = _normalizeId(deviceId);
+        for (final e in _scannedDevices.entries) {
+          if (_normalizeId(e.key) == normalized) {
+            target = e.value;
+            break;
+          }
+        }
+      }
       if (target == null) {
         final devices = await FlutterBluePlus.systemDevices([]);
         for (final d in devices) {
-          if (d.remoteId.str == deviceId) {
+          if (_normalizeId(d.remoteId.str) == _normalizeId(deviceId)) {
             target = d;
             break;
           }
         }
       }
       target ??= BluetoothDevice(remoteId: DeviceIdentifier(deviceId));
-      await target.connect();
+
+      await target.connect(timeout: const Duration(seconds: 25));
       _device = target;
+
       final services = await target.discoverServices();
       for (final s in services) {
         if (s.uuid.toString().toLowerCase() == serviceUuid) {
@@ -89,7 +112,7 @@ class BleBridge {
       }
       return _characteristic != null;
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 
