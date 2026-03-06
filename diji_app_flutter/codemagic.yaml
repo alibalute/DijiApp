@@ -1,4 +1,4 @@
-# CodeMagic CI/CD for diji_app_flutter
+# CodeMagic CI/CD for DijiApp
 # See CODEMAGIC_IOS_SETUP.md for code signing setup (required for iOS builds).
 
 workflows:

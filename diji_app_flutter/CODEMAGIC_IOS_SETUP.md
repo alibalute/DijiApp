@@ -41,7 +41,7 @@ CodeMagic can create and manage certificates and provisioning profiles via the A
 
 - Your app’s bundle ID in Xcode/Flutter must match what you use in CodeMagic (`com.example.dijiAppFlutter` in the current config).
 - For **App Store / TestFlight**, the bundle ID must be registered in the [Apple Developer portal](https://developer.apple.com/account) and an app created in [App Store Connect](https://appstoreconnect.apple.com) with that bundle ID.
-- If you change the bundle ID (e.g. from `com.example.dijiAppFlutter` to something like `com.yourcompany.etar`), update:
+- If you change the bundle ID (e.g. from `com.example.dijiAppFlutter` to something like `com.yourcompany.dijiapp`), update:
   - Xcode: **Runner** target → **Signing & Capabilities** → Bundle Identifier.
   - `codemagic.yaml`: `ios_signing.bundle_identifier`.
 
@@ -92,7 +92,7 @@ Your profile for `com.example.dijiAppFlutter` with **app_store** → you need an
 4. **Select the certificate** (the line with the cert name, not only the key).
 5. **File** → **Export Items** (or right‑click → **Export**).
 6. Choose format **Personal Information Exchange (.p12)**.
-7. Save the file (e.g. `etar-distribution.p12`) and set a **password** (you’ll need this in CodeMagic).
+7. Save the file (e.g. `DijiApp-distribution.p12`) and set a **password** (you’ll need this in CodeMagic).
 8. Keep the **.p12** and password safe; upload the **.p12** to CodeMagic (see Option B step 4 below).
 
 **If you don’t have a Mac:** You cannot create or export a .p12 yourself. Use **Option A** (App Store Connect API) so CodeMagic creates and manages the certificate for you, or use a teammate’s Mac once to create and export the .p12.
@@ -107,7 +107,7 @@ Your profile for `com.example.dijiAppFlutter` with **app_store** → you need an
    ```
 2. Select the **Runner** target → **Signing & Capabilities**.
 3. Choose your **Team** (sign in with your Apple ID if needed).
-4. Set a unique **Bundle ID** (e.g. `com.yourcompany.etar`).
+4. Set a unique **Bundle ID** (e.g. `com.yourcompany.dijiapp`).
 5. Enable **Automatically manage signing** and let Xcode create a Development (and optionally Distribution) certificate and provisioning profile.
 
 ### 2. Export the signing certificate (.p12)
@@ -130,7 +130,7 @@ Your profile for `com.example.dijiAppFlutter` with **app_store** → you need an
    - Give it a **reference name** (e.g. `ios-distribution`).
 3. **iOS** → **Add provisioning profile**:
    - Upload the **.mobileprovision** file.
-   - Give it a **reference name** (e.g. `etar-app-store`).
+   - Give it a **reference name** (e.g. `DijiApp-app-store`).
 
 ### 5. Point the workflow to these
 
@@ -144,7 +144,7 @@ environment:
     distribution_type: app_store
     bundle_identifier: com.example.dijiAppFlutter
     certificate: ios-distribution      # reference name of your .p12
-    provisioning_profile: etar-app-store  # reference name of your .mobileprovision
+    provisioning_profile: DijiApp-app-store  # reference name of your .mobileprovision
 ```
 
 ---

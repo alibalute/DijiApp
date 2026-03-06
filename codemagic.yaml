@@ -27,6 +27,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: ad_hoc
+        # Must match exactly the bundle ID in your Ad Hoc provisioning profile (and in the Xcode project)
         bundle_identifier: com.dijilele.eTarSettings
       vars:
         XCODE_PROJECT: "eTarSettings.xcodeproj"

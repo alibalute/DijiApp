@@ -26,7 +26,7 @@ Flutter app that wraps **qui-skinned.html** in a WebView and provides a BLE brid
    In `ios/Runner/Info.plist`, add:
    ```xml
    <key>NSBluetoothAlwaysUsageDescription</key>
-   <string>eTar Settings needs Bluetooth to connect to your eTar device.</string>
+   <string>DijiApp needs Bluetooth to connect to your device.</string>
    ```
    And in **Capabilities** (Xcode) enable **Bluetooth** or ensure `bluetooth-le` is in `UIRequiredDeviceCapabilities`.
 
@@ -60,7 +60,7 @@ The logo at the top of the settings screen is loaded from **`assets/logo.png`**.
      - assets/qui-skinned.html
      - assets/logo.png
    ```
-3. Run the app again. If `logo.png` is missing, the default eTar graphic is shown instead.
+3. Run the app again. If `logo.png` is missing, a default graphic is shown instead.
 
 ## Build
 
@@ -72,7 +72,7 @@ The logo at the top of the settings screen is loaded from **`assets/logo.png`**.
 
 - **lib/main.dart** – App entry.
 - **lib/screens/web_screen.dart** – Full-screen WebView, injects `AndroidBLE` at document start, handles BLE calls from the page.
-- **lib/ble/ble_bridge.dart** – BLE implementation (scan, connect, write, notifications) using flutter_blue_plus; eTar service UUID `03b80e5a-ede8-4b33-a751-6ce34ec4c700`.
-- **assets/qui-skinned.html** – Bundled web UI (same as the native iOS app).
+- **lib/ble/ble_bridge.dart** – BLE implementation (scan, connect, write, notifications) using flutter_blue_plus; service UUID `03b80e5a-ede8-4b33-a751-6ce34ec4c700`.
+- **assets/qui-skinned.html** – Bundled web UI.
 
 The HTML uses `navigator.bluetooth` when `window.AndroidBLE` is present; the bridge provides that interface so the existing UI works unchanged.
