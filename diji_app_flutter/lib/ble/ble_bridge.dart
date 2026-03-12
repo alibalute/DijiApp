@@ -33,36 +33,46 @@ class BleBridge {
 
     await _requestBluetoothPermission();
 
+    const scanDuration = Duration(seconds: 15);
+    final Map<String, ({BluetoothDevice device, String name})> seen = {};
+
     try {
       // Scan without service filter so we find devices that don't advertise the
-      // eTar service UUID (iOS often returns no devices when filtering by service).
-      await FlutterBluePlus.startScan(
-        timeout: const Duration(seconds: 15),
-      );
-      BluetoothDevice? found;
-      await for (final scanResult in FlutterBluePlus.scanResults) {
-        for (final r in scanResult) {
-          if (r.device.platformName.isNotEmpty || r.advertisementData.advName.isNotEmpty) {
-            found = r.device;
-            break;
-          }
-        }
-        if (found != null) break;
-        if (scanResult.isNotEmpty) {
-          found = scanResult.first.device;
-          break;
-        }
-      }
+      // service UUID (many devices don't advertise it; filtering yields no results on some Android/iOS).
+      await FlutterBluePlus.startScan(timeout: scanDuration);
+
+      // Collect results until timeout. scanResults emits the current list on each update;
+      // first emission is often empty, so we must listen for the full duration.
+      await FlutterBluePlus.scanResults
+          .map((List<ScanResult> list) {
+            for (final r in list) {
+              final id = r.device.remoteId.str;
+              if (seen.containsKey(id)) continue;
+              final name = r.advertisementData.advName.isNotEmpty
+                  ? r.advertisementData.advName
+                  : (r.device.platformName.isNotEmpty ? r.device.platformName : '');
+              seen[id] = (device: r.device, name: name.isNotEmpty ? name : 'Dijilele');
+            }
+            return null;
+          })
+          .drain()
+          .timeout(scanDuration, onTimeout: () {});
+
       await FlutterBluePlus.stopScan();
-      if (found != null) {
-        _scannedDevices[found.remoteId.str] = found;
-        final name = found.platformName.isNotEmpty ? found.platformName : 'eTar';
-        return DeviceResult(id: found.remoteId.str, name: name);
-      }
-    } catch (e) {
+    } catch (_) {
       await FlutterBluePlus.stopScan();
     }
-    return null;
+
+    if (seen.isEmpty) return null;
+
+    // Prefer device whose name contains "Dijilele" (case-insensitive), otherwise pick first.
+    final list = seen.entries.toList();
+    final dijiele = list.where((e) => e.value.name.toLowerCase().contains('dijiele')).toList();
+    final entry = dijiele.isNotEmpty ? dijiele.first : list.first;
+
+    final d = entry.value.device;
+    _scannedDevices[d.remoteId.str] = d;
+    return DeviceResult(id: d.remoteId.str, name: entry.value.name);
   }
 
   /// Normalize BLE device id for lookup (lowercase, no separators).

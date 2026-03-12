@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:diji_app_flutter/ble/ble_bridge.dart';
 
-/// Android-only WebView. Loads HTML via data URI (reliable); logo embedded as data URI in HTML.
+/// Android-only WebView. Loads HTML via data (reliable); logo embedded as data URI in HTML.
 class AndroidWebViewScreen extends StatefulWidget {
   const AndroidWebViewScreen({super.key});
 
@@ -14,9 +14,10 @@ class AndroidWebViewScreen extends StatefulWidget {
 
 class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   final BleBridge _bleBridge = BleBridge();
-  WebViewController? _controller;
+  InAppWebViewController? _controller;
   bool _loading = true;
   String? _error;
+  String? _injectedHtml;
   String? _logoDataUri;
 
   static const String _bridgeScript = r'''
@@ -67,9 +68,9 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
             if (result != null) {
               final deviceJson = jsonEncode({'id': result.id, 'name': result.name});
               final escaped = deviceJson.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
-              await controller.runJavaScript("window._bleResolve($callbackId, '$escaped');");
+              _runJs(controller, "window._bleResolve($callbackId, '$escaped');");
             } else {
-              await controller.runJavaScript("window._bleReject($callbackId, 'No device selected');");
+              _runJs(controller, "window._bleReject($callbackId, 'No device selected');");
             }
           }
           break;
@@ -81,13 +82,13 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
             try {
               final ok = await _bleBridge.connect(deviceId);
               if (ok) {
-                await controller.runJavaScript("window._bleOnConnect($callbackId);");
+                _runJs(controller, "window._bleOnConnect($callbackId);");
               } else {
-                await controller.runJavaScript("window._bleReject($callbackId, 'Service or characteristic not found');");
+                _runJs(controller, "window._bleReject($callbackId, 'Service or characteristic not found');");
               }
             } catch (e) {
               final msg = e.toString().replaceAll(r'\', r'\\').replaceAll("'", r"\'");
-              await controller.runJavaScript("window._bleReject($callbackId, '$msg');");
+              _runJs(controller, "window._bleReject($callbackId, '$msg');");
             }
           }
           break;
@@ -98,7 +99,7 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         case 'startNotifications':
           _bleBridge.startNotifications((base64) {
             final escaped = jsonEncode(base64);
-            controller.runJavaScript("if (window._bleOnNotification) window._bleOnNotification($escaped);");
+            controller.evaluateJavascript(source: "if (window._bleOnNotification) window._bleOnNotification($escaped);");
           });
           break;
         case 'disconnect':
@@ -110,10 +111,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _initWebView();
+  void _runJs(InAppWebViewController c, String js) {
+    c.evaluateJavascript(source: js);
   }
 
   void _injectLogo() {
@@ -121,17 +120,21 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     final c = _controller;
     if (uri == null || c == null) return;
     final escaped = uri.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
-    c.runJavaScript(
+    _runJs(c,
       "var e=document.getElementById('hero-logo');var s=document.getElementById('hero-logo-svg');"
       "if(e){e.src='$escaped';e.style.display='';e.onerror=null;}if(s)s.style.display='none';",
     );
   }
 
-  Future<void> _initWebView() async {
-    try {
-      String html = await rootBundle.loadString('assets/qui-skinned.html');
+  @override
+  void initState() {
+    super.initState();
+    _initHtml();
+  }
 
-      // Load logo for injection after page load (data-URI doc doesn't resolve relative logo.png).
+  Future<void> _initHtml() async {
+    try {
+      final html = await rootBundle.loadString('assets/qui-skinned.html');
       try {
         final logoData = await rootBundle.load('assets/logo.png');
         final bytes = logoData.buffer.asUint8List(logoData.offsetInBytes, logoData.lengthInBytes);
@@ -139,37 +142,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         final mime = (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8) ? 'image/jpeg' : 'image/png';
         _logoDataUri = 'data:$mime;base64,$b64';
       } catch (_) {}
-
-      // BLE bridge at start of <head> so navigator.bluetooth is set before page script runs.
-      const shim = r'''window.flutter_inappwebview={callHandler:function(n,d){if(n==='ble'&&window.ble&&window.ble.postMessage)window.ble.postMessage(d);}};''';
-      final injected = html.replaceFirst('<head>', '<head><script>$shim$_bridgeScript</script>');
-
-      final controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..addJavaScriptChannel('ble', onMessageReceived: (message) {
-            _onBleMessage(message.message);
-          })
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageFinished: (_) {
-              _injectLogo();
-              Future.delayed(const Duration(milliseconds: 100), () => _injectLogo());
-              if (mounted) setState(() => _loading = false);
-            },
-            onWebResourceError: (e) {
-              debugPrint('WebView error: ${e.description}');
-              if (mounted) setState(() => _loading = false);
-            },
-          ),
-        );
-
-      _controller = controller;
-
-      await controller.loadRequest(
-        Uri.dataFromString(injected, mimeType: 'text/html', encoding: utf8),
-      );
-
-      if (mounted) setState(() {});
+      final injected = html.replaceFirst('<head>', '<head><script>$_bridgeScript</script>');
+      if (mounted) setState(() => _injectedHtml = injected);
     } catch (e) {
       debugPrint('Android WebView init error: $e');
       if (mounted) setState(() => _error = e.toString());
@@ -194,7 +168,7 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         ),
       );
     }
-    if (_controller == null) {
+    if (_injectedHtml == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -204,8 +178,41 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            WebViewWidget(controller: _controller!),
-            if (_loading) const Center(child: CircularProgressIndicator()),
+            Positioned.fill(
+              child: InAppWebView(
+                initialData: InAppWebViewInitialData(
+                  data: _injectedHtml!,
+                  mimeType: 'text/html',
+                  encoding: 'utf-8',
+                ),
+                initialSettings: InAppWebViewSettings(
+                  javaScriptEnabled: true,
+                  allowFileAccess: true,
+                ),
+                onWebViewCreated: (controller) {
+                  _controller = controller;
+                  controller.addJavaScriptHandler(
+                    handlerName: 'ble',
+                    callback: (args) {
+                      if (args.isNotEmpty && args.first != null) {
+                        _onBleMessage(args.first.toString());
+                      }
+                    },
+                  );
+                },
+                onLoadStop: (controller, url) {
+                  _injectLogo();
+                  Future.delayed(const Duration(milliseconds: 100), () => _injectLogo());
+                  if (mounted) setState(() => _loading = false);
+                },
+                onReceivedError: (controller, request, error) {
+                  debugPrint('WebView error: ${error.description}');
+                  if (mounted) setState(() => _loading = false);
+                },
+              ),
+            ),
+            if (_loading)
+              const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),
