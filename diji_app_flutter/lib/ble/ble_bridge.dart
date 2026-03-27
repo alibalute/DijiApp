@@ -20,6 +20,7 @@ class BleBridge {
   BluetoothDevice? _device;
   BluetoothCharacteristic? _characteristic;
   void Function(String base64)? _onNotification;
+  StreamSubscription<List<int>>? _notificationSubscription;
   final Map<String, BluetoothDevice> _scannedDevices = {};
 
   /// Request Bluetooth permission. Android 12+ needs BLUETOOTH_SCAN/CONNECT; Android 6–11 needs BLUETOOTH + location.
@@ -246,22 +247,31 @@ class BleBridge {
     }
   }
 
-  void startNotifications(void Function(String base64) onData) {
+  /// Subscribe to device indications/notifications. Awaits CCCD on iOS before data flows reliably.
+  Future<void> startNotifications(void Function(String base64) onData) async {
     final c = _characteristic;
     if (c == null) return;
+    await _notificationSubscription?.cancel();
+    _notificationSubscription = null;
     _onNotification = onData;
-    c.lastValueStream.listen((value) {
+    _notificationSubscription = c.onValueReceived.listen((value) {
       if (value.isNotEmpty && _onNotification != null) {
         final b64 = base64Encode(value);
         _onNotification!(b64);
       }
     });
-    c.setNotifyValue(true);
+    try {
+      await c.setNotifyValue(true);
+    } catch (e, st) {
+      debugPrint('BLE setNotifyValue failed: $e\n$st');
+    }
   }
 
   /// Disconnect from the current device. Use this when the user taps Disconnect
   /// in the WebView; the bridge remains usable for reconnection.
   void disconnect() {
+    _notificationSubscription?.cancel();
+    _notificationSubscription = null;
     _device?.disconnect();
     _device = null;
     _characteristic = null;

@@ -96,7 +96,7 @@ class _WebScreenState extends State<WebScreen> {
           if (base64 != null) await _bleBridge.writeValueBase64(base64);
           break;
         case 'startNotifications':
-          _bleBridge.startNotifications((base64) {
+          await _bleBridge.startNotifications((base64) {
             final escaped = jsonEncode(base64);
             _runJs(controller, "if (window._bleOnNotification) window._bleOnNotification($escaped);");
           });

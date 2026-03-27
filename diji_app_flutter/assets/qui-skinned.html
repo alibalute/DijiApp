@@ -1005,8 +1005,155 @@
         midiChannelsDropdown.appendChild(option);
       });
 
+      let syncingFromFirmware = false;
+      const bleSettingsRxBuf = new Uint8Array(8192);
+      let bleSettingsRxLen = 0;
 
+      function setRadioCheckedByName(radioNodeList, on) {
+        if (!radioNodeList || !radioNodeList.length) return;
+        const want = on ? 'on' : 'off';
+        for (let i = 0; i < radioNodeList.length; i++) {
+          if (radioNodeList[i].value === want) {
+            radioNodeList[i].checked = true;
+            break;
+          }
+        }
+      }
 
+      function applyFirmwareSettingsFromJson(obj) {
+        if (!obj || typeof obj !== 'object') return;
+        syncingFromFirmware = true;
+        try {
+          if (typeof obj.instrument === 'number') {
+            const im = Math.max(0, Math.min(instrumentNames.length - 1, obj.instrument | 0));
+            instrumentsDropdown.selectedIndex = im;
+          }
+          if (typeof obj.chords === 'number') setRadioCheckedByName(chordsRadioButtons, obj.chords !== 0);
+          if (typeof obj.tuning === 'number') tuningsDropdown.selectedIndex = Math.max(0, Math.min(tuningNames.length - 1, obj.tuning | 0));
+          if (typeof obj.pitchSystem === 'number') pitchSystemsDropdown.selectedIndex = Math.max(0, Math.min(pitchSystemsNames.length - 1, obj.pitchSystem | 0));
+          if (typeof obj.midiChannel === 'number') midiChannelsDropdown.selectedIndex = Math.max(0, Math.min(midiChannelsNames.length - 1, obj.midiChannel | 0));
+          if (typeof obj.transpose === 'number') {
+            transposeSlider.value = String(obj.transpose);
+            transposeLabel.textContent = `Transpose: ${transposeSlider.value}`;
+          }
+          if (typeof obj.pitchChange === 'number') {
+            pitchSlider.value = String(obj.pitchChange);
+            pitchLabel.textContent = `Pitch Offset: ${pitchSlider.value}`;
+          }
+          if (typeof obj.vibrato === 'number') {
+            vibratoSlider.value = String(Math.max(0, Math.min(10, obj.vibrato | 0)));
+            vibratoLabel.textContent = `Vibrato: ${vibratoSlider.value}`;
+          }
+          if (typeof obj.metronomeBpm === 'number') {
+            tempoSlider.value = String(Math.max(0, Math.min(255, obj.metronomeBpm | 0)));
+            tempoLabel.textContent = `Tempo: ${tempoSlider.value}`;
+          }
+          if (typeof obj.metronomeBeats === 'number') {
+            metronomeNumBeatsSlider.value = String(Math.max(0, Math.min(255, obj.metronomeBeats | 0)));
+            metronomeNumBeatsLabel.textContent = `Metronome beats: ${metronomeNumBeatsSlider.value}`;
+          }
+          if (typeof obj.metronomeVol === 'number') {
+            metronomeVolSlider.value = String(Math.max(0, Math.min(127, obj.metronomeVol | 0)));
+            metronomeVolLabel.textContent = `Metronome Volume: ${metronomeVolSlider.value}`;
+          }
+          if (typeof obj.sustain === 'number') setRadioCheckedByName(sustainRadioButtons, obj.sustain !== 0);
+          if (typeof obj.tapping === 'number') setRadioCheckedByName(tappingRadioButtons, obj.tapping !== 0);
+          if (typeof obj.staccato === 'number') setRadioCheckedByName(staccatoRadioButtons, obj.staccato !== 0);
+          if (typeof obj.leftHand === 'number') setRadioCheckedByName(leftHandRadioButtons, obj.leftHand !== 0);
+          if (typeof obj.quarterTones === 'number') setRadioCheckedByName(quarterTonesRadioButtons, obj.quarterTones !== 0);
+          if (typeof obj.constantVelocity === 'number') setRadioCheckedByName(dynamicsRadioButtons, obj.constantVelocity !== 0);
+          if (typeof obj.tapWithoutStrum === 'number') setRadioCheckedByName(tapWithoutStrumRadioButtons, obj.tapWithoutStrum !== 0);
+          if (typeof obj.percussion === 'number') setRadioCheckedByName(percussionRadioButtons, obj.percussion !== 0);
+          if (typeof obj.string1 === 'number') setRadioCheckedByName(string1RadioButtons, obj.string1 !== 0);
+          if (typeof obj.string2 === 'number') setRadioCheckedByName(string2RadioButtons, obj.string2 !== 0);
+          if (typeof obj.string3 === 'number') setRadioCheckedByName(string3RadioButtons, obj.string3 !== 0);
+          if (typeof obj.string4 === 'number') setRadioCheckedByName(string4RadioButtons, obj.string4 !== 0);
+        } finally {
+          syncingFromFirmware = false;
+        }
+      }
+
+      /** Strip BLE-MIDI leading timestamp(s) for one notification. */
+      function stripBleMidiLeadingHeaders(arr) {
+        if (arr.length < 2) return arr;
+        if (!(arr[0] & 0x80)) return arr;
+        /* Continuation: TH then 7-bit data (SysEx continuation chunk). */
+        if (!(arr[1] & 0x80)) {
+          return arr.subarray(1);
+        }
+        /* Rare: TH then SysEx end F7 only. */
+        if (arr[1] === 0xf7) {
+          return arr.subarray(1);
+        }
+        /* Normal: TH + timestamp low + payload */
+        return arr.length >= 3 ? arr.subarray(2) : new Uint8Array(0);
+      }
+
+      /** After headers, blemidi inserts extra timestamp-low bytes (0x80+) between SysEx chunks
+       *  in the same packet. Base64 uses only 7-bit ASCII, so those bytes are never payload. */
+      function stripEmbeddedBleMidiTimestampsInPayload(s) {
+        const o = [];
+        for (let i = 0; i < s.length; i++) {
+          const b = s[i];
+          if (b & 0x80) {
+            if (b === 0xf0 || b === 0xf7) {
+              o.push(b);
+              continue;
+            }
+            if (i + 1 < s.length && (s[i + 1] < 0x80 || s[i + 1] === 0xf7)) {
+              continue;
+            }
+          }
+          o.push(b);
+        }
+        return new Uint8Array(o);
+      }
+
+      function feedBleSettingsStream(dataArray) {
+        const raw = new Uint8Array(dataArray.buffer, dataArray.byteOffset, dataArray.byteLength);
+        const unframed = stripBleMidiLeadingHeaders(raw);
+        const sysexBytes = stripEmbeddedBleMidiTimestampsInPayload(unframed);
+        for (let i = 0; i < sysexBytes.length; i++) {
+          if (bleSettingsRxLen >= bleSettingsRxBuf.length) {
+            bleSettingsRxBuf.copyWithin(0, bleSettingsRxLen - 4096, bleSettingsRxLen);
+            bleSettingsRxLen = 4096;
+          }
+          bleSettingsRxBuf[bleSettingsRxLen++] = sysexBytes[i];
+        }
+        while (true) {
+          let start = -1;
+          for (let s = 0; s + 3 < bleSettingsRxLen; s++) {
+            if (bleSettingsRxBuf[s] === 0xF0 && bleSettingsRxBuf[s + 1] === 0x7D && bleSettingsRxBuf[s + 2] === 0x53 && bleSettingsRxBuf[s + 3] === 0x53) {
+              start = s;
+              break;
+            }
+          }
+          if (start < 0) break;
+          let end = -1;
+          for (let e = start + 4; e < bleSettingsRxLen; e++) {
+            if (bleSettingsRxBuf[e] === 0xF7) {
+              end = e;
+              break;
+            }
+          }
+          if (end < 0) break;
+          let b64 = '';
+          for (let k = start + 4; k < end; k++) b64 += String.fromCharCode(bleSettingsRxBuf[k]);
+          const skip = end + 1;
+          bleSettingsRxBuf.copyWithin(0, skip, bleSettingsRxLen);
+          bleSettingsRxLen -= skip;
+          try {
+            const jsonStr = atob(b64);
+            applyFirmwareSettingsFromJson(JSON.parse(jsonStr));
+          } catch (err) {
+            console.warn('Settings sync', err);
+          }
+        }
+        if (bleSettingsRxLen > 4096) {
+          bleSettingsRxBuf.copyWithin(0, bleSettingsRxLen - 2048, bleSettingsRxLen);
+          bleSettingsRxLen = 2048;
+        }
+      }
 
       // Check if the Web Bluetooth API is supported
       if ('bluetooth' in navigator) {
@@ -1048,6 +1195,7 @@
 
               // Keep track of connected device
               connectedDevice = { device, server, midiService, midiCharacteristic };
+              bleSettingsRxLen = 0;
 
               // Set up event listener for receiving data
               midiCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
@@ -1058,11 +1206,13 @@
                 receivedData.byteLength || receivedData.buffer.byteLength
               );
 
-              /* BLE-MIDI frames may contain timestamps and multiple messages in one notification.
-               * Scan for known status markers and read the next byte as value. */
-              for (let i = 0; i + 1 < dataArray.length; i++) {
+              feedBleSettingsStream(dataArray);
+
+              /* Telemetry: device sends 3-byte messages ending with 0 (avoid false positives in JSON/base64). */
+              for (let i = 0; i + 2 < dataArray.length; i++) {
                 const code = dataArray[i];
                 const value = dataArray[i + 1];
+                if (dataArray[i + 2] !== 0) continue;
 
                 if (code === 0x56) { // battery level
                   var level = value; // 0-100
@@ -1238,7 +1388,7 @@
             fwMinor = null;
             fwPatch = null;
             fwVersionLabel.textContent = 'Firmware: --';
-
+            bleSettingsRxLen = 0;
 
             connectedDevice = null; // Reset connected device
           } catch (error) {
@@ -1256,6 +1406,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -1284,6 +1435,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -1308,6 +1460,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -1333,6 +1486,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -1358,6 +1512,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -1387,6 +1542,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1414,6 +1570,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1441,6 +1598,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1468,6 +1626,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1494,6 +1653,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1521,6 +1681,7 @@
         try {
           // Disconnect from the connected device
           if (connectedDevice) {
+            if (syncingFromFirmware) return;
             //make a  MIDI message as a Uint8Array
             let data = new Uint8Array(5);
             data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1548,6 +1709,7 @@
         try {
           // Disconnect from the connected device
           if (connectedDevice) {
+            if (syncingFromFirmware) return;
             //make a  MIDI message as a Uint8Array
             let data = new Uint8Array(5);
             data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1576,6 +1738,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1603,6 +1766,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1630,6 +1794,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
               data[0] = 0xbf; //dummy timestamp 1st byte
@@ -1657,6 +1822,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1688,6 +1854,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1720,6 +1887,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1751,6 +1919,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1782,6 +1951,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1815,6 +1985,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1847,6 +2018,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1878,6 +2050,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1909,6 +2082,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1941,6 +2115,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -1973,6 +2148,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -2004,6 +2180,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -2035,6 +2212,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -2070,6 +2248,7 @@
             try {
               // Disconnect from the connected device
               if (connectedDevice) {
+                if (syncingFromFirmware) return;
 
                 //make a  MIDI message as a Uint8Array
                 let data = new Uint8Array(5);
@@ -2105,6 +2284,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -2136,6 +2316,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -2167,6 +2348,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);
@@ -2192,6 +2374,7 @@
           try {
             // Disconnect from the connected device
             if (connectedDevice) {
+              if (syncingFromFirmware) return;
 
               //make a  MIDI message as a Uint8Array
               let data = new Uint8Array(5);

@@ -103,7 +103,7 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
           if (base64 != null) await _bleBridge.writeValueBase64(base64);
           break;
         case 'startNotifications':
-          _bleBridge.startNotifications((base64) {
+          await _bleBridge.startNotifications((base64) {
             final escaped = jsonEncode(base64);
             controller.evaluateJavascript(source: "if (window._bleOnNotification) window._bleOnNotification($escaped);");
           });
