@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -12,6 +13,9 @@ class DeviceResult {
 class BleBridge {
   static const String serviceUuid = '03b80e5a-ede8-4b33-a751-6ce34ec4c700';
   static const String charUuid = '7772e5db-3868-4112-a1a9-f2669d106bf3';
+
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   BluetoothDevice? _device;
   BluetoothCharacteristic? _characteristic;
@@ -29,38 +33,107 @@ class BleBridge {
   }
 
   Future<DeviceResult?> requestDevice() async {
-    final state = await FlutterBluePlus.adapterState.first;
-    if (state != BluetoothAdapterState.on) return null;
-
+    // Request OS permissions first. On iOS the first adapterState emission is often
+    // unknown/unauthorized until the user allows Bluetooth — if we checked .first
+    // before permission + before 'on', the first tap returned null (second tap worked).
     await _requestBluetoothPermission();
 
-    const scanDuration = Duration(seconds: 15);
+    try {
+      await FlutterBluePlus.adapterState
+          .where((s) => s == BluetoothAdapterState.on)
+          .timeout(const Duration(seconds: 12))
+          .first;
+    } catch (e) {
+      debugPrint('BLE requestDevice: adapter not on: $e');
+      return null;
+    }
+
+    /// Hard cap (same as before). We usually finish much earlier.
+    const maxScan = Duration(seconds: 15);
+    /// iOS: CoreBluetooth batches scan updates; shorter settle is enough.
+    final settleAfterFirstDevice =
+        _isIOS ? const Duration(milliseconds: 250) : const Duration(milliseconds: 800);
+
     final Map<String, ({BluetoothDevice device, String name})> seen = {};
+    final completer = Completer<void>();
+    Timer? settleTimer;
+    StreamSubscription<List<ScanResult>>? sub;
+
+    bool nameHasDijiele(String name) => name.toLowerCase().contains('dijiele');
+
+    bool hasPreferredName() => seen.values.any((e) => nameHasDijiele(e.name));
+
+    /// iOS: peripherals already known to the OS (e.g. previously paired) appear
+    /// here without waiting for an active scan (flutter_blue_plus documents this path).
+    if (_isIOS) {
+      try {
+        final sys = await FlutterBluePlus.systemDevices([Guid(serviceUuid)]);
+        for (final d in sys) {
+          final id = d.remoteId.str;
+          if (seen.containsKey(id)) continue;
+          final name = d.platformName.isNotEmpty ? d.platformName : 'Dijilele';
+          seen[id] = (device: d, name: name);
+        }
+        if (seen.isNotEmpty) {
+          final list = seen.entries.toList();
+          final dijiele =
+              list.where((e) => nameHasDijiele(e.value.name)).toList();
+          final entry = dijiele.isNotEmpty ? dijiele.first : list.first;
+          final d = entry.value.device;
+          _scannedDevices[d.remoteId.str] = d;
+          return DeviceResult(id: d.remoteId.str, name: entry.value.name);
+        }
+      } catch (e) {
+        debugPrint('BLE iOS systemDevices: $e');
+      }
+    }
+
+    void merge(List<ScanResult> list) {
+      for (final r in list) {
+        final id = r.device.remoteId.str;
+        if (seen.containsKey(id)) continue;
+        final name = r.advertisementData.advName.isNotEmpty
+            ? r.advertisementData.advName
+            : (r.device.platformName.isNotEmpty ? r.device.platformName : '');
+        seen[id] = (device: r.device, name: name.isNotEmpty ? name : 'Dijilele');
+      }
+    }
 
     try {
       // Scan without service filter so we find devices that don't advertise the
       // service UUID (many devices don't advertise it; filtering yields no results on some Android/iOS).
-      await FlutterBluePlus.startScan(timeout: scanDuration);
+      // iOS: oneByOne surfaces each advertisement sooner (helps first scan result).
+      await FlutterBluePlus.startScan(
+        timeout: maxScan,
+        oneByOne: _isIOS,
+      );
 
-      // Collect results until timeout. scanResults emits the current list on each update;
-      // first emission is often empty, so we must listen for the full duration.
-      await FlutterBluePlus.scanResults
-          .map((List<ScanResult> list) {
-            for (final r in list) {
-              final id = r.device.remoteId.str;
-              if (seen.containsKey(id)) continue;
-              final name = r.advertisementData.advName.isNotEmpty
-                  ? r.advertisementData.advName
-                  : (r.device.platformName.isNotEmpty ? r.device.platformName : '');
-              seen[id] = (device: r.device, name: name.isNotEmpty ? name : 'Dijilele');
-            }
-            return null;
-          })
-          .drain()
-          .timeout(scanDuration, onTimeout: () {});
+      sub = FlutterBluePlus.scanResults.listen((List<ScanResult> list) {
+        merge(list);
+        if (completer.isCompleted) return;
+        if (hasPreferredName()) {
+          settleTimer?.cancel();
+          completer.complete();
+          return;
+        }
+        if (seen.isNotEmpty) {
+          settleTimer ??= Timer(settleAfterFirstDevice, () {
+            if (!completer.isCompleted) completer.complete();
+          });
+        }
+      });
 
+      await Future.any<void>([
+        completer.future,
+        Future<void>.delayed(maxScan),
+      ]);
+
+      settleTimer?.cancel();
+      await sub.cancel();
       await FlutterBluePlus.stopScan();
     } catch (_) {
+      settleTimer?.cancel();
+      await sub?.cancel();
       await FlutterBluePlus.stopScan();
     }
 
@@ -68,7 +141,7 @@ class BleBridge {
 
     // Prefer device whose name contains "Dijilele" (case-insensitive), otherwise pick first.
     final list = seen.entries.toList();
-    final dijiele = list.where((e) => e.value.name.toLowerCase().contains('dijiele')).toList();
+    final dijiele = list.where((e) => nameHasDijiele(e.value.name)).toList();
     final entry = dijiele.isNotEmpty ? dijiele.first : list.first;
 
     final d = entry.value.device;
