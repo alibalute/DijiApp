@@ -29,11 +29,23 @@ flutter:
     - assets/icons/instagram.svg
 
 
-# App icon: put your logo as assets/app_icon.png (1024x1024 px), then run: dart run flutter_launcher_icons
+# App icon: put your master art at assets/app_icon.png (1024×1024 PNG).
+# Then run: dart run flutter_launcher_icons
+#
+# White margin / breathing room on home screens:
+# - Android: adaptive_icon_background + adaptive_icon_foreground_inset shrink the
+#   foreground so more of the background color (#FFFFFF) shows (not cropped away).
+# - iOS: the generator scales the full square; add opaque white padding inside your PNG
+#   (smaller logo in frame) — iOS does not apply an inset like Android adaptive icons.
+# - remove_alpha_ios: true fills transparent pixels with white so edges are not lost.
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: assets/app_icon.png
   remove_alpha_ios: true
+  # Adaptive icons (API 26+): required pair; inset is % padding on foreground (default 16).
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/app_icon.png
+  adaptive_icon_foreground_inset: 22
 
 
