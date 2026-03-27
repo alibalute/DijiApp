@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -114,6 +115,9 @@ class BleBridge {
           for (final c in s.characteristics) {
             if (c.uuid.toString().toLowerCase() == charUuid) {
               _characteristic = c;
+              debugPrint(
+                'BLE MIDI characteristic properties: ${c.properties}',
+              );
               break;
             }
           }
@@ -128,11 +132,45 @@ class BleBridge {
 
   Future<void> writeValueBase64(String base64) async {
     final c = _characteristic;
-    if (c == null) return;
+    if (c == null) {
+      debugPrint('BLE write skipped: no characteristic (connect first)');
+      return;
+    }
     try {
       final bytes = base64Decode(base64);
-      await c.write(bytes, withoutResponse: false);
-    } catch (_) {}
+      final p = c.properties;
+
+      Future<void> writeNoResp() => c.write(bytes, withoutResponse: true);
+      Future<void> writeWithResp() => c.write(bytes, withoutResponse: false);
+
+      // MIDI / firmware exposes WRITE + WRITE_NR. Prefer WRITE_NR (low latency).
+      // iOS sometimes mis-reports flags vs Android; retry the other mode on failure.
+      if (p.writeWithoutResponse) {
+        try {
+          await writeNoResp();
+          return;
+        } catch (e) {
+          debugPrint('BLE write withoutResponse failed, retrying with response: $e');
+        }
+      }
+      if (p.write) {
+        try {
+          await writeWithResp();
+          return;
+        } catch (e) {
+          debugPrint('BLE write with response failed: $e');
+        }
+      }
+      // No flags or both attempts failed: try both modes (covers sparse iOS props).
+      try {
+        await writeNoResp();
+      } catch (e) {
+        debugPrint('BLE write fallback withoutResponse: $e');
+        await writeWithResp();
+      }
+    } catch (e, st) {
+      debugPrint('BLE write failed: $e\n$st');
+    }
   }
 
   void startNotifications(void Function(String base64) onData) {

@@ -1,10 +1,11 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:diji_app_flutter/ble/ble_bridge.dart';
 
-/// Android-only WebView. Loads HTML via data (reliable); logo embedded as data URI in HTML.
+/// Android-only WebView. Loads the same asset URL as iOS so touch/gesture behavior matches.
 class AndroidWebViewScreen extends StatefulWidget {
   const AndroidWebViewScreen({super.key});
 
@@ -17,8 +18,13 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   InAppWebViewController? _controller;
   bool _loading = true;
   String? _error;
-  String? _injectedHtml;
   String? _logoDataUri;
+
+  /// Horizontal accumulation for edge swipe zones (center WebView stays free for sliders).
+  double _edgeDragDx = 0;
+
+  /// Same workaround as [WebScreen]: on Android, [onLoadStop] can be late; never block UI forever.
+  static const Duration _maxSpinnerDuration = Duration(milliseconds: 2500);
 
   static const String _bridgeScript = r'''
 (function() {
@@ -115,6 +121,40 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     c.evaluateJavascript(source: js);
   }
 
+  /// [delta] +1 = next tab, -1 = previous (wraps).
+  void _nudgeTab(int delta) {
+    final c = _controller;
+    if (c == null) return;
+    c.evaluateJavascript(source: '''
+(function(){
+  var n=document.querySelectorAll('.tab').length;
+  if(n<2||typeof openTab!=='function')return;
+  var i=typeof currentTabIndex!=='undefined'?currentTabIndex:0;
+  openTab((i+$delta+n)%n);
+})()
+''');
+  }
+
+  void _onEdgeHorizontalDragEnd(DragEndDetails details) {
+    final v = details.primaryVelocity ?? 0;
+    const vTh = 280.0;
+    const dTh = 72.0;
+    if (v.abs() >= vTh) {
+      if (v < 0) {
+        _nudgeTab(1);
+      } else {
+        _nudgeTab(-1);
+      }
+    } else if (_edgeDragDx.abs() >= dTh) {
+      if (_edgeDragDx < 0) {
+        _nudgeTab(1);
+      } else {
+        _nudgeTab(-1);
+      }
+    }
+    _edgeDragDx = 0;
+  }
+
   void _injectLogo() {
     final uri = _logoDataUri;
     final c = _controller;
@@ -129,24 +169,21 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   @override
   void initState() {
     super.initState();
-    _initHtml();
+    _initLogo();
+    Future.delayed(_maxSpinnerDuration, () {
+      if (mounted) setState(() => _loading = false);
+    });
   }
 
-  Future<void> _initHtml() async {
+  Future<void> _initLogo() async {
     try {
-      final html = await rootBundle.loadString('assets/qui-skinned.html');
-      try {
-        final logoData = await rootBundle.load('assets/logo.png');
-        final bytes = logoData.buffer.asUint8List(logoData.offsetInBytes, logoData.lengthInBytes);
-        final b64 = base64Encode(bytes);
-        final mime = (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8) ? 'image/jpeg' : 'image/png';
-        _logoDataUri = 'data:$mime;base64,$b64';
-      } catch (_) {}
-      final injected = html.replaceFirst('<head>', '<head><script>$_bridgeScript</script>');
-      if (mounted) setState(() => _injectedHtml = injected);
+      final logoData = await rootBundle.load('assets/logo.png');
+      final bytes = logoData.buffer.asUint8List(logoData.offsetInBytes, logoData.lengthInBytes);
+      final b64 = base64Encode(bytes);
+      final mime = (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8) ? 'image/jpeg' : 'image/png';
+      if (mounted) setState(() => _logoDataUri = 'data:$mime;base64,$b64');
     } catch (e) {
-      debugPrint('Android WebView init error: $e');
-      if (mounted) setState(() => _error = e.toString());
+      debugPrint('Android WebView logo load: $e');
     }
   }
 
@@ -168,11 +205,6 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         ),
       );
     }
-    if (_injectedHtml == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -180,14 +212,18 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
           children: [
             Positioned.fill(
               child: InAppWebView(
-                initialData: InAppWebViewInitialData(
-                  data: _injectedHtml!,
-                  mimeType: 'text/html',
-                  encoding: 'utf-8',
-                ),
+                initialFile: 'assets/qui-skinned.html',
+                initialUserScripts: UnmodifiableListView<UserScript>([
+                  UserScript(
+                    source: _bridgeScript,
+                    injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                  ),
+                ]),
                 initialSettings: InAppWebViewSettings(
                   javaScriptEnabled: true,
                   allowFileAccess: true,
+                  allowContentAccess: true,
+                  useHybridComposition: true,
                 ),
                 onWebViewCreated: (controller) {
                   _controller = controller;
@@ -209,6 +245,33 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                   debugPrint('WebView error: ${error.description}');
                   if (mounted) setState(() => _loading = false);
                 },
+              ),
+            ),
+            // Narrow strips only: avoids stealing horizontal drags from <input type="range"> in the WebView.
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 40,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onHorizontalDragStart: (_) => _edgeDragDx = 0,
+                onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
+                onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
+                child: const ColoredBox(color: Color(0x00000000)),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 40,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onHorizontalDragStart: (_) => _edgeDragDx = 0,
+                onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
+                onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
+                child: const ColoredBox(color: Color(0x00000000)),
               ),
             ),
             if (_loading)
