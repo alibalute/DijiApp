@@ -413,6 +413,10 @@
       <label><input type="radio" name="quarterTonesRadioGroup" value="off" disabled> Off</label>
     </fieldset>
 
+    <div style="margin-top:18px; opacity:0.9;">
+      <label id="fwVersionLabel">Firmware: --</label>
+    </div>
+
   </div>
 
 
@@ -620,6 +624,10 @@
       let turnoffButton = document.getElementById('turnoffButton');
 
       let batteryLabel = document.getElementById('batteryLabel');
+      let fwVersionLabel = document.getElementById('fwVersionLabel');
+      let fwMajor = null;
+      let fwMinor = null;
+      let fwPatch = null;
 
 
 
@@ -958,27 +966,46 @@
 
               // Set up event listener for receiving data
               midiCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
-              const receivedData  = event.target.value;
-              const byteLength = receivedData.byteLength;
-              const dataArray = new Uint8Array(receivedData.buffer); 
-              // Process received data here
-              if (dataArray[1] == 0x56){  //battery level data is received
-                var level = dataArray[2]  ; //dataArray[2] contains the battery level from 0-100 , multiplied by .8 because width of elements is 80%
+              const receivedData = event.target.value; // DataView
+              const dataArray = new Uint8Array(
+                receivedData.buffer,
+                receivedData.byteOffset || 0,
+                receivedData.byteLength || receivedData.buffer.byteLength
+              );
 
-                document.getElementById('battery-bar').style.width = level * 0.8 + '%';
-                if (level > 70 && level <= 100){
-                  document.getElementById('battery-bar').style.backgroundColor = '#33cc33' ; 
-                }else if (level > 50 && level <= 70) {
-                  document.getElementById('battery-bar').style.backgroundColor = '#ffff00' ; 
-                }else if (level > 30 && level <= 50) {
-                  document.getElementById('battery-bar').style.backgroundColor = '#ff9900' ; 
-                }else if (level > 0 && level <= 30) {
-                  document.getElementById('battery-bar').style.backgroundColor = '#ff0000' ; 
+              /* BLE-MIDI frames may contain timestamps and multiple messages in one notification.
+               * Scan for known status markers and read the next byte as value. */
+              for (let i = 0; i + 1 < dataArray.length; i++) {
+                const code = dataArray[i];
+                const value = dataArray[i + 1];
+
+                if (code === 0x56) { // battery level
+                  var level = value; // 0-100
+                  document.getElementById('battery-bar').style.width = level * 0.8 + '%';
+                  if (level > 70 && level <= 100){
+                    document.getElementById('battery-bar').style.backgroundColor = '#33cc33';
+                  } else if (level > 50 && level <= 70) {
+                    document.getElementById('battery-bar').style.backgroundColor = '#ffff00';
+                  } else if (level > 30 && level <= 50) {
+                    document.getElementById('battery-bar').style.backgroundColor = '#ff9900';
+                  } else if (level > 0 && level <= 30) {
+                    document.getElementById('battery-bar').style.backgroundColor = '#ff0000';
+                  }
+                  batteryLabel.textContent = `Battery: ${level} `;
+                } else if (code === 0x57) { // firmware major
+                  fwMajor = value;
+                } else if (code === 0x58) { // firmware minor
+                  fwMinor = value;
+                } else if (code === 0x59) { // firmware patch
+                  fwPatch = value;
                 }
+              }
 
-                batteryLabel.textContent = `Battery: ${dataArray[2]} `;
-              
-              }});
+              if (fwMajor !== null && fwMinor !== null && fwPatch !== null) {
+                fwVersionLabel.textContent = `Firmware: ${fwMajor}.${fwMinor}.${fwPatch}`;
+              }
+
+              });
 
 
                 // Start receiving notifications/indications
@@ -1121,6 +1148,11 @@
             tuningsDropdown.disabled = true;
             pitchSystemsDropdown.disabled = true;
             midiChannelsDropdown.disabled = true;
+
+            fwMajor = null;
+            fwMinor = null;
+            fwPatch = null;
+            fwVersionLabel.textContent = 'Firmware: --';
 
 
             connectedDevice = null; // Reset connected device
