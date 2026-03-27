@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>BLE Device Explorer</title>
   <style>
     :root {
@@ -34,10 +34,15 @@
       color: var(--text);
       background: var(--bg-dark) url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M24 0L24 48M0 24L48 24' stroke='%2320767A' stroke-width='.4' opacity='.4' fill='none'/%3E%3C/svg%3E"),
         linear-gradient(160deg, #1F2933 0%, #482c76 45%, #20767A 100%);
-      background-attachment: fixed;
+      /* fixed attachment breaks position:fixed / compositing in iOS WKWebView */
+      background-attachment: scroll;
       padding: 16px 20px 32px;
     }
-    .app-shell { width: 100%; max-width: 540px; margin: 0 auto; }
+    .app-shell {
+      width: 100%;
+      max-width: 540px;
+      margin: 0 auto;
+    }
     .hero {
       margin-bottom: 16px;
       padding: 24px 16px;
@@ -227,6 +232,124 @@
       margin: 20px 0 12px;
       font-size: 1.1rem;
     }
+    .control-with-help {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 2px;
+    }
+    .control-with-help.align-center {
+      align-items: center;
+    }
+    .control-with-help-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    button.help-icon {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      max-width: none;
+      padding: 0;
+      margin: 18px 8px 0 0;
+      flex-shrink: 0;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #f0f1f3 0%, #e2e4e8 100%);
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .control-with-help.align-center button.help-icon {
+      margin-top: 0;
+    }
+    button.help-icon:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, #e8eaed 0%, #d8dce2 100%);
+      color: #4b5563;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .help-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .help-overlay.help-overlay--open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .help-dialog {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      max-width: 400px;
+      width: 100%;
+      max-height: 75vh;
+      overflow: auto;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    .help-dialog-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 0;
+    }
+    .help-dialog-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    button.help-close {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      max-width: none;
+      padding: 0;
+      margin: 0;
+      flex-shrink: 0;
+      border-radius: var(--radius-sm);
+      font-size: 22px;
+      line-height: 1;
+      background: rgba(0,0,0,0.06);
+      color: var(--text);
+      box-shadow: none;
+    }
+    button.help-close:hover:not(:disabled) {
+      background: rgba(0,0,0,0.1);
+    }
+    .help-dialog-body {
+      margin: 0;
+      padding: 10px 16px 18px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
   </style>
   <script>
   (function(){
@@ -370,57 +493,125 @@
     </div>
 
   <div id="tab-content1" class="tab-content active">
-    <button id="scanButton">Find Dijilele</button>
-
-    <label for="deviceListLabel">Select your Dijilele:</label>
-    <select id="deviceListDropdown"></select>
-
-    <button id="connectButton" disabled>Connect</button>
-
-    <button id="disconnectButton" disabled>Disconnect</button>
-
-    <label id="batteryLabel" disabled>Battery: 0</label>
-    <div class="bar" id="battery-bar">‌</div>
-  
-
-    <label for="instrumentsLabel" disabled>Instrument:</label>
-    <select id="instrumentsDropdown" disabled></select>
-
-    <label for="tuningsLabel" disabled>Tuning:</label>
-    <select id="tuningsDropdown" disabled></select>
-
-
-    <label id="transposeLabel" disabled>Transpose: 0</label>
-    <input type="range" id="transposeSlider" min="-12" max="12" value="0" step="1" disabled>
-
-    <label id="vibratoLabel" disabled>Vibrato: 0</label>
-    <input type="range" id="vibratoSlider" min="0" max="10" value="0" step="1" disabled>
-
-
-    <fieldset>
-      <legend>Sustain Pedal:</legend>
-      <label><input type="radio" name="sustainRadioGroup" value="on" checked disabled> On</label>
-      <label><input type="radio" name="sustainRadioGroup" value="off" disabled> Off</label>
-    </fieldset>
-
-    <fieldset>
-      <legend>Chords Mode:</legend>
-      <label><input type="radio" name="chordsRadioGroup" value="on" disabled> On</label>
-      <label><input type="radio" name="chordsRadioGroup" value="off" checked disabled> Off</label>
-    </fieldset>
-
-    <fieldset>
-      <legend>Quarter Tones:</legend>
-      <label><input type="radio" name="quarterTonesRadioGroup" value="on" checked disabled> On</label>
-      <label><input type="radio" name="quarterTonesRadioGroup" value="off" disabled> Off</label>
-    </fieldset>
-
-    <div class="device-settings-actions" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-      <button type="button" id="saveSettingsButton" disabled>Save current settings</button>
-      <button type="button" id="resetSettingsButton" disabled>Load factory settings</button>
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Find Dijilele" data-help-body="Starts a Bluetooth scan for nearby Dijilele instruments. On Android you may need location permission for BLE discovery. Tap again if your device does not appear." aria-label="Help: Find Dijilele">?</button>
+      <div class="control-with-help-main">
+        <button id="scanButton">Find Dijilele</button>
+      </div>
     </div>
-    <div style="margin-top:10px; opacity:0.9;">
-      <label id="fwVersionLabel">Firmware: --</label>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Select instrument" data-help-body="After scanning, pick the Dijilele you want from this list, then tap Connect." aria-label="Help: Select device">?</button>
+      <div class="control-with-help-main">
+        <label for="deviceListLabel">Select your Dijilele:</label>
+        <select id="deviceListDropdown"></select>
+      </div>
+    </div>
+
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Connect" data-help-body="Opens a Bluetooth connection to the selected instrument so you can change settings and play." aria-label="Help: Connect">?</button>
+      <div class="control-with-help-main">
+        <button id="connectButton" disabled>Connect</button>
+      </div>
+    </div>
+
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Disconnect" data-help-body="Closes the Bluetooth link. Controls are disabled until you connect again." aria-label="Help: Disconnect">?</button>
+      <div class="control-with-help-main">
+        <button id="disconnectButton" disabled>Disconnect</button>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Battery" data-help-body="Approximate battery level reported by the instrument. Charge when low for best performance." aria-label="Help: Battery">?</button>
+      <div class="control-with-help-main">
+        <label id="batteryLabel" disabled>Battery: 0</label>
+        <div class="bar" id="battery-bar">‌</div>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Instrument" data-help-body="Choose the sound or preset loaded on the instrument. Options sync from the device when connected." aria-label="Help: Instrument">?</button>
+      <div class="control-with-help-main">
+        <label for="instrumentsLabel" disabled>Instrument:</label>
+        <select id="instrumentsDropdown" disabled></select>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Tuning" data-help-body="Select the tuning preset (for example standard or alternate tunings) sent to the instrument." aria-label="Help: Tuning">?</button>
+      <div class="control-with-help-main">
+        <label for="tuningsLabel" disabled>Tuning:</label>
+        <select id="tuningsDropdown" disabled></select>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Transpose" data-help-body="Shifts all notes up or down in semitone steps without changing finger patterns on the neck." aria-label="Help: Transpose">?</button>
+      <div class="control-with-help-main">
+        <label id="transposeLabel" disabled>Transpose: 0</label>
+        <input type="range" id="transposeSlider" min="-12" max="12" value="0" step="1" disabled>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Vibrato" data-help-body="Controls vibrato depth or intensity applied to played notes." aria-label="Help: Vibrato">?</button>
+      <div class="control-with-help-main">
+        <label id="vibratoLabel" disabled>Vibrato: 0</label>
+        <input type="range" id="vibratoSlider" min="0" max="10" value="0" step="1" disabled>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Sustain pedal" data-help-body="When On, sustain pedal behavior matches a traditional guitar sustain pedal where supported." aria-label="Help: Sustain pedal">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Sustain Pedal:</legend>
+          <label><input type="radio" name="sustainRadioGroup" value="on" checked disabled> On</label>
+          <label><input type="radio" name="sustainRadioGroup" value="off" disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Chords mode" data-help-body="When on, strumming the string will play chords instead of individual notes. Upward struming plays minor triad and downward struming plays major triad. " aria-label="Help: Chords mode">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Chords Mode:</legend>
+          <label><input type="radio" name="chordsRadioGroup" value="on" disabled> On</label>
+          <label><input type="radio" name="chordsRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Quarter tones" data-help-body="When On, quarter-tone intervals are available where the firmware supports them." aria-label="Help: Quarter tones">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Quarter Tones:</legend>
+          <label><input type="radio" name="quarterTonesRadioGroup" value="on" checked disabled> On</label>
+          <label><input type="radio" name="quarterTonesRadioGroup" value="off" disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Save and load settings" data-help-body="Save current settings writes the current settings to the device storage so when the device turns on, it will load the same settings. Load factory settings restores the default factory settings. " aria-label="Help: Save and factory settings">?</button>
+      <div class="control-with-help-main">
+        <div class="device-settings-actions" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <button type="button" id="saveSettingsButton" disabled>Save current settings</button>
+          <button type="button" id="resetSettingsButton" disabled>Load factory settings</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Firmware version" data-help-body="Shows the firmware version running on the connected instrument. Update firmware using your usual Dijilele update process if a newer build is available." aria-label="Help: Firmware">?</button>
+      <div class="control-with-help-main">
+        <div style="margin-top:10px; opacity:0.9;">
+          <label id="fwVersionLabel">Firmware: --</label>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -431,79 +622,141 @@
 
   <div id="tab-content2" class="tab-content">
 
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Pitch offset" data-help-body="Fine pitch correction in cents (or equivalent steps) to match concert pitch or compensate for room acoustics." aria-label="Help: Pitch offset">?</button>
+      <div class="control-with-help-main">
+        <label id="pitchLabel" disabled>Pitch offset: 0</label>
+        <input type="range" id="pitchSlider" min="-100" max="100" value="0" step="1" disabled>
+      </div>
+    </div>
 
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Pitch system" data-help-body="Selects the tuning system or temperament used for pitch mapping (for example equal temperament or alternatives offered by the firmware)." aria-label="Help: Pitch system">?</button>
+      <div class="control-with-help-main">
+        <label for="pitchSystemsLabel" disabled>Pitch System:</label>
+        <select id="pitchSystemsDropdown" disabled></select>
+      </div>
+    </div>
 
-    <label id="pitchLabel" disabled>Pitch offset: 0</label>
-    <input type="range" id="pitchSlider" min="-100" max="100" value="0" step="1" disabled>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="MIDI channels" data-help-body="Choose which MIDI channels the instrument uses when sending MIDI over Bluetooth or USB." aria-label="Help: MIDI channels">?</button>
+      <div class="control-with-help-main">
+        <label for="midiChannelsLabel" disabled>Midi Channels:</label>
+        <select id="midiChannelsDropdown" disabled></select>
+      </div>
+    </div>
 
-    <label for="pitchSystemsLabel" disabled>Pitch System:</label>
-    <select id="pitchSystemsDropdown" disabled></select>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Left hand mode" data-help-body="When On, string order gets changed to suit left-handed players." aria-label="Help: Left hand mode">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Left Hand Mode:</legend>
+          <label><input type="radio" name="leftHandRadioGroup" value="on" disabled> On</label>
+          <label><input type="radio" name="leftHandRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
 
-    <label for="midiChannelsLabel" disabled>Midi Channels:</label>
-    <select id="midiChannelsDropdown" disabled></select>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Dynamics" data-help-body="When On, note velocity reflects how hard you play; when Off, dynamics may be fixed or simplified." aria-label="Help: Dynamics">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Dynamics:</legend>
+          <label><input type="radio" name="dynamicsRadioGroup" value="on"  disabled> On</label>
+          <label><input type="radio" name="dynamicsRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
 
-    <fieldset>
-      <legend>Left Hand Mode:</legend>
-      <label><input type="radio" name="leftHandRadioGroup" value="on" disabled> On</label>
-      <label><input type="radio" name="leftHandRadioGroup" value="off" checked disabled> Off</label>
-    </fieldset>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Staccato" data-help-body="Shortens note length for a detached, crisp articulation when enabled." aria-label="Help: Staccato">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Staccato:</legend>
+          <label><input type="radio" name="staccatoRadioGroup" value="on"  disabled> On</label>
+          <label><input type="radio" name="staccatoRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
 
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Tapping (hammering)" data-help-body="Enables hammer-on and tapping gestures on the fingerboard to trigger notes without a new pluck or strum." aria-label="Help: Tapping">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Tapping (Hammering):</legend>
+          <label><input type="radio" name="tappingRadioGroup" value="on" disabled> On</label>
+          <label><input type="radio" name="tappingRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
 
-
-    <fieldset>
-      <legend>Dynamics:</legend>
-      <label><input type="radio" name="dynamicsRadioGroup" value="on"  disabled> On</label>
-      <label><input type="radio" name="dynamicsRadioGroup" value="off" checked disabled> Off</label>
-    </fieldset>
-
-    <fieldset>
-      <legend>Staccato:</legend>
-      <label><input type="radio" name="staccatoRadioGroup" value="on"  disabled> On</label>
-      <label><input type="radio" name="staccatoRadioGroup" value="off" checked disabled> Off</label>
-    </fieldset>
-
-    <fieldset>
-      <legend>Tapping (Hammering):</legend>
-      <label><input type="radio" name="tappingRadioGroup" value="on" disabled> On</label>
-      <label><input type="radio" name="tappingRadioGroup" value="off" checked disabled> Off</label>
-    </fieldset>
-
-    <fieldset>
-      <legend>Tapping Without Strumming:</legend>
-      <label><input type="radio" name="tapWithoutStrumRadioGroup" value="on" disabled> On</label>
-      <label><input type="radio" name="tapWithoutStrumRadioGroup" value="off" checked disabled> Off</label>
-    </fieldset>
-
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Tapping without strumming" data-help-body="When On, tapping can register notes without requiring an accompanying strum." aria-label="Help: Tapping without strumming">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Tapping Without Strumming:</legend>
+          <label><input type="radio" name="tapWithoutStrumRadioGroup" value="on" disabled> On</label>
+          <label><input type="radio" name="tapWithoutStrumRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
 
   </div>
 
 
   <div id="tab-content3" class="tab-content">
 
-    <fieldset>
-      <legend>Metronome:</legend>
-      <label><input type="radio" name="metronomeRadioGroup" value="on" disabled> On</label>
-      <label><input type="radio" name="metronomeRadioGroup" value="off" checked disabled> Off</label>
-    </fieldset>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Metronome" data-help-body="Turns the built-in click or beat sound on or off while practicing or playing along." aria-label="Help: Metronome">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Metronome:</legend>
+          <label><input type="radio" name="metronomeRadioGroup" value="on" disabled> On</label>
+          <label><input type="radio" name="metronomeRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
 
-    <label id="tempoLabel" disabled>Tempo: 60</label>
-    <input type="range" id="tempoSlider" min="30" max="250" value="60" step="1" disabled>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Tempo" data-help-body="Beats per minute for the metronome and related playback timing." aria-label="Help: Tempo">?</button>
+      <div class="control-with-help-main">
+        <label id="tempoLabel" disabled>Tempo: 60</label>
+        <input type="range" id="tempoSlider" min="30" max="250" value="60" step="1" disabled>
+      </div>
+    </div>
 
-    <label id="metronomeVolLabel" disabled>Metronome Volume: 60</label>
-    <input type="range" id="metronomeVolSlider" min="30" max="127" value="60" step="1" disabled>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Metronome volume" data-help-body="Loudness of the metronome click relative to other audio from the instrument." aria-label="Help: Metronome volume">?</button>
+      <div class="control-with-help-main">
+        <label id="metronomeVolLabel" disabled>Metronome Volume: 60</label>
+        <input type="range" id="metronomeVolSlider" min="30" max="127" value="60" step="1" disabled>
+      </div>
+    </div>
 
-    <label id="metronomeNumBeatsLabel" disabled>Metronome Number of Beats : 1</label>
-    <input type="range" id="metronomeNumBeatsSlider" min="1" max="17" value="1" step="1" disabled>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Beats per bar" data-help-body="How many beats are counted before the pattern repeats (for example 4 for common time)." aria-label="Help: Metronome beats">?</button>
+      <div class="control-with-help-main">
+        <label id="metronomeNumBeatsLabel" disabled>Metronome Number of Beats : 1</label>
+        <input type="range" id="metronomeNumBeatsSlider" min="1" max="17" value="1" step="1" disabled>
+      </div>
+    </div>
 
-    <label for="midiFileLabel">Select MIDI File:</label>
-    <select id="midiFileDropdown" disabled></select>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="Choose a MIDI file stored on the device or loaded into the list for backing tracks or practice." aria-label="Help: MIDI file">?</button>
+      <div class="control-with-help-main">
+        <label for="midiFileLabel">Select MIDI File:</label>
+        <select id="midiFileDropdown" disabled></select>
+      </div>
+    </div>
 
-    <button id="playButton">Play</button>
-    <button id="pauseButton" onclick="pause()" disabled>Pause</button>
-    <button id="stopButton" onclick="stop()" disabled>Stop</button>
-
-
-
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Playback controls" data-help-body="Play starts playback, Pause holds the current position, and Stop resets playback. Connect to the instrument first." aria-label="Help: Playback">?</button>
+      <div class="control-with-help-main">
+        <button id="playButton">Play</button>
+        <button id="pauseButton" onclick="pause()" disabled>Pause</button>
+        <button id="stopButton" onclick="stop()" disabled>Stop</button>
+      </div>
+    </div>
 
   </div>
 
@@ -512,47 +765,100 @@
 
   <div id="tab-content4" class="tab-content ">
 
-    <h3 >Individual String Tuning</h3>
-    <label id="string1TuningLabel" disabled>String 1 Note Number: 120</label>
-    <input type="range" id="string1TuningSlider" min="48" max="192" value="120" step="1" disabled> 
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Individual string tuning" data-help-body="Each slider sets the MIDI note number for that string so you can detune or set custom open-string pitches. Values typically span the playable range of the instrument." aria-label="Help: String tuning section">?</button>
+      <div class="control-with-help-main">
+        <h3>Individual String Tuning</h3>
+      </div>
+    </div>
 
-    <label id="string2TuningLabel" disabled>String 2 Note Number: 120</label>
-    <input type="range" id="string2TuningSlider" min="48" max="192" value="120" step="1" disabled>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 1 tuning" data-help-body="MIDI note number for the first string (usually the highest or thinnest string, depending on your setup)." aria-label="Help: String 1 tuning">?</button>
+      <div class="control-with-help-main">
+        <label id="string1TuningLabel" disabled>String 1 Note Number: 120</label>
+        <input type="range" id="string1TuningSlider" min="48" max="192" value="120" step="1" disabled>
+      </div>
+    </div>
 
-    <label id="string3TuningLabel" disabled>String 3 Note Number: 120</label>
-    <input type="range" id="string3TuningSlider" min="48" max="192" value="120" step="1" disabled>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 2 tuning" data-help-body="MIDI note number for the second string." aria-label="Help: String 2 tuning">?</button>
+      <div class="control-with-help-main">
+        <label id="string2TuningLabel" disabled>String 2 Note Number: 120</label>
+        <input type="range" id="string2TuningSlider" min="48" max="192" value="120" step="1" disabled>
+      </div>
+    </div>
 
-    <label id="string4TuningLabel" disabled>String 4 Note Number: 120</label>
-    <input type="range" id="string4TuningSlider" min="48" max="192" value="120" step="1" disabled> 
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 3 tuning" data-help-body="MIDI note number for the third string." aria-label="Help: String 3 tuning">?</button>
+      <div class="control-with-help-main">
+        <label id="string3TuningLabel" disabled>String 3 Note Number: 120</label>
+        <input type="range" id="string3TuningSlider" min="48" max="192" value="120" step="1" disabled>
+      </div>
+    </div>
 
-    <h3 >Individual String on/off</h3>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 4 tuning" data-help-body="MIDI note number for the fourth string." aria-label="Help: String 4 tuning">?</button>
+      <div class="control-with-help-main">
+        <label id="string4TuningLabel" disabled>String 4 Note Number: 120</label>
+        <input type="range" id="string4TuningSlider" min="48" max="192" value="120" step="1" disabled>
+      </div>
+    </div>
 
-    <fieldset>
-      <legend>String 1:</legend>
-      <label><input type="radio" name="string1RadioGroup" value="on"checked disabled> On</label>
-      <label><input type="radio" name="string1RadioGroup" value="off"  disabled> Off</label>
-    </fieldset>
-    <fieldset>
-      <legend>String 2:</legend>
-      <label><input type="radio" name="string2RadioGroup" value="on" checked disabled> On</label>
-      <label><input type="radio" name="string2RadioGroup" value="off"  disabled> Off</label>
-    </fieldset>
-    <fieldset>
-      <legend>String 3:</legend>
-      <label><input type="radio" name="string3RadioGroup" value="on" checked disabled> On</label>
-      <label><input type="radio" name="string3RadioGroup" value="off"  disabled> Off</label>
-    </fieldset>
-    <fieldset>
-      <legend>String 4:</legend>
-      <label><input type="radio" name="string4RadioGroup" value="on" checked disabled> On</label>
-      <label><input type="radio" name="string4RadioGroup" value="off"  disabled> Off</label>
-    </fieldset>        
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String on or off" data-help-body="Enable or mute each string independently for practice, alternate tunings, or maintenance." aria-label="Help: String on/off section">?</button>
+      <div class="control-with-help-main">
+        <h3>Individual String on/off</h3>
+      </div>
+    </div>
 
-    <h3>Turn the eTar Off</h3>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 1 on/off" data-help-body="When Off, the first string does not sound; when On, it behaves normally." aria-label="Help: String 1 on/off">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>String 1:</legend>
+          <label><input type="radio" name="string1RadioGroup" value="on" checked disabled> On</label>
+          <label><input type="radio" name="string1RadioGroup" value="off"  disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 2 on/off" data-help-body="When Off, the second string does not sound; when On, it behaves normally." aria-label="Help: String 2 on/off">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>String 2:</legend>
+          <label><input type="radio" name="string2RadioGroup" value="on" checked disabled> On</label>
+          <label><input type="radio" name="string2RadioGroup" value="off"  disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 3 on/off" data-help-body="When Off, the third string does not sound; when On, it behaves normally." aria-label="Help: String 3 on/off">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>String 3:</legend>
+          <label><input type="radio" name="string3RadioGroup" value="on" checked disabled> On</label>
+          <label><input type="radio" name="string3RadioGroup" value="off"  disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="String 4 on/off" data-help-body="When Off, the fourth string does not sound; when On, it behaves normally." aria-label="Help: String 4 on/off">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>String 4:</legend>
+          <label><input type="radio" name="string4RadioGroup" value="on" checked disabled> On</label>
+          <label><input type="radio" name="string4RadioGroup" value="off"  disabled> Off</label>
+        </fieldset>
+      </div>
+    </div>
 
-    <button id="turnoffButton" disabled>Turn Off</button>
-
-
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Turn off eTar" data-help-body="Sends a power-off command to the instrument over Bluetooth. You may need to power it on again physically if it fully shuts down." aria-label="Help: Turn off">?</button>
+      <div class="control-with-help-main">
+        <h3>Turn the eTar Off</h3>
+        <button id="turnoffButton" disabled>Turn Off</button>
+      </div>
+    </div>
 
   </div>
 
@@ -581,6 +887,36 @@
 
 
     }
+
+    function openHelp(title, body) {
+      var titleEl = document.getElementById('helpDialogTitle');
+      var bodyEl = document.getElementById('helpDialogBody');
+      var ov = document.getElementById('helpOverlay');
+      if (titleEl) titleEl.textContent = title || 'Help';
+      if (bodyEl) bodyEl.textContent = body || '';
+      if (ov) ov.classList.add('help-overlay--open');
+    }
+
+    function closeHelp() {
+      var ov = document.getElementById('helpOverlay');
+      if (ov) ov.classList.remove('help-overlay--open');
+    }
+
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.help-icon');
+      if (!btn) return;
+      e.preventDefault();
+      var title = btn.getAttribute('data-help-title') || 'Help';
+      var body = btn.getAttribute('data-help-body') || '';
+      openHelp(title, body);
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var ov = document.getElementById('helpOverlay');
+        if (ov && ov.classList.contains('help-overlay--open')) closeHelp();
+      }
+    });
 
     function attachTabSwipe() {
       var minSwipe = 56;
@@ -2443,6 +2779,16 @@
 
 
   </script>
+
+  <div id="helpOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="helpDialogTitle" onclick="if(event.target===this) closeHelp()">
+    <div class="help-dialog" onclick="event.stopPropagation()">
+      <div class="help-dialog-header">
+        <h2 id="helpDialogTitle" class="help-dialog-title"></h2>
+        <button type="button" class="help-close" onclick="closeHelp()" aria-label="Close">&times;</button>
+      </div>
+      <p id="helpDialogBody" class="help-dialog-body"></p>
+    </div>
+  </div>
 
   </div><!-- .app-shell -->
 

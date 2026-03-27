@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:diji_app_flutter/ble/ble_bridge.dart';
+import 'package:diji_app_flutter/webview_external_navigation.dart';
+import 'package:diji_app_flutter/widgets/top_links_strip.dart';
 
 /// Android-only WebView. Loads the same asset URL as iOS so touch/gesture behavior matches.
 class AndroidWebViewScreen extends StatefulWidget {
@@ -207,75 +209,91 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     }
     return Scaffold(
       body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Positioned.fill(
-              child: InAppWebView(
-                initialFile: 'assets/qui-skinned.html',
-                initialUserScripts: UnmodifiableListView<UserScript>([
-                  UserScript(
-                    source: _bridgeScript,
-                    injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TopLinksStrip(),
+              ),
+            ),
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned.fill(
+                    child: InAppWebView(
+                      initialFile: 'assets/qui-skinned.html',
+                      initialUserScripts: UnmodifiableListView<UserScript>([
+                        UserScript(
+                          source: _bridgeScript,
+                          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                        ),
+                      ]),
+                      initialSettings: InAppWebViewSettings(
+                        javaScriptEnabled: true,
+                        allowFileAccess: true,
+                        allowContentAccess: true,
+                        useHybridComposition: true,
+                        useShouldOverrideUrlLoading: true,
+                      ),
+                      shouldOverrideUrlLoading: openExternalHttpInSystemBrowser,
+                      onWebViewCreated: (controller) {
+                        _controller = controller;
+                        controller.addJavaScriptHandler(
+                          handlerName: 'ble',
+                          callback: (args) {
+                            if (args.isNotEmpty && args.first != null) {
+                              _onBleMessage(args.first.toString());
+                            }
+                          },
+                        );
+                      },
+                      onLoadStop: (controller, url) {
+                        _injectLogo();
+                        Future.delayed(const Duration(milliseconds: 100), () => _injectLogo());
+                        if (mounted) setState(() => _loading = false);
+                      },
+                      onReceivedError: (controller, request, error) {
+                        debugPrint('WebView error: ${error.description}');
+                        if (mounted) setState(() => _loading = false);
+                      },
+                    ),
                   ),
-                ]),
-                initialSettings: InAppWebViewSettings(
-                  javaScriptEnabled: true,
-                  allowFileAccess: true,
-                  allowContentAccess: true,
-                  useHybridComposition: true,
-                ),
-                onWebViewCreated: (controller) {
-                  _controller = controller;
-                  controller.addJavaScriptHandler(
-                    handlerName: 'ble',
-                    callback: (args) {
-                      if (args.isNotEmpty && args.first != null) {
-                        _onBleMessage(args.first.toString());
-                      }
-                    },
-                  );
-                },
-                onLoadStop: (controller, url) {
-                  _injectLogo();
-                  Future.delayed(const Duration(milliseconds: 100), () => _injectLogo());
-                  if (mounted) setState(() => _loading = false);
-                },
-                onReceivedError: (controller, request, error) {
-                  debugPrint('WebView error: ${error.description}');
-                  if (mounted) setState(() => _loading = false);
-                },
+                  // Narrow strips only: avoids stealing horizontal drags from <input type="range"> in the WebView.
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 40,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragStart: (_) => _edgeDragDx = 0,
+                      onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
+                      onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
+                      child: const ColoredBox(color: Color(0x00000000)),
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 40,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragStart: (_) => _edgeDragDx = 0,
+                      onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
+                      onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
+                      child: const ColoredBox(color: Color(0x00000000)),
+                    ),
+                  ),
+                  if (_loading)
+                    const Center(child: CircularProgressIndicator()),
+                ],
               ),
             ),
-            // Narrow strips only: avoids stealing horizontal drags from <input type="range"> in the WebView.
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 40,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onHorizontalDragStart: (_) => _edgeDragDx = 0,
-                onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
-                onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
-                child: const ColoredBox(color: Color(0x00000000)),
-              ),
-            ),
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: 40,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onHorizontalDragStart: (_) => _edgeDragDx = 0,
-                onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
-                onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
-                child: const ColoredBox(color: Color(0x00000000)),
-              ),
-            ),
-            if (_loading)
-              const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),

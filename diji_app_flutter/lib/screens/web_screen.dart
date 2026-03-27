@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:diji_app_flutter/ble/ble_bridge.dart';
+import 'package:diji_app_flutter/webview_external_navigation.dart';
+import 'package:diji_app_flutter/widgets/top_links_strip.dart';
 
 class WebScreen extends StatefulWidget {
   const WebScreen({super.key});
@@ -137,60 +139,81 @@ class _WebScreenState extends State<WebScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // iOS WKWebView is a platform view that often draws above Flutter widgets in a Stack.
+    // Keep TopLinksStrip in a Column above the WebView so it is never occluded.
     return Scaffold(
       body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Positioned.fill(
-              child: InAppWebView(
-              // Used for web and iOS (Android uses AndroidWebViewScreen).
-              initialFile: kIsWeb ? null : 'assets/qui-skinned.html',
-              initialUrlRequest: kIsWeb
-                  ? URLRequest(
-                      url: WebUri(Uri.base.resolve('assets/qui-skinned.html').toString()),
-                    )
-                  : null,
-              initialSettings: InAppWebViewSettings(
-                transparentBackground: false,
-                javaScriptEnabled: true,
-                allowFileAccess: true,
-                allowContentAccess: true,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TopLinksStrip(),
               ),
-              initialUserScripts: UnmodifiableListView<UserScript>([
-                UserScript(
-                  source: _bridgeScript,
-                  injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-                ),
-              ]),
-              onWebViewCreated: (controller) {
-                _webViewController = controller;
-                if (!kIsWeb) {
-                  try {
-                    controller.addJavaScriptHandler(
-                      handlerName: 'ble',
-                      callback: (args) {
-                        if (args.isNotEmpty && args.first != null) {
-                          _onBleMessage(args.first.toString());
+            ),
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned.fill(
+                    child: InAppWebView(
+                      // Used for web and iOS (Android uses AndroidWebViewScreen).
+                      initialFile: kIsWeb ? null : 'assets/qui-skinned.html',
+                      initialUrlRequest: kIsWeb
+                          ? URLRequest(
+                              url: WebUri(
+                                Uri.base.resolve('assets/qui-skinned.html').toString(),
+                              ),
+                            )
+                          : null,
+                      initialSettings: InAppWebViewSettings(
+                        transparentBackground: false,
+                        javaScriptEnabled: true,
+                        allowFileAccess: true,
+                        allowContentAccess: true,
+                        useShouldOverrideUrlLoading: !kIsWeb,
+                      ),
+                      shouldOverrideUrlLoading:
+                          kIsWeb ? null : openExternalHttpInSystemBrowser,
+                      initialUserScripts: UnmodifiableListView<UserScript>([
+                        UserScript(
+                          source: _bridgeScript,
+                          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                        ),
+                      ]),
+                      onWebViewCreated: (controller) {
+                        _webViewController = controller;
+                        if (!kIsWeb) {
+                          try {
+                            controller.addJavaScriptHandler(
+                              handlerName: 'ble',
+                              callback: (args) {
+                                if (args.isNotEmpty && args.first != null) {
+                                  _onBleMessage(args.first.toString());
+                                }
+                              },
+                            );
+                          } catch (_) {}
                         }
                       },
-                    );
-                  } catch (_) {}
-                }
-              },
-              onLoadStop: (controller, url) {
-                _stopLoading();
-              },
-              onReceivedError: (controller, request, error) {
-                _stopLoading();
-                debugPrint('WebView load error: ${error.description}');
-              },
-            ),
-            ),
-            if (_loading)
-              const Center(
-                child: CircularProgressIndicator(),
+                      onLoadStop: (controller, url) {
+                        _stopLoading();
+                      },
+                      onReceivedError: (controller, request, error) {
+                        _stopLoading();
+                        debugPrint('WebView load error: ${error.description}');
+                      },
+                    ),
+                  ),
+                  if (_loading)
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                ],
               ),
+            ),
           ],
         ),
       ),
