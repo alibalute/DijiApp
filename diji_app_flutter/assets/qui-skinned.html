@@ -415,7 +415,11 @@
       <label><input type="radio" name="quarterTonesRadioGroup" value="off" disabled> Off</label>
     </fieldset>
 
-    <div style="margin-top:18px; opacity:0.9;">
+    <div class="device-settings-actions" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button type="button" id="saveSettingsButton" disabled>Save current settings</button>
+      <button type="button" id="resetSettingsButton" disabled>Load factory settings</button>
+    </div>
+    <div style="margin-top:10px; opacity:0.9;">
       <label id="fwVersionLabel">Firmware: --</label>
     </div>
 
@@ -731,6 +735,8 @@
       let dropdown3 = document.getElementById('dropdown3');
       let connectButton = document.getElementById('connectButton');
       let disconnectButton = document.getElementById('disconnectButton');
+      let saveSettingsButton = document.getElementById('saveSettingsButton');
+      let resetSettingsButton = document.getElementById('resetSettingsButton');
       let connectedDevice = null;
       let device = null;
 
@@ -1270,8 +1276,8 @@
 
               playButton.disabled = false;
               turnoffButton.disabled = false;
-
-
+              saveSettingsButton.disabled = false;
+              resetSettingsButton.disabled = false;
 
               vibratoSlider.disabled = false;
               for (let i = 0; i < sustainRadioButtons.length; i++)
@@ -1345,9 +1351,8 @@
             string3TuningSlider.disabled = true;
             string4TuningSlider.disabled = true;
             turnoffButton.disabled = true;
-
-
-
+            saveSettingsButton.disabled = true;
+            resetSettingsButton.disabled = true;
 
             vibratoSlider.disabled = true;
             for (let i = 0; i < sustainRadioButtons.length; i++)
@@ -1396,8 +1401,30 @@
           }
         });
 
+        async function sendBleSettingsSubcommand(subcmd) {
+          if (syncingFromFirmware || !connectedDevice) return;
+          try {
+            const data = new Uint8Array(5);
+            data[0] = 0xbf;
+            data[1] = 0x8c;
+            data[2] = 0xfe;
+            data[3] = 0x54;
+            data[4] = subcmd;
+            await connectedDevice.midiCharacteristic.writeValue(data);
+          } catch (error) {
+            console.error('Settings BLE command:', error);
+          }
+        }
 
-
+        saveSettingsButton.addEventListener('click', async () => {
+          await sendBleSettingsSubcommand(1);
+        });
+        resetSettingsButton.addEventListener('click', async () => {
+          if (!confirm('Reset to factory defaults from the device (factory.json)? Current UI may not match until settings sync again.')) {
+            return;
+          }
+          await sendBleSettingsSubcommand(2);
+        });
 
         // Add an event listener to the 'instruments' dropdown
         instrumentsDropdown.addEventListener('change', async () => {
