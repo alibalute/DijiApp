@@ -1,8 +1,11 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+
 import 'package:diji_app_flutter/ble/ble_bridge.dart';
 import 'package:diji_app_flutter/webview_external_navigation.dart';
 import 'package:diji_app_flutter/widgets/top_links_strip.dart';
@@ -99,8 +102,10 @@ class _WebScreenState extends State<WebScreen> {
           break;
         case 'startNotifications':
           await _bleBridge.startNotifications((base64) {
-            final escaped = jsonEncode(base64);
-            _runJs(controller, "if (window._bleOnNotification) window._bleOnNotification($escaped);");
+            _runJs(
+              controller,
+              "try{if(window._bleOnNotification)window._bleOnNotification('$base64');}catch(e){}",
+            );
           });
           break;
         case 'disconnect':
@@ -114,6 +119,55 @@ class _WebScreenState extends State<WebScreen> {
 
   void _runJs(InAppWebViewController c, String js) {
     c.evaluateJavascript(source: js);
+  }
+
+  /// iOS WKWebView document picker often excludes `.sf2` for `<input type="file">`; use UIDocumentPicker via file_picker.
+  ///
+  /// On Android, [FileType.custom] with `sf2` fails silently (no MIME in [MimeTypeMap]); use [FileType.any] and filter.
+  Future<void> _pickSoundfontForWebView(InAppWebViewController controller) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        withData: true,
+        allowCompression: false,
+      );
+      if (!mounted) return;
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      if (!file.name.toLowerCase().endsWith('.sf2')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please choose a SoundFont file (.sf2).')),
+        );
+        return;
+      }
+      final bytes = file.bytes;
+      if (bytes == null || bytes.isEmpty) {
+        debugPrint('pickSoundfont: empty file bytes');
+        return;
+      }
+      final payload = jsonEncode({'name': file.name, 'b64': base64Encode(bytes)});
+      _runJs(controller, 'window.__dijiOnNativeSoundfont($payload);');
+    } catch (e) {
+      debugPrint('pickSoundfont error: $e');
+    }
+  }
+
+  UnmodifiableListView<UserScript> _initialUserScripts() {
+    final list = <UserScript>[
+      UserScript(
+        source: _bridgeScript,
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+      ),
+    ];
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      list.add(
+        UserScript(
+          source: 'window.__dijiNativeSoundfontPicker=true;',
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        ),
+      );
+    }
+    return UnmodifiableListView<UserScript>(list);
   }
 
   void _stopLoading() {
@@ -177,12 +231,7 @@ class _WebScreenState extends State<WebScreen> {
                       ),
                       shouldOverrideUrlLoading:
                           kIsWeb ? null : openExternalHttpInSystemBrowser,
-                      initialUserScripts: UnmodifiableListView<UserScript>([
-                        UserScript(
-                          source: _bridgeScript,
-                          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-                        ),
-                      ]),
+                      initialUserScripts: _initialUserScripts(),
                       onWebViewCreated: (controller) {
                         _webViewController = controller;
                         if (!kIsWeb) {
@@ -196,6 +245,14 @@ class _WebScreenState extends State<WebScreen> {
                               },
                             );
                           } catch (_) {}
+                          if (defaultTargetPlatform == TargetPlatform.iOS) {
+                            try {
+                              controller.addJavaScriptHandler(
+                                handlerName: 'pickSoundfont',
+                                callback: (_) => _pickSoundfontForWebView(controller),
+                              );
+                            } catch (_) {}
+                          }
                         }
                       },
                       onLoadStop: (controller, url) {

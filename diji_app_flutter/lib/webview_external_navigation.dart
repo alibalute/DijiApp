@@ -13,6 +13,13 @@ Future<NavigationActionPolicy?> openExternalHttpInSystemBrowser(
   if (uri.scheme != 'http' && uri.scheme != 'https') {
     return NavigationActionPolicy.ALLOW;
   }
+  final host = uri.host.toLowerCase();
+  if (host == 'localhost' ||
+      host == '127.0.0.1' ||
+      host == '[::1]' ||
+      host.endsWith('.localhost')) {
+    return NavigationActionPolicy.ALLOW;
+  }
   if (await canLaunchUrl(uri)) {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }

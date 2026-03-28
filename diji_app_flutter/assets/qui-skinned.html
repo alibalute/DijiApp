@@ -300,6 +300,25 @@
       opacity: 1;
       visibility: visible;
     }
+    .midi-debug-log {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: min(42vh, 320px);
+      overflow: auto;
+      margin: 0 0 12px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .midi-debug-stats {
+      font-size: 0.9em;
+      opacity: 0.95;
+      margin-bottom: 10px;
+    }
     .help-dialog {
       background: var(--bg-card);
       border-radius: var(--radius);
@@ -444,9 +463,37 @@
     };
   })();
   </script>
+  <!-- FluidSynth WASM via js-synthesizer: real-time audio from BLE MIDI (load order matters) -->
+  <script defer src="js/libfluidsynth-2.4.6.js"></script>
+  <script defer src="js/js-synthesizer.min.js"></script>
 </head>
 
 <body>
+  <!-- Prime Web Audio on first touch: long async synth init can expire user activation; Android WebView then keeps AudioContext suspended. -->
+  <script>
+    (function () {
+      function unlockOnce() {
+        if (window.__dijiWebAudioUnlockDone) return;
+        window.__dijiWebAudioUnlockDone = true;
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        try {
+          var c = new Ctx();
+          var p = c.resume();
+          if (p && typeof p.then === 'function') {
+            p.then(function () { try { c.close(); } catch (e) {} })
+              .catch(function () { try { c.close(); } catch (e2) {} });
+          } else {
+            try { c.close(); } catch (e3) {}
+          }
+        } catch (e) {}
+        document.removeEventListener('touchstart', unlockOnce, true);
+        document.removeEventListener('click', unlockOnce, true);
+      }
+      document.addEventListener('touchstart', unlockOnce, { capture: true, passive: true });
+      document.addEventListener('click', unlockOnce, { capture: true });
+    })();
+  </script>
 
   <div class="app-shell">
     <header class="hero">
@@ -488,6 +535,10 @@
         <li id="tab4" class="tab" role="tab" onclick="openTab(3)">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 8h16M4 12h16M4 16h16"/></svg>
           Strings
+        </li>
+        <li id="tab5" class="tab" role="tab" onclick="openTab(4)">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10c0-1.1.9-2 2-2h2v10H6c-1.1 0-2-.9-2-2v-6z"/><path d="M10 8h2v10h-2V8z"/><path d="M14 12h2v6h-2v-6z"/><path d="M18 6h2c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2h-2V6z"/></svg>
+          Synthesizer
         </li>
       </ul>
     </div>
@@ -862,6 +913,51 @@
 
   </div>
 
+  <div id="tab-content5" class="tab-content">
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="SoundFont file" data-help-body="Choose a SoundFont 2 (.sf2) file. It is loaded into FluidSynth for Bluetooth MIDI monitoring. Large files may take a moment to parse." aria-label="Help: SoundFont">?</button>
+      <div class="control-with-help-main">
+        <h3>Ble MIDI sound</h3>
+        <p style="margin:8px 0; opacity:0.9; font-size:0.95em;">Load a .sf2 file for the in-app synthesizer used when you play over BLE MIDI.</p>
+        <!-- iOS WKWebView and Android WebView file inputs often favor images / hide .sf2; native file_picker when __dijiNativeSoundfontPicker is set. -->
+        <input type="file" id="synthSoundfontFile" accept="*/*" style="display:none" />
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+          <button type="button" id="loadSoundfontButton">Load soundfont</button>
+          <span id="synthSoundfontName" style="opacity:0.85; font-size:0.9em;">Bundled soundfont</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Instrument preset" data-help-body="Pick a preset from the loaded SoundFont. The selection is applied to all MIDI channels used for monitoring." aria-label="Help: Instrument">?</button>
+      <div class="control-with-help-main">
+        <label for="synthInstrumentDropdown">Instrument:</label>
+        <select id="synthInstrumentDropdown" disabled>
+          <option value="">Load a soundfont first</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="USB MIDI monitoring" data-help-body="On desktop Chrome, uses the Web MIDI API. In this Android app, USB controllers use the system MIDI stack (same FluidSynth path). iOS / Safari WebViews generally do not support Web MIDI — use Bluetooth MIDI there. Requires a user tap to enable." aria-label="Help: USB MIDI">?</button>
+      <div class="control-with-help-main">
+        <h3>USB MIDI</h3>
+        <p style="margin:8px 0; opacity:0.9; font-size:0.95em;">Play a USB MIDI controller into this page’s synthesizer (same soundfont as BLE monitoring).</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+          <button type="button" id="usbMidiEnableButton">Enable USB MIDI</button>
+          <button type="button" id="midiDebugOpenButton">MIDI monitor…</button>
+          <label style="font-size:0.9em; opacity:0.95; white-space:nowrap; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+            <input type="checkbox" id="midiDebugArmCheck" checked />
+            <span>Log MIDI</span>
+          </label>
+          <span id="usbMidiStatus" style="opacity:0.85; font-size:0.9em;">USB MIDI off</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 
   <script>
 
@@ -902,6 +998,84 @@
       if (ov) ov.classList.remove('help-overlay--open');
     }
 
+    /* ---- MIDI packet monitor (global: used from HTML onclick + hooks from DOMContentLoaded) ---- */
+    var midiDebugLines = [];
+    var midiDebugCountNative = 0;
+    var midiDebugCountDispatch = 0;
+    var midiDebugCountDropped = 0;
+    var midiDebugCountBleDropped = 0;
+
+    function midiDebugRecordingOn() {
+      var arm = document.getElementById('midiDebugArmCheck');
+      return !!(arm && arm.checked);
+    }
+
+    function midiDebugHex(u8, maxB) {
+      maxB = maxB || 48;
+      if (!u8 || u8.length === 0) return '(empty)';
+      var n = Math.min(u8.length, maxB);
+      var parts = [];
+      for (var i = 0; i < n; i++) parts.push(('0' + u8[i].toString(16)).slice(-2));
+      var s = parts.join(' ');
+      if (u8.length > n) s += ' …(+' + (u8.length - n) + ' B)';
+      return s;
+    }
+
+    function midiDebugRefreshStats() {
+      var el = document.getElementById('midiDebugStats');
+      if (!el) return;
+      el.textContent = 'USB native batches: ' + midiDebugCountNative +
+        '  |  Forwarded to synth: ' + midiDebugCountDispatch +
+        '  |  USB dropped (synth off): ' + midiDebugCountDropped +
+        '  |  BLE dropped (synth off): ' + midiDebugCountBleDropped;
+    }
+
+    function midiDebugPushLine(text) {
+      if (!midiDebugRecordingOn()) return;
+      var t = new Date().toLocaleTimeString();
+      midiDebugLines.push('[' + t + '] ' + text);
+      if (midiDebugLines.length > 28) midiDebugLines.shift();
+      var pre = document.getElementById('midiDebugLog');
+      if (pre) pre.textContent = midiDebugLines.join('\n');
+      midiDebugRefreshStats();
+    }
+
+    function openMidiDebugOverlay() {
+      var o = document.getElementById('midiDebugOverlay');
+      if (o) o.classList.add('help-overlay--open');
+      midiDebugRefreshStats();
+    }
+
+    function closeMidiDebugOverlay() {
+      var o = document.getElementById('midiDebugOverlay');
+      if (o) o.classList.remove('help-overlay--open');
+    }
+
+    window.__dijiMidiDbgNative = function (u8) {
+      if (!midiDebugRecordingOn()) return;
+      midiDebugCountNative++;
+      midiDebugPushLine('USB native #' + midiDebugCountNative + ' (' + u8.length + ' B): ' + midiDebugHex(u8));
+    };
+
+    window.__dijiMidiDbgUsbDropped = function (u8) {
+      if (!midiDebugRecordingOn()) return;
+      midiDebugCountDropped++;
+      midiDebugPushLine('USB not forwarded (synth not ready) #' + midiDebugCountDropped + ': ' + midiDebugHex(u8));
+    };
+
+    window.__dijiMidiDbgBleDropped = function (raw) {
+      if (!midiDebugRecordingOn()) return;
+      midiDebugCountBleDropped++;
+      var u8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw || []);
+      midiDebugPushLine('BLE not forwarded (synth not ready) #' + midiDebugCountBleDropped + ': ' + midiDebugHex(u8));
+    };
+
+    window.__dijiMidiDbgDispatch = function (tag, u8) {
+      if (!midiDebugRecordingOn()) return;
+      midiDebugCountDispatch++;
+      midiDebugPushLine((tag || 'MIDI') + ' → synth #' + midiDebugCountDispatch + ' (' + u8.length + ' B): ' + midiDebugHex(u8));
+    };
+
     document.addEventListener('click', function(e) {
       var btn = e.target.closest('.help-icon');
       if (!btn) return;
@@ -915,6 +1089,8 @@
       if (e.key === 'Escape') {
         var ov = document.getElementById('helpOverlay');
         if (ov && ov.classList.contains('help-overlay--open')) closeHelp();
+        var md = document.getElementById('midiDebugOverlay');
+        if (md && md.classList.contains('help-overlay--open')) closeMidiDebugOverlay();
       }
     });
 
@@ -1350,6 +1526,88 @@
       let syncingFromFirmware = false;
       const bleSettingsRxBuf = new Uint8Array(8192);
       let bleSettingsRxLen = 0;
+      /** True while buffer holds an incomplete F0…F7 settings SysEx (next packet may be continuation without leading F0). */
+      let bleSettingsMidSysex = false;
+      /** Coalesce non-MIDI work to one rAF (settings + telemetry DOM) so the BLE handler stays short. */
+      const bleSettingsPendingPackets = [];
+      const bleTelemetryPendingPackets = [];
+      const BLE_TELEMETRY_QUEUE_CAP = 48;
+      let bleSettingsRafId = 0;
+
+      function resetBleSettingsDeferred() {
+        bleSettingsPendingPackets.length = 0;
+        bleTelemetryPendingPackets.length = 0;
+        if (bleSettingsRafId) {
+          cancelAnimationFrame(bleSettingsRafId);
+          bleSettingsRafId = 0;
+        }
+      }
+
+      function scheduleBleDeferredDrain() {
+        if (bleSettingsRafId) return;
+        bleSettingsRafId = requestAnimationFrame(function bleDeferredDrainFrame() {
+          bleSettingsRafId = 0;
+          const sbatch = bleSettingsPendingPackets.splice(0, bleSettingsPendingPackets.length);
+          for (let i = 0; i < sbatch.length; i++) {
+            feedBleSettingsStreamPreprocessed(sbatch[i]);
+          }
+          const tbatch = bleTelemetryPendingPackets.splice(0, bleTelemetryPendingPackets.length);
+          for (let j = 0; j < tbatch.length; j++) {
+            applyBleTelemetryFromRawPacket(tbatch[j]);
+          }
+        });
+      }
+
+      function applyBleTelemetryFromRawPacket(dataArray) {
+        for (let i = 0; i + 2 < dataArray.length; i++) {
+          const code = dataArray[i];
+          const value = dataArray[i + 1];
+          if (dataArray[i + 2] !== 0) continue;
+
+          if (code === 0x56) {
+            var level = value;
+            document.getElementById('battery-bar').style.width = level * 0.8 + '%';
+            if (level > 70 && level <= 100) {
+              document.getElementById('battery-bar').style.backgroundColor = '#33cc33';
+            } else if (level > 50 && level <= 70) {
+              document.getElementById('battery-bar').style.backgroundColor = '#ffff00';
+            } else if (level > 30 && level <= 50) {
+              document.getElementById('battery-bar').style.backgroundColor = '#ff9900';
+            } else if (level > 0 && level <= 30) {
+              document.getElementById('battery-bar').style.backgroundColor = '#ff0000';
+            }
+            batteryLabel.textContent = `Battery: ${level} `;
+          } else if (code === 0x57) {
+            fwMajor = value;
+          } else if (code === 0x58) {
+            fwMinor = value;
+          } else if (code === 0x59) {
+            fwPatch = value;
+          }
+        }
+
+        if (fwMajor !== null && fwMinor !== null && fwPatch !== null) {
+          fwVersionLabel.textContent = `Firmware: ${fwMajor}.${fwMinor}.${fwPatch}`;
+        }
+      }
+
+      /** Copy payload (BLE buffer may be reused) and queue; at most one rAF pending — drains all queued packets in order. */
+      function queueBleSettingsFromPayload(blePayload) {
+        const c = new Uint8Array(blePayload.length);
+        c.set(blePayload);
+        bleSettingsPendingPackets.push(c);
+        scheduleBleDeferredDrain();
+      }
+
+      function queueBleTelemetryFromRaw(dataArray) {
+        const c = new Uint8Array(dataArray.length);
+        c.set(dataArray);
+        bleTelemetryPendingPackets.push(c);
+        while (bleTelemetryPendingPackets.length > BLE_TELEMETRY_QUEUE_CAP) {
+          bleTelemetryPendingPackets.shift();
+        }
+        scheduleBleDeferredDrain();
+      }
 
       function setRadioCheckedByName(radioNodeList, on) {
         if (!radioNodeList || !radioNodeList.length) return;
@@ -1451,17 +1709,32 @@
         return new Uint8Array(o);
       }
 
-      function feedBleSettingsStream(dataArray) {
+      /** One BLE notification → stripped payload (shared by MIDI + settings; avoids duplicate work). */
+      function preprocessBleMidiNotificationPacket(dataArray) {
         const raw = new Uint8Array(dataArray.buffer, dataArray.byteOffset, dataArray.byteLength);
         const unframed = stripBleMidiLeadingHeaders(raw);
-        const sysexBytes = stripEmbeddedBleMidiTimestampsInPayload(unframed);
-        for (let i = 0; i < sysexBytes.length; i++) {
+        return stripEmbeddedBleMidiTimestampsInPayload(unframed);
+      }
+
+      function feedBleSettingsStreamPreprocessed(sysexBytes) {
+        let slice = sysexBytes;
+        if (!bleSettingsMidSysex && bleSettingsRxLen === 0) {
+          let o = 0;
+          while (o < slice.length && slice[o] !== 0xF0) o++;
+          if (o >= slice.length) {
+            return;
+          }
+          slice = slice.subarray(o);
+        }
+
+        for (let i = 0; i < slice.length; i++) {
           if (bleSettingsRxLen >= bleSettingsRxBuf.length) {
             bleSettingsRxBuf.copyWithin(0, bleSettingsRxLen - 4096, bleSettingsRxLen);
             bleSettingsRxLen = 4096;
           }
-          bleSettingsRxBuf[bleSettingsRxLen++] = sysexBytes[i];
+          bleSettingsRxBuf[bleSettingsRxLen++] = slice[i];
         }
+
         while (true) {
           let start = -1;
           for (let s = 0; s + 3 < bleSettingsRxLen; s++) {
@@ -1470,7 +1743,17 @@
               break;
             }
           }
-          if (start < 0) break;
+          if (start < 0) {
+            if (bleSettingsRxLen > 0 && !bleSettingsMidSysex) {
+              bleSettingsRxLen = 0;
+            }
+            break;
+          }
+          if (start > 0) {
+            bleSettingsRxBuf.copyWithin(0, start, bleSettingsRxLen);
+            bleSettingsRxLen -= start;
+            start = 0;
+          }
           let end = -1;
           for (let e = start + 4; e < bleSettingsRxLen; e++) {
             if (bleSettingsRxBuf[e] === 0xF7) {
@@ -1478,7 +1761,11 @@
               break;
             }
           }
-          if (end < 0) break;
+          if (end < 0) {
+            bleSettingsMidSysex = true;
+            break;
+          }
+          bleSettingsMidSysex = false;
           let b64 = '';
           for (let k = start + 4; k < end; k++) b64 += String.fromCharCode(bleSettingsRxBuf[k]);
           const skip = end + 1;
@@ -1495,7 +1782,892 @@
           bleSettingsRxBuf.copyWithin(0, bleSettingsRxLen - 2048, bleSettingsRxLen);
           bleSettingsRxLen = 2048;
         }
+        if (bleSettingsRxLen === 0) {
+          bleSettingsMidSysex = false;
+        }
       }
+
+      /** ---- BLE MIDI -> FluidSynth (js-synthesizer, WASM) ---- */
+      let bleMidiSynth = null;
+      let bleMidiSynthAudioCtx = null;
+      let bleMidiSynthReady = false;
+      let bleMidiSynthInitPromise = null;
+      /** Bundled GM-ish bank used when no custom file is loaded or when custom load fails. */
+      const BLE_MIDI_DEFAULT_SF2 = 'synth/VintageDreamsWaves-v2.sf2';
+
+      /** If set, used instead of bundled default .sf2 */
+      let bleMidiCustomFontBuffer = null;
+      /** null = no font loaded; id may be 0 — do not use !id (that skipped FluidSynth program select). */
+      let bleMidiLoadedSfontId = null;
+      /** Bank / program last chosen in the synth instrument dropdown (FluidSynth needs bank + prog + sfont). */
+      let bleMidiUiInstrumentBank = 0;
+      let bleMidiUiInstrumentProg = 0;
+      /**
+       * Many controllers send Program Change 0 on connect or with every packet; that was calling
+       * midiProgramChange() and overriding the dropdown. Set false to let hardware PC change the patch.
+       */
+      let bleMidiIgnoreHardwareProgramChange = true;
+      /** Call with true to let MIDI Program Change messages change the patch (default: UI dropdown only). */
+      window.__dijiSetHonorHardwareProgramChange = function (honor) {
+        bleMidiIgnoreHardwareProgramChange = !honor;
+      };
+      /** Copy of last buffer passed to loadSFont — used to list presets if worklet MessagePort enumeration fails (e.g. Android WebView). */
+      let bleMidiLastSf2ArrayBuffer = null;
+      /** After custom SF2 fails, next populate shows this instead of only "Bundled soundfont". */
+      let bleMidiShowBundledFallbackLabel = false;
+
+      function assetUrl(rel) {
+        return new URL(rel, document.baseURI).href;
+      }
+
+      async function fetchBundledBleMidiFontBuffer() {
+        const res = await fetch(assetUrl(BLE_MIDI_DEFAULT_SF2));
+        if (!res.ok) throw new Error('SoundFont HTTP ' + res.status);
+        return res.arrayBuffer();
+      }
+
+      async function getBleMidiFontBuffer() {
+        if (bleMidiCustomFontBuffer) {
+          return bleMidiCustomFontBuffer.slice(0);
+        }
+        return fetchBundledBleMidiFontBuffer();
+      }
+
+      /**
+       * Read preset names / bank / program from SF2 RIFF LIST pdta → phdr (SoundFont 2.01).
+       * Does not depend on js-synthesizer worklet messaging (reliable on Android WebView).
+       */
+      function parseSf2PhdrPresets(arrayBuffer) {
+        if (!arrayBuffer || arrayBuffer.byteLength < 64) return [];
+        const u8 = new Uint8Array(arrayBuffer);
+        const dv = new DataView(arrayBuffer);
+        if (u8[0] !== 0x52 || u8[1] !== 0x49 || u8[2] !== 0x46 || u8[3] !== 0x46) return [];
+        const riffDataSize = dv.getUint32(4, true);
+        const fileEnd = Math.min(8 + riffDataSize, u8.length);
+        if (u8[8] !== 0x73 || u8[9] !== 0x66 || u8[10] !== 0x62 || u8[11] !== 0x6b) return [];
+        const te = (typeof TextDecoder !== 'undefined')
+          ? new TextDecoder('latin1')
+          : null;
+        let o = 12;
+        while (o + 8 <= fileEnd) {
+          const id = String.fromCharCode(u8[o], u8[o + 1], u8[o + 2], u8[o + 3]);
+          const sz = dv.getUint32(o + 4, true);
+          const d0 = o + 8;
+          const d1 = Math.min(d0 + sz, fileEnd);
+          const pad = sz & 1;
+          if (id === 'LIST' && d0 + 4 <= d1) {
+            const listType = String.fromCharCode(u8[d0], u8[d0 + 1], u8[d0 + 2], u8[d0 + 3]);
+            if (listType === 'pdta') {
+              return scanPdtaPhdr(u8, dv, d0 + 4, d1, te);
+            }
+          }
+          o = d1 + pad;
+        }
+        return [];
+      }
+
+      function scanPdtaPhdr(u8, dv, start, end, te) {
+        let p = start;
+        while (p + 8 <= end) {
+          const sid = String.fromCharCode(u8[p], u8[p + 1], u8[p + 2], u8[p + 3]);
+          const ssz = dv.getUint32(p + 4, true);
+          const s0 = p + 8;
+          const s1 = Math.min(s0 + ssz, end);
+          if (sid === 'phdr' && s1 > s0) {
+            return readPhdrPresetRecords(u8, dv, s0, s1, te);
+          }
+          p = s1 + (ssz & 1);
+        }
+        return [];
+      }
+
+      function readPhdrPresetRecords(u8, dv, start, end, te) {
+        const out = [];
+        let off = start;
+        while (off + 38 <= end) {
+          const wPreset = dv.getUint16(off + 20, true);
+          if (wPreset === 0xffff) break;
+          const bankNum = dv.getUint16(off + 22, true);
+          const nameBytes = u8.subarray(off, off + 20);
+          let z = 0;
+          while (z < 20 && nameBytes[z] !== 0) z++;
+          let name;
+          if (te && z > 0) {
+            name = te.decode(nameBytes.subarray(0, z));
+          } else if (z > 0) {
+            name = String.fromCharCode.apply(null, Array.from(nameBytes.subarray(0, z)));
+          } else {
+            name = 'Preset ' + bankNum + '/' + wPreset;
+          }
+          out.push({ name: name.trim(), bankNum: bankNum, num: wPreset });
+          off += 38;
+        }
+        return out;
+      }
+
+      function addSynthPresetOption(sel, displayName, bankNum, progNum) {
+        const opt = document.createElement('option');
+        opt.value = bankNum + ':' + progNum;
+        opt.textContent = displayName + ' (bank ' + bankNum + ', prog ' + progNum + ')';
+        opt.dataset.bank = String(bankNum);
+        opt.dataset.preset = String(progNum);
+        opt.setAttribute('data-sfont-bank', String(bankNum));
+        opt.setAttribute('data-sfont-prog', String(progNum));
+        sel.appendChild(opt);
+      }
+
+      /** Bank / program from option value (reliable on Android WebView; option.dataset is sometimes wrong). */
+      function parseSynthPresetOptionValue(opt) {
+        if (!opt) return null;
+        const raw = opt.value;
+        if (raw == null || raw === '') return null;
+        const parts = String(raw).split(':');
+        if (parts.length < 2) return null;
+        const bank = parseInt(parts[0], 10);
+        const presetNum = parseInt(parts[parts.length - 1], 10);
+        if (Number.isNaN(bank) || Number.isNaN(presetNum)) return null;
+        return { bank: bank, presetNum: presetNum };
+      }
+
+      function normalizeBankProgPreset(p) {
+        let bankNum = p.bankNum;
+        if (bankNum == null || bankNum === '') bankNum = p.bank;
+        let num = p.num;
+        if (num == null || num === '') num = p.presetNum != null ? p.presetNum : p.program;
+        if (typeof bankNum === 'string') bankNum = parseInt(bankNum, 10);
+        if (typeof num === 'string') num = parseInt(num, 10);
+        if (bankNum == null || num == null || Number.isNaN(bankNum) || Number.isNaN(num)) return null;
+        const name = p.name != null ? String(p.name) : ('Preset ' + bankNum + '/' + num);
+        return { bankNum: bankNum, num: num, name: name };
+      }
+
+      async function populateSynthPresetDropdown(synth, sfontId) {
+        const sel = document.getElementById('synthInstrumentDropdown');
+        const nameEl = document.getElementById('synthSoundfontName');
+        if (!sel) return;
+        while (sel.firstChild) sel.removeChild(sel.firstChild);
+        const ph = document.createElement('option');
+        ph.value = '';
+        ph.textContent = 'Select instrument…';
+        sel.appendChild(ph);
+        sel.disabled = true;
+        let sfNameHint = '';
+        try {
+          const sfObj = synth.getSFontObject(sfontId);
+          const sf = sfObj && typeof sfObj.then === 'function' ? await sfObj : sfObj;
+          if (sf) {
+            if (typeof sf.getName === 'function') {
+              sfNameHint = sf.getName() || '';
+            }
+            let iterP = sf.getPresetIterable();
+            let iterable = iterP && typeof iterP.then === 'function' ? await iterP : iterP;
+            if (iterable == null) iterable = [];
+            if (iterable[Symbol.iterator] == null && typeof iterable.length === 'number') {
+              iterable = Array.prototype.slice.call(iterable);
+            }
+            for (const p of iterable) {
+              const row = normalizeBankProgPreset(p);
+              if (!row) continue;
+              addSynthPresetOption(sel, row.name, row.bankNum, row.num);
+            }
+          } else {
+            console.warn('getSFontObject returned null for id', sfontId);
+          }
+        } catch (e) {
+          console.warn('Preset list (worklet)', e && e.message ? e.message : e, e);
+        }
+        if (sel.options.length <= 1 && bleMidiLastSf2ArrayBuffer && bleMidiLastSf2ArrayBuffer.byteLength > 64) {
+          const parsed = parseSf2PhdrPresets(bleMidiLastSf2ArrayBuffer);
+          if (parsed.length) {
+            console.warn('Preset list: SF2 phdr fallback, ' + parsed.length + ' presets');
+            for (let i = 0; i < parsed.length; i++) {
+              const q = parsed[i];
+              addSynthPresetOption(sel, q.name, q.bankNum, q.num);
+            }
+          }
+        }
+        if (nameEl) {
+          if (bleMidiShowBundledFallbackLabel) {
+            nameEl.textContent = 'Bundled soundfont (custom file did not load)';
+            bleMidiShowBundledFallbackLabel = false;
+          } else {
+            nameEl.textContent = sfNameHint
+              ? sfNameHint
+              : (bleMidiCustomFontBuffer ? 'Custom soundfont' : 'Bundled soundfont');
+          }
+        }
+        if (sel.options.length > 1) {
+          sel.disabled = false;
+          sel.selectedIndex = 1;
+          applySynthInstrumentSelection();
+        }
+      }
+
+      function applySynthInstrumentSelection() {
+        const sel = document.getElementById('synthInstrumentDropdown');
+        if (!sel) return;
+        const opt = sel.selectedOptions[0];
+        let parsed = parseSynthPresetOptionValue(opt);
+        if (!parsed && opt) {
+          const bAttr = opt.getAttribute('data-sfont-bank');
+          const pAttr = opt.getAttribute('data-sfont-prog');
+          if (bAttr != null && pAttr != null) {
+            const bank = parseInt(bAttr, 10);
+            const presetNum = parseInt(pAttr, 10);
+            if (!Number.isNaN(bank) && !Number.isNaN(presetNum)) {
+              parsed = { bank: bank, presetNum: presetNum };
+            }
+          }
+        }
+        if (!parsed) return;
+        const bank = parsed.bank;
+        const presetNum = parsed.presetNum;
+        bleMidiUiInstrumentBank = bank;
+        bleMidiUiInstrumentProg = presetNum;
+        /* Android: USB audio uses native TinySoundFont — FluidSynth never receives those notes; sync patch here. */
+        try {
+          var bridge = window.flutter_inappwebview;
+          if (bridge && typeof bridge.callHandler === 'function') {
+            bridge.callHandler('nativeUsbSynthInstrument', JSON.stringify({ bank: bank, preset: presetNum }));
+          }
+        } catch (e) {
+          console.warn('nativeUsbSynthInstrument', e);
+        }
+        const synth = bleMidiSynth;
+        if (!synth || bleMidiLoadedSfontId == null || bleMidiLoadedSfontId < 0) {
+          return;
+        }
+        if (typeof synth.midiProgramSelect !== 'function' && typeof synth.midiProgramChange !== 'function') {
+          return;
+        }
+        applyBleMidiUiInstrumentToAllChannels(synth, bleMidiLoadedSfontId, bank, presetNum);
+      }
+
+      /**
+       * FluidSynth: prefer fluid_synth_program_select (midiProgramSelect) per channel — one atomic call.
+       * Fallback: sfont + bank + program change.
+       */
+      function applyBleMidiUiInstrumentToAllChannels(synth, sfontId, bankVal, progVal) {
+        if (!synth || sfontId == null || sfontId < 0) return;
+        if (typeof synth.midiProgramSelect === 'function') {
+          for (let c = 0; c < 16; c++) {
+            synth.midiProgramSelect(c, sfontId, bankVal, progVal);
+          }
+          return;
+        }
+        for (let c = 0; c < 16; c++) {
+          if (typeof synth.midiSFontSelect === 'function') {
+            synth.midiSFontSelect(c, sfontId);
+          }
+          if (typeof synth.midiBankSelect === 'function') {
+            synth.midiBankSelect(c, bankVal);
+          }
+          synth.midiProgramChange(c, progVal);
+        }
+      }
+
+      async function initBleMidiSynthWithArrayBuffer(buf) {
+        await JSSynth.waitForReady();
+        /* Numeric hint (seconds) asks for a smaller output buffer than the string hints; ~4 ms target (engine may round up). */
+        const ctx = new (window.AudioContext || window.webkitAudioContext)({
+          latencyHint: 0.001
+        });
+        await ctx.resume();
+
+        /* FluidSynth only via AudioWorklet (no ScriptProcessorNode). */
+        if (!ctx.audioWorklet || typeof JSSynth.AudioWorkletNodeSynthesizer !== 'function') {
+          throw new Error('Ble MIDI synth requires AudioWorklet (not supported in this browser/WebView)');
+        }
+        let synth = null;
+        try {
+          await ctx.audioWorklet.addModule(assetUrl('js/libfluidsynth-2.4.6.js'));
+          await ctx.audioWorklet.addModule(assetUrl('js/js-synthesizer.worklet.min.js'));
+          const aws = new JSSynth.AudioWorkletNodeSynthesizer();
+          aws.init(ctx.sampleRate);
+          const wnode = aws.createAudioNode(ctx);
+          wnode.connect(ctx.destination);
+          const sfontId = await aws.loadSFont(buf);
+          bleMidiLoadedSfontId = sfontId;
+          try {
+            bleMidiLastSf2ArrayBuffer = buf.slice(0);
+          } catch (e) {
+            bleMidiLastSf2ArrayBuffer = null;
+          }
+          aws.setGain(0.55);
+          synth = aws;
+          /* loadSFont / worklet init are slow — user activation may be gone; force running before first MIDI. */
+          try {
+            await ctx.resume();
+            if (ctx.state !== 'running') {
+              await new Promise(function (r) { setTimeout(r, 120); });
+              await ctx.resume();
+            }
+          } catch (e) { /* ignore */ }
+        } catch (awErr) {
+          console.warn('AudioWorklet synth failed', awErr);
+          try {
+            ctx.close();
+          } catch (e) { /* ignore */ }
+          throw awErr;
+        }
+
+        bleMidiSynth = synth;
+        bleMidiSynthAudioCtx = ctx;
+        bleMidiSynthReady = true;
+        await populateSynthPresetDropdown(synth, bleMidiLoadedSfontId);
+        applySynthInstrumentSelection();
+      }
+
+      async function reloadBleMidiSynthWithUserBuffer(buf) {
+        bleMidiCustomFontBuffer = buf;
+        shutdownBleMidiSynth();
+        bleMidiSynthInitPromise = null;
+        bleMidiSynthInitPromise = (async () => {
+          try {
+            await initBleMidiSynthWithArrayBuffer(buf.slice(0));
+          } catch (e) {
+            console.warn('BleMidi synth reload (custom soundfont)', e);
+            bleMidiCustomFontBuffer = null;
+            try {
+              const bundled = await fetchBundledBleMidiFontBuffer();
+              bleMidiShowBundledFallbackLabel = true;
+              await initBleMidiSynthWithArrayBuffer(bundled);
+              try {
+                alert('Could not load that soundfont. Using the built-in soundfont instead.');
+              } catch (a) { /* ignore */ }
+            } catch (e2) {
+              console.warn('BleMidi bundled soundfont fallback failed', e2);
+              bleMidiShowBundledFallbackLabel = false;
+              bleMidiSynthInitPromise = null;
+            }
+          }
+        })();
+        return bleMidiSynthInitPromise;
+      }
+
+      function stripSysExForMidiVoice(arr) {
+        const out = [];
+        let i = 0;
+        while (i < arr.length) {
+          if (arr[i] === 0xF0) {
+            while (i < arr.length && arr[i] !== 0xF7) i++;
+            if (i < arr.length) i++;
+            continue;
+          }
+          out.push(arr[i++]);
+        }
+        return new Uint8Array(out);
+      }
+
+      /** Android WebView often re-suspends [AudioContext] after init; resume on MIDI so notes are audible. */
+      function resumeBleMidiAudioContext() {
+        try {
+          const ctx = bleMidiSynthAudioCtx;
+          if (ctx && ctx.state === 'suspended') {
+            ctx.resume().catch(function () { /* ignore */ });
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      /**
+       * After a gap, WebView may leave AudioContext not-yet-running while resume() is still in flight.
+       * Dispatching note-ons in that window feels “stuck”; wait for resume before feeding FluidSynth.
+       */
+      function dispatchMidiVoiceToSynthWhenAudioReady(u8, dbgSource) {
+        const ctx = bleMidiSynthAudioCtx;
+        const run = function () {
+          resumeBleMidiAudioContext();
+          dispatchMidiVoiceToSynthCore(u8, dbgSource);
+        };
+        if (!ctx || ctx.state === 'running') {
+          run();
+          return;
+        }
+        try {
+          ctx.resume().then(run).catch(function () { run(); });
+        } catch (e) {
+          run();
+        }
+      }
+
+      window.__dijiResumeSynthAudio = resumeBleMidiAudioContext;
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') resumeBleMidiAudioContext();
+      });
+
+      function dispatchMidiVoiceToSynthCore(u8, dbgSource) {
+        if (typeof window.__dijiMidiDbgDispatch === 'function') {
+          window.__dijiMidiDbgDispatch(dbgSource || 'MIDI', u8);
+        }
+        const s = bleMidiSynth;
+        let i = 0;
+        let status = 0;
+        const len = u8.length;
+        while (i < len) {
+          const b = u8[i];
+          if (b < 0x80) {
+            if (status === 0) {
+              i++;
+              continue;
+            }
+            const cmd = status & 0xF0;
+            const ch = status & 0x0F;
+            if (cmd === 0x90) {
+              if (i + 1 >= len) break;
+              const note = b;
+              const vel = u8[i + 1];
+              i += 2;
+              if (vel === 0) s.midiNoteOff(ch, note);
+              else s.midiNoteOn(ch, note, vel);
+              continue;
+            }
+            if (cmd === 0x80) {
+              if (i + 1 >= len) break;
+              const note = b;
+              i += 2;
+              s.midiNoteOff(ch, note);
+              continue;
+            }
+            if (cmd === 0xB0 && i + 1 < len) {
+              i += 2;
+              continue;
+            }
+            if (cmd === 0xC0 && i < len) {
+              const prog = b;
+              i++;
+              if (!bleMidiIgnoreHardwareProgramChange && bleMidiLoadedSfontId != null && bleMidiLoadedSfontId >= 0) {
+                if (typeof s.midiSFontSelect === 'function') {
+                  s.midiSFontSelect(ch, bleMidiLoadedSfontId);
+                }
+                if (typeof s.midiBankSelect === 'function') {
+                  s.midiBankSelect(ch, bleMidiUiInstrumentBank);
+                }
+                s.midiProgramChange(ch, prog);
+              }
+              continue;
+            }
+            if (cmd === 0xE0 && i + 1 < len) {
+              i += 2;
+              continue;
+            }
+            if (cmd === 0xD0 && i < len) {
+              i += 1;
+              continue;
+            }
+            i++;
+            continue;
+          }
+          if (b >= 0xF8) {
+            i++;
+            continue;
+          }
+          if (b === 0xF0) {
+            while (i < len && u8[i] !== 0xF7) i++;
+            if (i < len) i++;
+            continue;
+          }
+          status = b;
+          i++;
+          const cmd = b & 0xF0;
+          const ch = b & 0x0F;
+          if (cmd === 0x90 && i + 1 < len) {
+            const note = u8[i++];
+            const vel = u8[i++];
+            if (vel === 0) s.midiNoteOff(ch, note);
+            else s.midiNoteOn(ch, note, vel);
+            continue;
+          }
+          if (cmd === 0x80 && i + 1 < len) {
+            const note = u8[i++];
+            i++;
+            s.midiNoteOff(ch, note);
+            continue;
+          }
+          if (cmd === 0xB0 && i + 1 < len) {
+            i += 2;
+            continue;
+          }
+          if (cmd === 0xC0 && i < len) {
+            const prog = u8[i++];
+            if (!bleMidiIgnoreHardwareProgramChange && bleMidiLoadedSfontId != null && bleMidiLoadedSfontId >= 0) {
+              if (typeof s.midiSFontSelect === 'function') {
+                s.midiSFontSelect(ch, bleMidiLoadedSfontId);
+              }
+              if (typeof s.midiBankSelect === 'function') {
+                s.midiBankSelect(ch, bleMidiUiInstrumentBank);
+              }
+              s.midiProgramChange(ch, prog);
+            }
+            continue;
+          }
+          if (cmd === 0xE0 && i + 1 < len) {
+            i += 2;
+            continue;
+          }
+          if (cmd === 0xD0 && i < len) {
+            i += 1;
+            continue;
+          }
+        }
+      }
+
+      function dispatchMidiVoiceToSynth(u8, dbgSource) {
+        dispatchMidiVoiceToSynthWhenAudioReady(u8, dbgSource);
+      }
+
+      function feedBleMidiNotesToSynthFromPreprocessed(preprocessedPayload) {
+        if (!bleMidiSynthReady || !bleMidiSynth) {
+          if (typeof window.__dijiMidiDbgBleDropped === 'function') {
+            window.__dijiMidiDbgBleDropped(preprocessedPayload);
+          }
+          return;
+        }
+        const p = stripSysExForMidiVoice(preprocessedPayload);
+        if (p.length === 0) return;
+        try {
+          dispatchMidiVoiceToSynth(p, 'BLE');
+        } catch (e) {
+          console.warn('MIDI synth', e);
+        }
+      }
+
+      /** Web MIDI (USB class-compliant); same FluidSynth path as BLE after stripping is unnecessary — wire protocol is standard MIDI bytes. */
+      let usbMidiAccess = null;
+      /** Android app: native MidiManager bridge (WebView has no requestMIDIAccess). */
+      let usbMidiNativeActive = false;
+
+      window._nativeUsbMidiMessage = function (b64) {
+        try {
+          const binary = atob(b64);
+          const len = binary.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+          if (typeof window.__dijiMidiDbgNative === 'function') {
+            window.__dijiMidiDbgNative(bytes);
+          }
+          feedUsbMidiToSynth(bytes);
+        } catch (e) {
+          console.warn('native USB MIDI', e);
+        }
+      };
+
+      window._usbMidiNativePortCountUpdate = function (n) {
+        const count = typeof n === 'number' ? n : parseInt(n, 10) || 0;
+        window.__dijiUsbMidiLastPortCount = count;
+        const st = document.getElementById('usbMidiStatus');
+        if (st) {
+          st.textContent = count > 0
+            ? ('USB MIDI on — ' + count + ' USB port(s)')
+            : 'USB MIDI on — still connecting ports… (OTG / permission / replug if this stays)';
+        }
+        if (count > 0 && window.__dijiUsbMidiZeroPortTimer) {
+          try { clearTimeout(window.__dijiUsbMidiZeroPortTimer); } catch (e) { /* ignore */ }
+          window.__dijiUsbMidiZeroPortTimer = null;
+        }
+      };
+
+      window._usbMidiNativeStarted = function (ok, arg2) {
+        if (ok) {
+          resumeBleMidiAudioContext();
+          usbMidiNativeActive = true;
+          const n = typeof arg2 === 'number' ? arg2 : parseInt(arg2, 10) || 0;
+          const st = document.getElementById('usbMidiStatus');
+          if (st) {
+            st.textContent = n > 0
+              ? ('USB MIDI on — ' + n + ' USB port(s)')
+              : 'USB MIDI on — opening ports…';
+          }
+          const btn = document.getElementById('usbMidiEnableButton');
+          if (btn) btn.textContent = 'Disable USB MIDI';
+          if (n === 0) {
+            try {
+              if (window.__dijiUsbMidiZeroPortTimer) clearTimeout(window.__dijiUsbMidiZeroPortTimer);
+            } catch (e) { /* ignore */ }
+            window.__dijiUsbMidiZeroPortTimer = setTimeout(function () {
+              window.__dijiUsbMidiZeroPortTimer = null;
+              if ((window.__dijiUsbMidiLastPortCount || 0) > 0) return;
+              try {
+                alert('USB MIDI is on but no USB MIDI ports were detected after a few seconds.\n\n• Approve USB access if Android asked.\n• Use a data-capable OTG cable (not charge-only).\n• Unplug/replug the keyboard, then tap Disable USB MIDI and Enable again.\n• Turn on Log MIDI + MIDI monitor to see if bytes arrive.');
+              } catch (a) { /* ignore */ }
+            }, 5000);
+          }
+        } else {
+          usbMidiNativeActive = false;
+          const msg = typeof arg2 === 'string' ? arg2 : String(arg2 || 'unknown error');
+          alert('Could not start USB MIDI: ' + msg);
+        }
+      };
+
+      window._usbMidiNativeStopped = function () {
+        try {
+          if (window.__dijiUsbMidiZeroPortTimer) clearTimeout(window.__dijiUsbMidiZeroPortTimer);
+        } catch (e) { /* ignore */ }
+        window.__dijiUsbMidiZeroPortTimer = null;
+        window.__dijiUsbMidiLastPortCount = 0;
+        usbMidiNativeActive = false;
+        const st = document.getElementById('usbMidiStatus');
+        if (st) st.textContent = 'USB MIDI off';
+        const btn = document.getElementById('usbMidiEnableButton');
+        if (btn) btn.textContent = 'Enable USB MIDI';
+      };
+
+      function feedUsbMidiToSynth(data) {
+        const u8 = data instanceof Uint8Array ? data : new Uint8Array(data || []);
+        if (u8.length === 0) return;
+        if (!bleMidiSynthReady || !bleMidiSynth) {
+          if (typeof window.__dijiMidiDbgUsbDropped === 'function') {
+            window.__dijiMidiDbgUsbDropped(u8);
+          }
+          return;
+        }
+        try {
+          dispatchMidiVoiceToSynth(u8, 'USB');
+        } catch (e) {
+          console.warn('USB MIDI synth', e);
+        }
+      }
+
+      function bindUsbMidiInputPort(port) {
+        if (!port || port.type !== 'input') return;
+        port.onmidimessage = function (e) {
+          if (e.data && e.data.length) feedUsbMidiToSynth(e.data);
+        };
+      }
+
+      function attachUsbMidiInputHandlers(access) {
+        access.inputs.forEach(function (port) {
+          bindUsbMidiInputPort(port);
+        });
+        access.onstatechange = function (e) {
+          const port = e.port;
+          if (port && port.type === 'input' && port.state === 'connected') {
+            bindUsbMidiInputPort(port);
+          }
+        };
+      }
+
+      function disableUsbMidiMonitoring() {
+        if (usbMidiNativeActive) {
+          if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+            window.flutter_inappwebview.callHandler('usbMidi', JSON.stringify({ action: 'stop' }));
+          } else {
+            window._usbMidiNativeStopped();
+          }
+          return;
+        }
+        if (usbMidiAccess) {
+          try {
+            usbMidiAccess.inputs.forEach(function (port) {
+              port.onmidimessage = null;
+            });
+            usbMidiAccess.onstatechange = null;
+          } catch (err) { /* ignore */ }
+          usbMidiAccess = null;
+        }
+        const st = document.getElementById('usbMidiStatus');
+        if (st) st.textContent = 'USB MIDI off';
+        const btn = document.getElementById('usbMidiEnableButton');
+        if (btn) btn.textContent = 'Enable USB MIDI';
+      }
+
+      async function enableUsbMidiMonitoring() {
+        if (usbMidiAccess || usbMidiNativeActive) return;
+        try {
+          resumeBleMidiAudioContext();
+          await ensureBleMidiSynth();
+          if (!bleMidiSynthReady || !bleMidiSynth) {
+            alert('Synthesizer did not start (check console for AudioWorklet / soundfont errors).');
+            return;
+          }
+        } catch (e) {
+          console.warn('USB MIDI synth', e);
+          try {
+            alert('Synthesizer did not start: ' + (e && e.message ? e.message : String(e)));
+          } catch (a) { /* ignore */ }
+          return;
+        }
+        if (window.__dijiNativeUsbMidi === true &&
+            window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+          window.flutter_inappwebview.callHandler('usbMidi', JSON.stringify({ action: 'start' }));
+          return;
+        }
+        if (typeof navigator.requestMIDIAccess !== 'function') {
+          alert('Web MIDI is not available in this browser or WebView. Try Chrome on desktop for USB MIDI, or use Bluetooth monitoring in the app.');
+          return;
+        }
+        try {
+          const access = await navigator.requestMIDIAccess({ sysex: true });
+          usbMidiAccess = access;
+          attachUsbMidiInputHandlers(access);
+          const st = document.getElementById('usbMidiStatus');
+          if (st) st.textContent = 'USB MIDI on — ' + access.inputs.size + ' input port(s)';
+          const btn = document.getElementById('usbMidiEnableButton');
+          if (btn) btn.textContent = 'Disable USB MIDI';
+        } catch (err) {
+          console.warn('USB MIDI', err);
+          alert('Could not open Web MIDI: ' + (err && err.message ? err.message : String(err)));
+        }
+      }
+
+      async function waitForBleMidiJSSynth(maxMs) {
+        const cap = typeof maxMs === 'number' ? maxMs : 30000;
+        const t0 = Date.now();
+        while (typeof JSSynth === 'undefined') {
+          if (Date.now() - t0 > cap) {
+            throw new Error('JSSynth (js-synthesizer) did not load — check the browser console and script URLs.');
+          }
+          await new Promise(function (r) { setTimeout(r, 50); });
+        }
+        await JSSynth.waitForReady();
+      }
+
+      async function ensureBleMidiSynth() {
+        if (bleMidiSynthReady && bleMidiSynth) return;
+        if (bleMidiSynthInitPromise) return bleMidiSynthInitPromise;
+        bleMidiSynthInitPromise = (async () => {
+          try {
+            await waitForBleMidiJSSynth();
+            const buf = await getBleMidiFontBuffer();
+            await initBleMidiSynthWithArrayBuffer(buf);
+          } catch (e) {
+            console.warn('BleMidi synth init', e);
+            if (bleMidiCustomFontBuffer) {
+              bleMidiCustomFontBuffer = null;
+              try {
+                const bundled = await fetchBundledBleMidiFontBuffer();
+                bleMidiShowBundledFallbackLabel = true;
+                await initBleMidiSynthWithArrayBuffer(bundled);
+              } catch (e2) {
+                console.warn('BleMidi bundled fallback after init failure', e2);
+                bleMidiShowBundledFallbackLabel = false;
+                bleMidiSynthInitPromise = null;
+              }
+            } else {
+              bleMidiSynthInitPromise = null;
+            }
+          }
+        })();
+        return bleMidiSynthInitPromise;
+      }
+
+      function shutdownBleMidiSynth() {
+        bleMidiSynthReady = false;
+        bleMidiSynthInitPromise = null;
+        bleMidiLoadedSfontId = null;
+        bleMidiUiInstrumentBank = 0;
+        bleMidiUiInstrumentProg = 0;
+        bleMidiLastSf2ArrayBuffer = null;
+        bleMidiShowBundledFallbackLabel = false;
+        try {
+          if (bleMidiSynth) {
+            bleMidiSynth.midiAllNotesOff(-1);
+            bleMidiSynth.close();
+          }
+        } catch (e) { /* ignore */ }
+        bleMidiSynth = null;
+        try {
+          if (bleMidiSynthAudioCtx) bleMidiSynthAudioCtx.close();
+        } catch (e) { /* ignore */ }
+        bleMidiSynthAudioCtx = null;
+      }
+
+      function applySoundfontArrayBufferFromUser(ab, displayName) {
+        resumeBleMidiAudioContext();
+        if (!(ab instanceof ArrayBuffer) || ab.byteLength === 0) return;
+        const nameEl = document.getElementById('synthSoundfontName');
+        if (nameEl && displayName) nameEl.textContent = displayName;
+        reloadBleMidiSynthWithUserBuffer(ab);
+      }
+
+      window.__dijiOnNativeSoundfont = function (payload) {
+        try {
+          if (!payload || !payload.b64) return;
+          const name = payload.name || 'soundfont.sf2';
+          const binary = atob(payload.b64);
+          const len = binary.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+          applySoundfontArrayBufferFromUser(bytes.buffer, name);
+        } catch (e) {
+          console.warn('Native soundfont decode', e);
+        }
+      };
+
+      (function setupSynthTabUi() {
+        const fileInput = document.getElementById('synthSoundfontFile');
+        const loadBtn = document.getElementById('loadSoundfontButton');
+        const instSel = document.getElementById('synthInstrumentDropdown');
+        if (!fileInput || !loadBtn) return;
+        loadBtn.addEventListener('click', function () {
+          var bridge = window.flutter_inappwebview;
+          var fh = bridge && typeof bridge.callHandler === 'function';
+          if (window.__dijiNativeSoundfontPicker && fh) {
+            try {
+              var ret = bridge.callHandler('pickSoundfont', '');
+              if (ret != null && typeof ret.then === 'function') {
+                ret.catch(function (err) { console.warn('pickSoundfont handler', err); });
+              }
+            } catch (e) {
+              console.warn('pickSoundfont callHandler', e);
+            }
+            return;
+          }
+          try {
+            fileInput.click();
+          } catch (e) {
+            console.warn('soundfont file input', e);
+          }
+        });
+        fileInput.addEventListener('change', function () {
+          const f = fileInput.files && fileInput.files[0];
+          if (!f) return;
+          const reader = new FileReader();
+          reader.onload = function () {
+            const ab = reader.result;
+            if (ab instanceof ArrayBuffer) {
+              applySoundfontArrayBufferFromUser(ab, f.name);
+            }
+          };
+          reader.onerror = function () {
+            console.warn('SoundFont read failed');
+          };
+          reader.readAsArrayBuffer(f);
+          fileInput.value = '';
+        });
+        if (instSel) {
+          instSel.addEventListener('change', applySynthInstrumentSelection);
+        }
+      })();
+
+      (function setupUsbMidiUi() {
+        const btn = document.getElementById('usbMidiEnableButton');
+        if (btn) {
+          btn.addEventListener('click', function () {
+            if (usbMidiAccess || usbMidiNativeActive) disableUsbMidiMonitoring();
+            else void enableUsbMidiMonitoring();
+          });
+        }
+        const midiMonBtn = document.getElementById('midiDebugOpenButton');
+        if (midiMonBtn) {
+          midiMonBtn.addEventListener('click', function () {
+            openMidiDebugOverlay();
+          });
+        }
+        const midiClr = document.getElementById('midiDebugClearButton');
+        if (midiClr) {
+          midiClr.addEventListener('click', function () {
+            midiDebugLines = [];
+            midiDebugCountNative = 0;
+            midiDebugCountDispatch = 0;
+            midiDebugCountDropped = 0;
+            midiDebugCountBleDropped = 0;
+            var pre = document.getElementById('midiDebugLog');
+            if (pre) pre.textContent = '';
+            midiDebugRefreshStats();
+          });
+        }
+      })();
 
       // Check if the Web Bluetooth API is supported
       if ('bluetooth' in navigator) {
@@ -1525,6 +2697,10 @@
 
           if (deviceId) {
             try {
+              // Web Audio + FluidSynth must start after a user gesture (iOS / Android).
+              resumeBleMidiAudioContext();
+              await ensureBleMidiSynth();
+
               // Connect to the selected device
 
               const server = await device.gatt.connect();
@@ -1538,6 +2714,8 @@
               // Keep track of connected device
               connectedDevice = { device, server, midiService, midiCharacteristic };
               bleSettingsRxLen = 0;
+              bleSettingsMidSysex = false;
+              resetBleSettingsDeferred();
 
               // Set up event listener for receiving data
               midiCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
@@ -1548,39 +2726,11 @@
                 receivedData.byteLength || receivedData.buffer.byteLength
               );
 
-              feedBleSettingsStream(dataArray);
-
-              /* Telemetry: device sends 3-byte messages ending with 0 (avoid false positives in JSON/base64). */
-              for (let i = 0; i + 2 < dataArray.length; i++) {
-                const code = dataArray[i];
-                const value = dataArray[i + 1];
-                if (dataArray[i + 2] !== 0) continue;
-
-                if (code === 0x56) { // battery level
-                  var level = value; // 0-100
-                  document.getElementById('battery-bar').style.width = level * 0.8 + '%';
-                  if (level > 70 && level <= 100){
-                    document.getElementById('battery-bar').style.backgroundColor = '#33cc33';
-                  } else if (level > 50 && level <= 70) {
-                    document.getElementById('battery-bar').style.backgroundColor = '#ffff00';
-                  } else if (level > 30 && level <= 50) {
-                    document.getElementById('battery-bar').style.backgroundColor = '#ff9900';
-                  } else if (level > 0 && level <= 30) {
-                    document.getElementById('battery-bar').style.backgroundColor = '#ff0000';
-                  }
-                  batteryLabel.textContent = `Battery: ${level} `;
-                } else if (code === 0x57) { // firmware major
-                  fwMajor = value;
-                } else if (code === 0x58) { // firmware minor
-                  fwMinor = value;
-                } else if (code === 0x59) { // firmware patch
-                  fwPatch = value;
-                }
-              }
-
-              if (fwMajor !== null && fwMinor !== null && fwPatch !== null) {
-                fwVersionLabel.textContent = `Firmware: ${fwMajor}.${fwMinor}.${fwPatch}`;
-              }
+              const blePayload = preprocessBleMidiNotificationPacket(dataArray);
+              feedBleMidiNotesToSynthFromPreprocessed(blePayload);
+              queueBleSettingsFromPayload(blePayload);
+              /* Battery / FW telemetry was touching the DOM every packet here — defer to same rAF as settings. */
+              queueBleTelemetryFromRaw(dataArray);
 
               });
 
@@ -1671,6 +2821,8 @@
               console.log('Disconnected from MIDI device:', connectedDevice.device.name);
             }
 
+            shutdownBleMidiSynth();
+
             // Disable the disconnect button
             disconnectButton.disabled = true;
             instrumentsDropdown.disabled = true;
@@ -1730,6 +2882,8 @@
             fwPatch = null;
             fwVersionLabel.textContent = 'Firmware: --';
             bleSettingsRxLen = 0;
+            bleSettingsMidSysex = false;
+            resetBleSettingsDeferred();
 
             connectedDevice = null; // Reset connected device
           } catch (error) {
@@ -2787,6 +3941,24 @@
         <button type="button" class="help-close" onclick="closeHelp()" aria-label="Close">&times;</button>
       </div>
       <p id="helpDialogBody" class="help-dialog-body"></p>
+    </div>
+  </div>
+
+  <div id="midiDebugOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="midiDebugTitle" onclick="if(event.target===this) closeMidiDebugOverlay()">
+    <div class="help-dialog" onclick="event.stopPropagation()" style="max-width: min(520px, 100%);">
+      <div class="help-dialog-header">
+        <h2 id="midiDebugTitle" class="help-dialog-title">MIDI packet monitor</h2>
+        <button type="button" class="help-close" onclick="closeMidiDebugOverlay()" aria-label="Close">&times;</button>
+      </div>
+      <div class="help-dialog-body" style="padding: 0 16px 16px;">
+        <p style="margin: 0 0 10px; font-size:0.92em; opacity:0.9;">Shows whether bytes reach the WebView from USB (native Android) and whether they are forwarded to the synthesizer. Enable <strong>Log MIDI</strong> on this tab (next to “MIDI monitor…”), then play keys. If you denied USB access, use system settings or replug the cable and tap Enable USB MIDI again.</p>
+        <div id="midiDebugStats" class="midi-debug-stats" aria-live="polite"></div>
+        <pre id="midiDebugLog" class="midi-debug-log"></pre>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <button type="button" id="midiDebugClearButton">Clear log</button>
+          <button type="button" onclick="closeMidiDebugOverlay()">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 
