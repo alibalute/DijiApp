@@ -277,6 +277,127 @@
     .control-with-help.align-center button.help-icon {
       margin-top: 0;
     }
+    /* Synthesizer tab: quick instrument grid (16 slots) */
+    .quick-ins-wrap {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 24px;
+    }
+    .quick-ins-wrap h3 {
+      margin: 0 0 10px;
+    }
+    .quick-ins-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+    .quick-ins-grid .quick-ins-btn {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 8px 4px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 4px;
+      min-height: 72px;
+      background: linear-gradient(180deg, #fff 0%, #f0eef5 100%);
+      color: var(--purple);
+      border: 2px solid rgba(72, 44, 118, 0.22);
+      box-shadow: 0 2px 8px rgba(31, 41, 51, 0.08);
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.15;
+      border-radius: var(--radius-sm);
+    }
+    .quick-ins-grid .quick-ins-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--teal);
+      box-shadow: 0 4px 12px rgba(238, 168, 3, 0.2);
+    }
+    .quick-ins-grid .quick-ins-btn.active {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, #fff9e6 0%, #ffeec2 100%);
+      color: #8a5a00;
+      box-shadow: 0 0 0 2px rgba(238, 168, 3, 0.35);
+    }
+    .quick-ins-grid .quick-ins-btn:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+    .quick-ins-grid .quick-ins-btn .quick-ins-icon {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .quick-ins-grid .quick-ins-btn .quick-ins-icon svg {
+      width: 34px;
+      height: 34px;
+      display: block;
+    }
+    .quick-ins-label {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 1px;
+    }
+    .synth-soundfont-block {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .synth-soundfont-block .synth-more-instruments-title {
+      margin: 0 0 10px;
+      width: 100%;
+      text-align: center;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .synth-usb-midi-top {
+      margin-bottom: 14px;
+    }
+    .synth-usb-midi-top .control-with-help-main h3 {
+      margin: 0 0 6px;
+    }
+    .synth-usb-midi-device {
+      margin: 0;
+      font-size: 0.9em;
+      opacity: 0.88;
+      min-height: 1.3em;
+      word-break: break-word;
+    }
+    /* Same layout as other tab-5 rows: help column + main (8px gap via button.help-icon margin-right). */
+    .synth-soundfont-load-row {
+      width: 100%;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .synth-soundfont-load-row #loadSoundfontButton {
+      width: auto;
+      max-width: none;
+      min-width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .synth-soundfont-block .synth-sf-name {
+      margin-top: 10px;
+      font-size: 0.9em;
+      opacity: 0.88;
+      min-height: 1.2em;
+      word-break: break-word;
+      max-width: 100%;
+    }
     button.help-icon:hover:not(:disabled) {
       transform: translateY(-1px);
       background: linear-gradient(180deg, #e8eaed 0%, #d8dce2 100%);
@@ -372,6 +493,7 @@
   </style>
   <script>
   (function(){
+    /* Flutter web (Chrome): WebScreen does not inject AndroidBLE — keep native navigator.bluetooth. */
     if (typeof window.AndroidBLE === 'undefined') return;
     window._blePromises = {};
     window._bleNextId = 0;
@@ -915,18 +1037,30 @@
 
   <div id="tab-content5" class="tab-content">
 
-    <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="SoundFont file" data-help-body="Choose a SoundFont 2 (.sf2) file. It is loaded into FluidSynth for Bluetooth MIDI monitoring. Large files may take a moment to parse." aria-label="Help: SoundFont">?</button>
+    <div class="control-with-help synth-usb-midi-top">
+      <button type="button" class="help-icon" data-help-title="USB MIDI" data-help-body="Independent of Bluetooth. Android: class-compliant USB MIDI starts automatically (OTG if needed; approve USB if prompted). iPhone / iPad app: Core MIDI sources (USB via Camera Adapter, hub, or compatible interfaces) are connected automatically like Android — WKWebView does not use Web MIDI. Chrome / Flutter web: Web MIDI is requested when supported; tap once if the browser asks for permission. The Dijilele BLE link is only for the instrument’s own settings and MIDI — not required for USB controllers." aria-label="Help: USB MIDI">?</button>
       <div class="control-with-help-main">
-        <h3>Ble MIDI sound</h3>
-        <p style="margin:8px 0; opacity:0.9; font-size:0.95em;">Load a .sf2 file for the in-app synthesizer used when you play over BLE MIDI.</p>
-        <!-- iOS WKWebView and Android WebView file inputs often favor images / hide .sf2; native file_picker when __dijiNativeSoundfontPicker is set. -->
-        <input type="file" id="synthSoundfontFile" accept="*/*" style="display:none" />
-        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+        <h3>USB MIDI</h3>
+        <div id="usbMidiDeviceName" class="synth-usb-midi-device" aria-live="polite">Starting…</div>
+      </div>
+    </div>
+
+    <div class="quick-ins-wrap">
+      <h3>Quick instruments</h3>
+      <div id="quickInstrumentsGrid" class="quick-ins-grid" role="toolbar" aria-label="Quick instrument presets"></div>
+    </div>
+
+    <div class="synth-soundfont-block">
+      <h3 class="synth-more-instruments-title">More instruments</h3>
+      <!-- iOS / Flutter web / desktop embedders: file input often hides .sf2; Flutter file_picker when __dijiNativeSoundfontPicker is set (Android app uses its own picker). -->
+      <input type="file" id="synthSoundfontFile" accept="*/*" style="display:none" />
+      <div class="control-with-help align-center synth-soundfont-load-row">
+        <button type="button" class="help-icon" data-help-title="SoundFont" data-help-body="Choose a SoundFont 2 (.sf2) file. It loads into the in-app synthesizer for USB MIDI and, when enabled, Bluetooth MIDI. Large files may take a moment to parse. On Android, the system file picker opens when you tap Load soundfont. In Chrome (Flutter web) and on iOS, the app opens a file picker for .sf2 files." aria-label="Help: SoundFont">?</button>
+        <div class="control-with-help-main">
           <button type="button" id="loadSoundfontButton">Load soundfont</button>
-          <span id="synthSoundfontName" style="opacity:0.85; font-size:0.9em;">Bundled soundfont</span>
         </div>
       </div>
+      <div id="synthSoundfontName" class="synth-sf-name" aria-live="polite"></div>
     </div>
 
     <div class="control-with-help">
@@ -936,23 +1070,6 @@
         <select id="synthInstrumentDropdown" disabled>
           <option value="">Load a soundfont first</option>
         </select>
-      </div>
-    </div>
-
-    <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="USB MIDI monitoring" data-help-body="On desktop Chrome, uses the Web MIDI API. In this Android app, USB controllers use the system MIDI stack (same FluidSynth path). iOS / Safari WebViews generally do not support Web MIDI — use Bluetooth MIDI there. Requires a user tap to enable." aria-label="Help: USB MIDI">?</button>
-      <div class="control-with-help-main">
-        <h3>USB MIDI</h3>
-        <p style="margin:8px 0; opacity:0.9; font-size:0.95em;">Play a USB MIDI controller into this page’s synthesizer (same soundfont as BLE monitoring).</p>
-        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
-          <button type="button" id="usbMidiEnableButton">Enable USB MIDI</button>
-          <button type="button" id="midiDebugOpenButton">MIDI monitor…</button>
-          <label style="font-size:0.9em; opacity:0.95; white-space:nowrap; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-            <input type="checkbox" id="midiDebugArmCheck" checked />
-            <span>Log MIDI</span>
-          </label>
-          <span id="usbMidiStatus" style="opacity:0.85; font-size:0.9em;">USB MIDI off</span>
-        </div>
       </div>
     </div>
 
@@ -998,83 +1115,17 @@
       if (ov) ov.classList.remove('help-overlay--open');
     }
 
-    /* ---- MIDI packet monitor (global: used from HTML onclick + hooks from DOMContentLoaded) ---- */
-    var midiDebugLines = [];
-    var midiDebugCountNative = 0;
-    var midiDebugCountDispatch = 0;
-    var midiDebugCountDropped = 0;
-    var midiDebugCountBleDropped = 0;
-
-    function midiDebugRecordingOn() {
-      var arm = document.getElementById('midiDebugArmCheck');
-      return !!(arm && arm.checked);
-    }
-
-    function midiDebugHex(u8, maxB) {
-      maxB = maxB || 48;
-      if (!u8 || u8.length === 0) return '(empty)';
-      var n = Math.min(u8.length, maxB);
-      var parts = [];
-      for (var i = 0; i < n; i++) parts.push(('0' + u8[i].toString(16)).slice(-2));
-      var s = parts.join(' ');
-      if (u8.length > n) s += ' …(+' + (u8.length - n) + ' B)';
-      return s;
-    }
-
-    function midiDebugRefreshStats() {
-      var el = document.getElementById('midiDebugStats');
-      if (!el) return;
-      el.textContent = 'USB native batches: ' + midiDebugCountNative +
-        '  |  Forwarded to synth: ' + midiDebugCountDispatch +
-        '  |  USB dropped (synth off): ' + midiDebugCountDropped +
-        '  |  BLE dropped (synth off): ' + midiDebugCountBleDropped;
-    }
-
-    function midiDebugPushLine(text) {
-      if (!midiDebugRecordingOn()) return;
-      var t = new Date().toLocaleTimeString();
-      midiDebugLines.push('[' + t + '] ' + text);
-      if (midiDebugLines.length > 28) midiDebugLines.shift();
-      var pre = document.getElementById('midiDebugLog');
-      if (pre) pre.textContent = midiDebugLines.join('\n');
-      midiDebugRefreshStats();
-    }
-
-    function openMidiDebugOverlay() {
-      var o = document.getElementById('midiDebugOverlay');
-      if (o) o.classList.add('help-overlay--open');
-      midiDebugRefreshStats();
-    }
-
-    function closeMidiDebugOverlay() {
-      var o = document.getElementById('midiDebugOverlay');
-      if (o) o.classList.remove('help-overlay--open');
-    }
-
-    window.__dijiMidiDbgNative = function (u8) {
-      if (!midiDebugRecordingOn()) return;
-      midiDebugCountNative++;
-      midiDebugPushLine('USB native #' + midiDebugCountNative + ' (' + u8.length + ' B): ' + midiDebugHex(u8));
-    };
-
-    window.__dijiMidiDbgUsbDropped = function (u8) {
-      if (!midiDebugRecordingOn()) return;
-      midiDebugCountDropped++;
-      midiDebugPushLine('USB not forwarded (synth not ready) #' + midiDebugCountDropped + ': ' + midiDebugHex(u8));
-    };
-
-    window.__dijiMidiDbgBleDropped = function (raw) {
-      if (!midiDebugRecordingOn()) return;
-      midiDebugCountBleDropped++;
-      var u8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw || []);
-      midiDebugPushLine('BLE not forwarded (synth not ready) #' + midiDebugCountBleDropped + ': ' + midiDebugHex(u8));
-    };
-
-    window.__dijiMidiDbgDispatch = function (tag, u8) {
-      if (!midiDebugRecordingOn()) return;
-      midiDebugCountDispatch++;
-      midiDebugPushLine((tag || 'MIDI') + ' → synth #' + midiDebugCountDispatch + ' (' + u8.length + ' B): ' + midiDebugHex(u8));
-    };
+    /* ---- MIDI monitor removed from synthesizer tab; stubs keep legacy hooks harmless ---- */
+    function midiDebugRecordingOn() { return false; }
+    function midiDebugHex(u8, maxB) { return ''; }
+    function midiDebugRefreshStats() {}
+    function midiDebugPushLine(text) {}
+    function openMidiDebugOverlay() {}
+    function closeMidiDebugOverlay() {}
+    window.__dijiMidiDbgNative = function () {};
+    window.__dijiMidiDbgUsbDropped = function () {};
+    window.__dijiMidiDbgBleDropped = function () {};
+    window.__dijiMidiDbgDispatch = function () {};
 
     document.addEventListener('click', function(e) {
       var btn = e.target.closest('.help-icon');
@@ -1089,8 +1140,6 @@
       if (e.key === 'Escape') {
         var ov = document.getElementById('helpOverlay');
         if (ov && ov.classList.contains('help-overlay--open')) closeHelp();
-        var md = document.getElementById('midiDebugOverlay');
-        if (md && md.classList.contains('help-overlay--open')) closeMidiDebugOverlay();
       }
     });
 
@@ -1797,6 +1846,15 @@
 
       /** If set, used instead of bundled default .sf2 */
       let bleMidiCustomFontBuffer = null;
+      /** Shown under Load soundfont: file basename or chosen label only (no extra suffixes). */
+      let bleMidiSoundfontDisplayName = '';
+
+      function soundfontFileNameFromPath(p) {
+        if (!p) return '';
+        const s = String(p);
+        const i = s.lastIndexOf('/');
+        return i >= 0 ? s.slice(i + 1) : s;
+      }
       /** null = no font loaded; id may be 0 — do not use !id (that skipped FluidSynth program select). */
       let bleMidiLoadedSfontId = null;
       /** Bank / program last chosen in the synth instrument dropdown (FluidSynth needs bank + prog + sfont). */
@@ -1807,6 +1865,11 @@
        * midiProgramChange() and overriding the dropdown. Set false to let hardware PC change the patch.
        */
       let bleMidiIgnoreHardwareProgramChange = true;
+      /**
+       * When strictly true, BLE notification traffic is sent to the in-page Synthesizer (FluidSynth).
+       * Default false: BLE still updates settings / battery / firmware via SysEx; USB MIDI → synth unchanged.
+       */
+      window.__dijiBleMidiToSynthEnabled = false;
       /** Call with true to let MIDI Program Change messages change the patch (default: UI dropdown only). */
       window.__dijiSetHonorHardwareProgramChange = function (honor) {
         bleMidiIgnoreHardwareProgramChange = !honor;
@@ -1908,7 +1971,7 @@
       function addSynthPresetOption(sel, displayName, bankNum, progNum) {
         const opt = document.createElement('option');
         opt.value = bankNum + ':' + progNum;
-        opt.textContent = displayName + ' (bank ' + bankNum + ', prog ' + progNum + ')';
+        opt.textContent = displayName;
         opt.dataset.bank = String(bankNum);
         opt.dataset.preset = String(progNum);
         opt.setAttribute('data-sfont-bank', String(bankNum));
@@ -1988,12 +2051,15 @@
         }
         if (nameEl) {
           if (bleMidiShowBundledFallbackLabel) {
-            nameEl.textContent = 'Bundled soundfont (custom file did not load)';
+            bleMidiSoundfontDisplayName = soundfontFileNameFromPath(BLE_MIDI_DEFAULT_SF2);
+            nameEl.textContent = bleMidiSoundfontDisplayName;
             bleMidiShowBundledFallbackLabel = false;
+          } else if (bleMidiSoundfontDisplayName) {
+            nameEl.textContent = bleMidiSoundfontDisplayName;
           } else {
             nameEl.textContent = sfNameHint
               ? sfNameHint
-              : (bleMidiCustomFontBuffer ? 'Custom soundfont' : 'Bundled soundfont');
+              : soundfontFileNameFromPath(BLE_MIDI_DEFAULT_SF2);
           }
         }
         if (sel.options.length > 1) {
@@ -2128,6 +2194,7 @@
           } catch (e) {
             console.warn('BleMidi synth reload (custom soundfont)', e);
             bleMidiCustomFontBuffer = null;
+            bleMidiSoundfontDisplayName = soundfontFileNameFromPath(BLE_MIDI_DEFAULT_SF2);
             try {
               const bundled = await fetchBundledBleMidiFontBuffer();
               bleMidiShowBundledFallbackLabel = true;
@@ -2143,6 +2210,196 @@
           }
         })();
         return bleMidiSynthInitPromise;
+      }
+
+      /**
+       * Quick instruments (Synthesizer tab): 16 slots. Edit here — paths are Flutter asset keys
+       * (same style as synth/VintageDreamsWaves-v2.sf2). Add matching .sf2 files under assets/
+       * and include assets/synth/instruments/ in pubspec.yaml. The path must match the
+       * bundled filename exactly (e.g. eTar2024.sf2) — Flutter’s asset server is case-sensitive.
+       * sf2Asset: string path, or null/'' to use the bundled default SoundFont.
+       * bank / program: SoundFont bank and MIDI preset (program) number.
+       */
+      const DIJI_QUICK_INSTRUMENTS = [
+        { label: 'Setar', sf2Asset: 'synth/instruments/eTar2024.sf2', bank: 0, program: 1, icon: 'setar' },
+        { label: 'Tar', sf2Asset: 'synth/instruments/eTar2024.sf2', bank: 0, program: 0, icon: 'tar' },
+        { label: 'Santoor', sf2Asset: 'synth/instruments/eTar2024.sf2', bank: 0, program: 3, icon: 'santoor' },
+        { label: 'Oud', sf2Asset: 'synth/instruments/oud.sf2', bank: 0, program: 4, icon: 'oud' },
+        { label: 'Ukulele', sf2Asset: 'synth/instruments/ukulele.sf2', bank: 0, program: 0, icon: 'ukulele' },
+        { label: 'Guitar', sf2Asset: 'synth/instruments/guitar.sf2', bank: 0, program: 0, icon: 'guitar' },
+        { label: 'Banjo', sf2Asset: 'synth/instruments/banjo.sf2', bank: 0, program: 0, icon: 'banjo' },
+        { label: 'Mandolin', sf2Asset: 'synth/instruments/mandolin.sf2', bank: 0, program: 0, icon: 'mandolin' },
+        { label: 'Slot 9', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
+        { label: 'Slot 10', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
+        { label: 'Slot 11', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
+        { label: 'Slot 12', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
+        { label: 'Slot 13', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
+        { label: 'Slot 14', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
+        { label: 'Slot 15', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
+        { label: 'Slot 16', sf2Asset: null, bank: 0, program: 0, icon: 'note' }
+      ];
+
+      let quickInstrumentsActiveIndex = -1;
+      let quickInstrumentLoading = false;
+
+      function quickInstrumentIconSvg(kind) {
+        const o = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="none"><g stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">';
+        const c = '</g></svg>';
+        const p = {
+          setar: '<ellipse cx="16" cy="35" rx="8" ry="6"/><path d="M20 32 L36 9"/><path d="M22 28 L26 22 M18 33 L14 38"/>',
+          tar: '<ellipse cx="17" cy="34" rx="11" ry="9"/><path d="M24 28 L40 7"/><path d="M12 32 L20 30"/>',
+          santoor: '<path d="M6 26 L42 20 L40 38 L8 44 Z"/><path d="M11 25.5 L9.5 42 M18 24 L16.5 40.5 M25 22.5 L23.5 39 M32 21 L30.5 37.5 M37 20 L35.5 36"/>',
+          oud: '<path d="M24 40 C11 40 9 26 13 15 C17 6 31 6 35 15 C39 26 37 40 24 40Z"/><path d="M24 17 L24 8 L31 5"/><path d="M20 22 L28 22"/>',
+          ukulele: '<path d="M22 10h4v7c7 1.5 11 7 11 16c0 9-7 15-15 15S7 42 7 33c0-7 3.5-12.5 9-15V10z"/><circle cx="24" cy="30" r="2.5"/>',
+          guitar: '<path d="M23 8h2v9c9 1.5 13 8 13 18c0 10-8 17-17 17S4 35 4 25c0-8 5-14.5 12-16.5V8z"/><circle cx="24" cy="28" r="3"/>',
+          banjo: '<circle cx="22" cy="30" r="11"/><path d="M22 19 L25 7"/><ellipse cx="22" cy="30" rx="5" ry="4"/>',
+          mandolin: '<path d="M24 9l1.5 5c7 2 11 8 11 15c0 8-6 14-12.5 14S11 37 11 29c0-5 3.5-10 9-12.5L22 9h4z"/><path d="M24 20v14"/>',
+          note: '<path d="M30 10v22"/><path d="M30 10h-10v12"/><ellipse cx="18" cy="38" rx="5" ry="4"/>'
+        };
+        return o + (p[kind] || p.guitar) + c;
+      }
+
+      function selectSynthPresetInDropdown(bank, presetNum) {
+        const sel = document.getElementById('synthInstrumentDropdown');
+        if (!sel) return false;
+        for (let i = 0; i < sel.options.length; i++) {
+          const parsed = parseSynthPresetOptionValue(sel.options[i]);
+          if (parsed && parsed.bank === bank && parsed.presetNum === presetNum) {
+            sel.selectedIndex = i;
+            applySynthInstrumentSelection();
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function forceSynthInstrumentBankProg(bank, presetNum) {
+        bleMidiUiInstrumentBank = bank;
+        bleMidiUiInstrumentProg = presetNum;
+        try {
+          var bridge = window.flutter_inappwebview;
+          if (bridge && typeof bridge.callHandler === 'function') {
+            bridge.callHandler('nativeUsbSynthInstrument', JSON.stringify({ bank: bank, preset: presetNum }));
+          }
+        } catch (e) {
+          console.warn('nativeUsbSynthInstrument', e);
+        }
+        const synth = bleMidiSynth;
+        if (!synth || bleMidiLoadedSfontId == null || bleMidiLoadedSfontId < 0) return;
+        applyBleMidiUiInstrumentToAllChannels(synth, bleMidiLoadedSfontId, bank, presetNum);
+      }
+
+      function isLikelySf2ArrayBuffer(buf) {
+        if (!buf || buf.byteLength < 16) return false;
+        const u8 = new Uint8Array(buf, 0, 12);
+        return u8[0] === 0x52 && u8[1] === 0x49 && u8[2] === 0x46 && u8[3] === 0x46;
+      }
+
+      /** eTar / etar spelling — InAppLocalhostServer uses rootBundle.load; key must match pubspec + filename. */
+      function quickInstrumentSf2FetchCandidates(primary) {
+        const list = [String(primary).trim()];
+        const lower = list[0].toLowerCase();
+        const slash = list[0].lastIndexOf('/');
+        const dir = slash >= 0 ? list[0].slice(0, slash + 1) : '';
+        if (lower.endsWith('etar2024.sf2')) {
+          list.push(dir + 'eTar2024.sf2', dir + 'etar2024.sf2', dir + 'ETAR2024.SF2');
+        }
+        return [...new Set(list)];
+      }
+
+      async function fetchQuickInstrumentSf2Buffer(primaryPath) {
+        const paths = quickInstrumentSf2FetchCandidates(primaryPath);
+        let lastErr = null;
+        for (let i = 0; i < paths.length; i++) {
+          const p = paths[i];
+          try {
+            const res = await fetch(assetUrl(p));
+            if (res.ok) {
+              const buf = await res.arrayBuffer();
+              return { buf: buf, pathUsed: p };
+            }
+            lastErr = new Error('HTTP ' + res.status + ' for ' + p);
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+        throw lastErr || new Error('SoundFont fetch failed');
+      }
+
+      /**
+       * Android: USB MIDI audio uses native TinySoundFont, not Web FluidSynth. Loading SF2 in-page only
+       * updates the dropdown + WASM synth; push the same bundled asset into native before applyInstrument.
+       */
+      async function syncNativeUsbBundledSf2(assetRelative) {
+        if (!assetRelative || String(assetRelative).trim() === '') return;
+        var bridge = window.flutter_inappwebview;
+        if (!bridge || typeof bridge.callHandler !== 'function') return;
+        try {
+          var p = bridge.callHandler(
+            'nativeUsbSynthLoadBundledSf2',
+            JSON.stringify({ assetRelative: String(assetRelative).trim() })
+          );
+          if (p != null && typeof p.then === 'function') {
+            await p;
+          }
+        } catch (e) {
+          console.warn('syncNativeUsbBundledSf2', e);
+        }
+      }
+
+      async function loadQuickInstrumentSlot(index, entry) {
+        resumeBleMidiAudioContext();
+        const useBundled = entry.sf2Asset == null || String(entry.sf2Asset).trim() === '';
+        const synthReady = waitForBleMidiJSSynth();
+        let buf;
+        let sf2PathForLabel = entry.sf2Asset;
+        try {
+          if (useBundled) {
+            buf = await fetchBundledBleMidiFontBuffer();
+          } else {
+            const got = await fetchQuickInstrumentSf2Buffer(entry.sf2Asset);
+            buf = got.buf;
+            sf2PathForLabel = got.pathUsed;
+          }
+          if (!isLikelySf2ArrayBuffer(buf)) {
+            throw new Error('File is not a valid SoundFont (.sf2)');
+          }
+        } catch (e) {
+          console.warn('Quick instrument load', e);
+          try {
+            alert((entry.label || 'Instrument') + ': could not load SoundFont. ' + (e && e.message ? e.message : String(e)));
+          } catch (a) { /* ignore */ }
+          return;
+        }
+        try {
+          await synthReady;
+        } catch (e) {
+          console.warn('Quick instrument: synthesizer engine not ready', e);
+          try {
+            alert((entry.label || 'Instrument') + ': synthesizer is still loading. Try again in a moment.');
+          } catch (a) { /* ignore */ }
+          return;
+        }
+        const bank = Number.isFinite(Number(entry.bank)) ? Number(entry.bank) : 0;
+        const prog = Number.isFinite(Number(entry.program)) ? Number(entry.program) : 0;
+        bleMidiSoundfontDisplayName = useBundled
+          ? soundfontFileNameFromPath(BLE_MIDI_DEFAULT_SF2)
+          : soundfontFileNameFromPath(sf2PathForLabel);
+        try {
+          await reloadBleMidiSynthWithUserBuffer(buf.slice(0));
+        } catch (e) {
+          console.warn('Quick instrument synth reload', e);
+          return;
+        }
+        const assetRelForNative = useBundled ? BLE_MIDI_DEFAULT_SF2 : sf2PathForLabel;
+        await syncNativeUsbBundledSf2(assetRelForNative);
+        if (!selectSynthPresetInDropdown(bank, prog)) {
+          forceSynthInstrumentBankProg(bank, prog);
+        }
+        quickInstrumentsActiveIndex = index;
+        document.querySelectorAll('#quickInstrumentsGrid .quick-ins-btn').forEach(function (b, i) {
+          b.classList.toggle('active', i === index);
+        });
       }
 
       function stripSysExForMidiVoice(arr) {
@@ -2317,6 +2574,9 @@
       }
 
       function feedBleMidiNotesToSynthFromPreprocessed(preprocessedPayload) {
+        if (window.__dijiBleMidiToSynthEnabled !== true) {
+          return;
+        }
         if (!bleMidiSynthReady || !bleMidiSynth) {
           if (typeof window.__dijiMidiDbgBleDropped === 'function') {
             window.__dijiMidiDbgBleDropped(preprocessedPayload);
@@ -2336,6 +2596,12 @@
       let usbMidiAccess = null;
       /** Android app: native MidiManager bridge (WebView has no requestMIDIAccess). */
       let usbMidiNativeActive = false;
+      /** One alert per “session” when USB device name(s) are known (resets when port count returns to 0). */
+      let usbMidiDeviceNameAlertShown = false;
+      /** Chrome / Web MIDI: retry requestMIDIAccess once after user gesture if autoplay policy blocked it. */
+      let webMidiGestureRetryScheduled = false;
+      /** Avoid overlapping requestMIDIAccess from auto-start timers. */
+      let webMidiOpening = false;
 
       window._nativeUsbMidiMessage = function (b64) {
         try {
@@ -2352,14 +2618,34 @@
         }
       };
 
-      window._usbMidiNativePortCountUpdate = function (n) {
+      window._usbMidiNativePortCountUpdate = function (n, deviceNamesJson) {
         const count = typeof n === 'number' ? n : parseInt(n, 10) || 0;
+        let names = '';
+        if (typeof deviceNamesJson === 'string') {
+          names = deviceNamesJson;
+        }
         window.__dijiUsbMidiLastPortCount = count;
-        const st = document.getElementById('usbMidiStatus');
+        const st = document.getElementById('usbMidiDeviceName');
         if (st) {
-          st.textContent = count > 0
-            ? ('USB MIDI on — ' + count + ' USB port(s)')
-            : 'USB MIDI on — still connecting ports… (OTG / permission / replug if this stays)';
+          if (count > 0) {
+            const trimmed = names ? String(names).trim() : '';
+            st.textContent = trimmed
+              ? trimmed
+              : (count === 1 ? 'USB MIDI device connected' : ('USB MIDI connected (' + count + ' ports)'));
+          } else if (usbMidiNativeActive) {
+            st.textContent = 'Waiting for USB MIDI device…';
+          } else {
+            st.textContent = 'Not connected';
+          }
+        }
+        if (count === 0) {
+          usbMidiDeviceNameAlertShown = false;
+        }
+        if (count > 0 && names && !usbMidiDeviceNameAlertShown) {
+          usbMidiDeviceNameAlertShown = true;
+          try {
+            alert('USB MIDI connected:\n\n' + names);
+          } catch (a) { /* ignore */ }
         }
         if (count > 0 && window.__dijiUsbMidiZeroPortTimer) {
           try { clearTimeout(window.__dijiUsbMidiZeroPortTimer); } catch (e) { /* ignore */ }
@@ -2372,14 +2658,12 @@
           resumeBleMidiAudioContext();
           usbMidiNativeActive = true;
           const n = typeof arg2 === 'number' ? arg2 : parseInt(arg2, 10) || 0;
-          const st = document.getElementById('usbMidiStatus');
+          const st = document.getElementById('usbMidiDeviceName');
           if (st) {
             st.textContent = n > 0
-              ? ('USB MIDI on — ' + n + ' USB port(s)')
-              : 'USB MIDI on — opening ports…';
+              ? (n === 1 ? 'USB MIDI device connected' : ('USB MIDI connected (' + n + ' ports)'))
+              : 'Opening USB MIDI…';
           }
-          const btn = document.getElementById('usbMidiEnableButton');
-          if (btn) btn.textContent = 'Disable USB MIDI';
           if (n === 0) {
             try {
               if (window.__dijiUsbMidiZeroPortTimer) clearTimeout(window.__dijiUsbMidiZeroPortTimer);
@@ -2388,7 +2672,7 @@
               window.__dijiUsbMidiZeroPortTimer = null;
               if ((window.__dijiUsbMidiLastPortCount || 0) > 0) return;
               try {
-                alert('USB MIDI is on but no USB MIDI ports were detected after a few seconds.\n\n• Approve USB access if Android asked.\n• Use a data-capable OTG cable (not charge-only).\n• Unplug/replug the keyboard, then tap Disable USB MIDI and Enable again.\n• Turn on Log MIDI + MIDI monitor to see if bytes arrive.');
+                alert('USB MIDI is on but no USB MIDI ports were detected after a few seconds.\n\n• Approve USB access if Android asked.\n• Use a data-capable OTG cable (not charge-only).\n• Unplug/replug the USB MIDI device.');
               } catch (a) { /* ignore */ }
             }, 5000);
           }
@@ -2406,10 +2690,9 @@
         window.__dijiUsbMidiZeroPortTimer = null;
         window.__dijiUsbMidiLastPortCount = 0;
         usbMidiNativeActive = false;
-        const st = document.getElementById('usbMidiStatus');
-        if (st) st.textContent = 'USB MIDI off';
-        const btn = document.getElementById('usbMidiEnableButton');
-        if (btn) btn.textContent = 'Enable USB MIDI';
+        usbMidiDeviceNameAlertShown = false;
+        const st = document.getElementById('usbMidiDeviceName');
+        if (st) st.textContent = 'Not connected';
       };
 
       function feedUsbMidiToSynth(data) {
@@ -2444,7 +2727,38 @@
           if (port && port.type === 'input' && port.state === 'connected') {
             bindUsbMidiInputPort(port);
           }
+          updateUsbMidiDeviceNameFromAccess(access);
         };
+      }
+
+      function updateUsbMidiDeviceNameFromAccess(access) {
+        const st = document.getElementById('usbMidiDeviceName');
+        if (!st || !access) return;
+        const portNames = [];
+        try {
+          access.inputs.forEach(function (port) {
+            portNames.push(port.name || 'MIDI input');
+          });
+        } catch (e) { /* ignore */ }
+        const sz = access.inputs.size;
+        st.textContent = portNames.length
+          ? portNames.join(', ')
+          : (sz > 0 ? ('Web MIDI (' + sz + ' input port' + (sz === 1 ? '' : 's') + ')') : 'No MIDI input ports');
+      }
+
+      function scheduleWebMidiAutoRetryOnGesture() {
+        if (webMidiGestureRetryScheduled) return;
+        if (window.__dijiNativeUsbMidi === true) return;
+        webMidiGestureRetryScheduled = true;
+        function retry() {
+          document.removeEventListener('click', retry, true);
+          document.removeEventListener('touchstart', retry, true);
+          if (usbMidiAccess || usbMidiNativeActive) return;
+          if (typeof navigator.requestMIDIAccess !== 'function') return;
+          void enableUsbMidiMonitoring(true);
+        }
+        document.addEventListener('click', retry, { capture: true, passive: true });
+        document.addEventListener('touchstart', retry, { capture: true, passive: true });
       }
 
       function disableUsbMidiMonitoring() {
@@ -2465,48 +2779,100 @@
           } catch (err) { /* ignore */ }
           usbMidiAccess = null;
         }
-        const st = document.getElementById('usbMidiStatus');
-        if (st) st.textContent = 'USB MIDI off';
-        const btn = document.getElementById('usbMidiEnableButton');
-        if (btn) btn.textContent = 'Enable USB MIDI';
+        const st = document.getElementById('usbMidiDeviceName');
+        if (st) st.textContent = 'Not connected';
+        usbMidiDeviceNameAlertShown = false;
       }
 
-      async function enableUsbMidiMonitoring() {
+      /**
+       * @param {boolean} [silent] If true (auto-start on Chrome), no alert(); open Web MIDI before WASM synth
+       *        so device names appear even while AudioWorklet / soundfont is still loading.
+       */
+      async function enableUsbMidiMonitoring(silent) {
+        const quiet = silent === true;
         if (usbMidiAccess || usbMidiNativeActive) return;
-        try {
-          resumeBleMidiAudioContext();
-          await ensureBleMidiSynth();
-          if (!bleMidiSynthReady || !bleMidiSynth) {
-            alert('Synthesizer did not start (check console for AudioWorklet / soundfont errors).');
-            return;
-          }
-        } catch (e) {
-          console.warn('USB MIDI synth', e);
-          try {
-            alert('Synthesizer did not start: ' + (e && e.message ? e.message : String(e)));
-          } catch (a) { /* ignore */ }
-          return;
-        }
+        /**
+         * Android: USB MIDI is handled in Kotlin (MidiManager) and usually audio goes to the native
+         * synth — do not require the WebView FluidSynth/AudioWorklet to be up first, or OTG devices
+         * never get scanned/opened when WASM synth fails to init.
+         */
         if (window.__dijiNativeUsbMidi === true &&
             window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-          window.flutter_inappwebview.callHandler('usbMidi', JSON.stringify({ action: 'start' }));
+          try {
+            resumeBleMidiAudioContext();
+          } catch (e) { /* ignore */ }
+          try {
+            window.flutter_inappwebview.callHandler('usbMidi', JSON.stringify({ action: 'start' }));
+          } catch (e) {
+            console.warn('USB MIDI native start', e);
+          }
           return;
         }
         if (typeof navigator.requestMIDIAccess !== 'function') {
-          alert('Web MIDI is not available in this browser or WebView. Try Chrome on desktop for USB MIDI, or use Bluetooth monitoring in the app.');
+          if (!quiet) {
+            alert('Web MIDI is not available in this browser or WebView. Try Chrome on desktop for USB MIDI, or use Bluetooth monitoring in the app.');
+          }
+          const st0 = document.getElementById('usbMidiDeviceName');
+          if (st0) st0.textContent = 'Web MIDI not available';
           return;
         }
+        if (webMidiOpening) return;
+        webMidiOpening = true;
         try {
-          const access = await navigator.requestMIDIAccess({ sysex: true });
-          usbMidiAccess = access;
-          attachUsbMidiInputHandlers(access);
-          const st = document.getElementById('usbMidiStatus');
-          if (st) st.textContent = 'USB MIDI on — ' + access.inputs.size + ' input port(s)';
-          const btn = document.getElementById('usbMidiEnableButton');
-          if (btn) btn.textContent = 'Disable USB MIDI';
-        } catch (err) {
-          console.warn('USB MIDI', err);
-          alert('Could not open Web MIDI: ' + (err && err.message ? err.message : String(err)));
+          try {
+            resumeBleMidiAudioContext();
+            let access;
+            try {
+              access = await navigator.requestMIDIAccess({ sysex: true });
+            } catch (eSysex) {
+              console.warn('Web MIDI (sysex)', eSysex);
+              access = await navigator.requestMIDIAccess({ sysex: false });
+            }
+            usbMidiAccess = access;
+            attachUsbMidiInputHandlers(access);
+            updateUsbMidiDeviceNameFromAccess(access);
+          } catch (err) {
+            console.warn('USB MIDI', err);
+            const ename = err && err.name ? String(err.name) : '';
+            if (ename === 'SecurityError' || ename === 'NotAllowedError') {
+              scheduleWebMidiAutoRetryOnGesture();
+            }
+            if (!quiet) {
+              try {
+                alert('Could not open Web MIDI: ' + (err && err.message ? err.message : String(err)));
+              } catch (a) { /* ignore */ }
+            }
+            const stBad = document.getElementById('usbMidiDeviceName');
+            if (stBad && !usbMidiAccess) {
+              stBad.textContent = (quiet && (ename === 'SecurityError' || ename === 'NotAllowedError'))
+                ? 'Tap anywhere to allow MIDI access'
+                : 'Not connected';
+            }
+            return;
+          }
+          if (quiet) {
+            void ensureBleMidiSynth().catch(function (e) {
+              console.warn('BleMidi synth init (auto USB MIDI)', e);
+            });
+            return;
+          }
+          try {
+            resumeBleMidiAudioContext();
+            await ensureBleMidiSynth();
+            if (!bleMidiSynthReady || !bleMidiSynth) {
+              try {
+                alert('Synthesizer did not start (check console for AudioWorklet / soundfont errors). USB MIDI is connected; sound may work after reload or when the synth finishes loading.');
+              } catch (a) { /* ignore */ }
+              return;
+            }
+          } catch (e) {
+            console.warn('USB MIDI synth', e);
+            try {
+              alert('Synthesizer did not start: ' + (e && e.message ? e.message : String(e)));
+            } catch (a) { /* ignore */ }
+          }
+        } finally {
+          webMidiOpening = false;
         }
       }
 
@@ -2575,8 +2941,7 @@
       function applySoundfontArrayBufferFromUser(ab, displayName) {
         resumeBleMidiAudioContext();
         if (!(ab instanceof ArrayBuffer) || ab.byteLength === 0) return;
-        const nameEl = document.getElementById('synthSoundfontName');
-        if (nameEl && displayName) nameEl.textContent = displayName;
+        bleMidiSoundfontDisplayName = displayName ? String(displayName) : '';
         reloadBleMidiSynthWithUserBuffer(ab);
       }
 
@@ -2640,33 +3005,68 @@
         }
       })();
 
-      (function setupUsbMidiUi() {
-        const btn = document.getElementById('usbMidiEnableButton');
-        if (btn) {
+      (function setupQuickInstrumentsGrid() {
+        const grid = document.getElementById('quickInstrumentsGrid');
+        if (!grid || typeof DIJI_QUICK_INSTRUMENTS === 'undefined' || !DIJI_QUICK_INSTRUMENTS.length) return;
+        grid.innerHTML = '';
+        DIJI_QUICK_INSTRUMENTS.forEach(function (entry, index) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'quick-ins-btn';
+          btn.setAttribute('aria-label', 'Load ' + (entry.label || 'instrument'));
+          const iconWrap = document.createElement('span');
+          iconWrap.className = 'quick-ins-icon';
+          iconWrap.innerHTML = quickInstrumentIconSvg(entry.icon || 'guitar');
+          const lab = document.createElement('span');
+          lab.className = 'quick-ins-label';
+          lab.textContent = entry.label || ('Slot ' + (index + 1));
+          btn.appendChild(iconWrap);
+          btn.appendChild(lab);
           btn.addEventListener('click', function () {
-            if (usbMidiAccess || usbMidiNativeActive) disableUsbMidiMonitoring();
-            else void enableUsbMidiMonitoring();
+            if (quickInstrumentLoading) return;
+            quickInstrumentLoading = true;
+            const all = grid.querySelectorAll('.quick-ins-btn');
+            all.forEach(function (b) { b.disabled = true; });
+            loadQuickInstrumentSlot(index, entry).finally(function () {
+              quickInstrumentLoading = false;
+              all.forEach(function (b) { b.disabled = false; });
+            });
           });
+          grid.appendChild(btn);
+        });
+      })();
+
+      /** Android: USB MIDI is independent of BLE — start listening as soon as the WebView bridge exists. */
+      (function autoStartNativeUsbMidi() {
+        function tryStart() {
+          if (window.__dijiNativeUsbMidi !== true) return;
+          var bridge = window.flutter_inappwebview;
+          if (!bridge || typeof bridge.callHandler !== 'function') return;
+          if (usbMidiNativeActive || usbMidiAccess) return;
+          void enableUsbMidiMonitoring();
         }
-        const midiMonBtn = document.getElementById('midiDebugOpenButton');
-        if (midiMonBtn) {
-          midiMonBtn.addEventListener('click', function () {
-            openMidiDebugOverlay();
-          });
+        tryStart();
+        setTimeout(tryStart, 300);
+        setTimeout(tryStart, 1000);
+        setTimeout(tryStart, 2500);
+      })();
+
+      /** Chrome / Flutter web: requestMIDIAccess as soon as scripts run (mirrors Android auto-start). */
+      (function autoStartWebMidiMonitoring() {
+        function tryStart() {
+          if (window.__dijiNativeUsbMidi === true) return;
+          if (usbMidiNativeActive || usbMidiAccess) return;
+          if (typeof navigator.requestMIDIAccess !== 'function') {
+            var st = document.getElementById('usbMidiDeviceName');
+            if (st && st.textContent === 'Starting…') st.textContent = 'Web MIDI not available';
+            return;
+          }
+          void enableUsbMidiMonitoring(true);
         }
-        const midiClr = document.getElementById('midiDebugClearButton');
-        if (midiClr) {
-          midiClr.addEventListener('click', function () {
-            midiDebugLines = [];
-            midiDebugCountNative = 0;
-            midiDebugCountDispatch = 0;
-            midiDebugCountDropped = 0;
-            midiDebugCountBleDropped = 0;
-            var pre = document.getElementById('midiDebugLog');
-            if (pre) pre.textContent = '';
-            midiDebugRefreshStats();
-          });
-        }
+        tryStart();
+        setTimeout(tryStart, 300);
+        setTimeout(tryStart, 1000);
+        setTimeout(tryStart, 2500);
       })();
 
       // Check if the Web Bluetooth API is supported
@@ -2737,7 +3137,6 @@
 
                 // Start receiving notifications/indications
                 await midiCharacteristic.startNotifications(); // Use startIndications() if your device uses indications instead
-
 
               // Enable the disconnect button
               disconnectButton.disabled = false;
@@ -3941,24 +4340,6 @@
         <button type="button" class="help-close" onclick="closeHelp()" aria-label="Close">&times;</button>
       </div>
       <p id="helpDialogBody" class="help-dialog-body"></p>
-    </div>
-  </div>
-
-  <div id="midiDebugOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="midiDebugTitle" onclick="if(event.target===this) closeMidiDebugOverlay()">
-    <div class="help-dialog" onclick="event.stopPropagation()" style="max-width: min(520px, 100%);">
-      <div class="help-dialog-header">
-        <h2 id="midiDebugTitle" class="help-dialog-title">MIDI packet monitor</h2>
-        <button type="button" class="help-close" onclick="closeMidiDebugOverlay()" aria-label="Close">&times;</button>
-      </div>
-      <div class="help-dialog-body" style="padding: 0 16px 16px;">
-        <p style="margin: 0 0 10px; font-size:0.92em; opacity:0.9;">Shows whether bytes reach the WebView from USB (native Android) and whether they are forwarded to the synthesizer. Enable <strong>Log MIDI</strong> on this tab (next to “MIDI monitor…”), then play keys. If you denied USB access, use system settings or replug the cable and tap Enable USB MIDI again.</p>
-        <div id="midiDebugStats" class="midi-debug-stats" aria-live="polite"></div>
-        <pre id="midiDebugLog" class="midi-debug-log"></pre>
-        <div style="display:flex; flex-wrap:wrap; gap:10px;">
-          <button type="button" id="midiDebugClearButton">Clear log</button>
-          <button type="button" onclick="closeMidiDebugOverlay()">Close</button>
-        </div>
-      </div>
     </div>
   </div>
 

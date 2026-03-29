@@ -331,6 +331,26 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     }
   }
 
+  /// USB MIDI audio goes through native TinySoundFont, not Web FluidSynth — keep it in sync when the page loads a bundled .sf2 (quick instruments).
+  Future<void> _loadBundledSoundfontIntoNativeUsbSynthFromWeb(String jsonStr) async {
+    try {
+      final decoded = jsonDecode(jsonStr);
+      if (decoded is! Map) return;
+      final m = Map<String, dynamic>.from(decoded);
+      final rel = m['assetRelative'] as String?;
+      if (rel == null || rel.trim().isEmpty) return;
+      final path = rel.startsWith('assets/') ? rel : 'assets/${rel.trim()}';
+      final bd = await rootBundle.load(path);
+      final bytes = bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes);
+      final ok = await _nativeUsbSynth.invokeMethod<bool>('loadSoundfont', bytes);
+      if (ok != true) {
+        debugPrint('nativeUsbSynthLoadBundledSf2: native engine did not accept $path');
+      }
+    } catch (e, st) {
+      debugPrint('nativeUsbSynthLoadBundledSf2: $e\n$st');
+    }
+  }
+
   Future<void> _startAssetHost() async {
     try {
       await _assetServer.start();
@@ -357,17 +377,33 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     });
   }
 
+  (int count, String deviceNames) _parseUsbMidiPortPayload(dynamic raw) {
+    if (raw is int) return (raw, '');
+    if (raw is Map) {
+      final c = raw['count'];
+      final n = c is int ? c : (c is num ? c.toInt() : 0);
+      final dn = raw['deviceNames'];
+      final s = dn is String ? dn : '';
+      return (n, s);
+    }
+    return (0, '');
+  }
+
+  void _notifyWebUsbMidiPorts(InAppWebViewController c, int count, String deviceNames) {
+    final namesJson = jsonEncode(deviceNames);
+    _runJs(
+      c,
+      'try{if(window._usbMidiNativePortCountUpdate)window._usbMidiNativePortCountUpdate($count,$namesJson);}catch(e){}',
+    );
+  }
+
   /// Native side pushes real port count after [MidiManager.openDevice] completes (async).
   Future<dynamic> _onUsbMidiCallFromPlatform(MethodCall call) async {
     if (call.method != 'usbMidiPortsUpdated') return null;
-    final raw = call.arguments;
-    final n = raw is int ? raw : (raw is num ? raw.toInt() : 0);
+    final (n, names) = _parseUsbMidiPortPayload(call.arguments);
     final c = _controller;
     if (c != null && mounted) {
-      _runJs(
-        c,
-        'try{if(window._usbMidiNativePortCountUpdate)window._usbMidiNativePortCountUpdate($n);}catch(e){}',
-      );
+      _notifyWebUsbMidiPorts(c, n, names);
     }
     return null;
   }
@@ -377,12 +413,9 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
       Future<void>.delayed(Duration(milliseconds: delayMs), () async {
         if (!mounted || _controller != controller) return;
         try {
-          final n = await _usbMidiMethod.invokeMethod<dynamic>('portCount');
-          final count = n is int ? n : (n is num ? n.toInt() : 0);
-          _runJs(
-            controller,
-            'try{if(window._usbMidiNativePortCountUpdate)window._usbMidiNativePortCountUpdate($count);}catch(e){}',
-          );
+          final raw = await _usbMidiMethod.invokeMethod<dynamic>('portCount');
+          final (count, names) = _parseUsbMidiPortPayload(raw);
+          _notifyWebUsbMidiPorts(controller, count, names);
         } catch (_) {}
       });
     }
@@ -528,6 +561,15 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                           callback: (args) {
                             if (args.isEmpty || args.first == null) return;
                             _onNativeUsbSynthInstrumentFromWeb(args.first.toString());
+                          },
+                        );
+                        controller.addJavaScriptHandler(
+                          handlerName: 'nativeUsbSynthLoadBundledSf2',
+                          callback: (args) async {
+                            if (args.isEmpty || args.first == null) return;
+                            await _loadBundledSoundfontIntoNativeUsbSynthFromWeb(
+                              args.first.toString(),
+                            );
                           },
                         );
                       },

@@ -103,7 +103,12 @@ object UsbMidiBridge {
                     }
                     "portCount" -> {
                         val n = synchronized(connectedPorts) { connectedPorts.size }
-                        result.success(n)
+                        result.success(
+                            mapOf(
+                                "count" to n,
+                                "deviceNames" to connectedUsbDeviceDisplayNames(),
+                            ),
+                        )
                     }
                     else -> result.notImplemented()
                 }
@@ -205,6 +210,8 @@ object UsbMidiBridge {
 
     private fun rescanMidiDevices() {
         val mm = midiManager ?: return
+        // OTG devices often need UsbManager permission before MidiManager.openDevice succeeds.
+        requestUsbHostPermissionForAttachedDevices()
         Log.i(TAG, "Rescanning MIDI devices (${mm.devices.size} reported)")
         for (info in mm.devices) {
             openUsbDevice(info)
@@ -236,9 +243,13 @@ object UsbMidiBridge {
             val ch = methodChannel ?: return@Runnable
             val n = synchronized(connectedPorts) { connectedPorts.size }
             try {
+                val payload = mapOf(
+                    "count" to n,
+                    "deviceNames" to connectedUsbDeviceDisplayNames(),
+                )
                 ch.invokeMethod(
                     "usbMidiPortsUpdated",
-                    n,
+                    payload,
                     object : MethodChannel.Result {
                         override fun success(result: Any?) {}
                         override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {}
@@ -270,6 +281,7 @@ object UsbMidiBridge {
         deviceCallback = object : MidiManager.DeviceCallback() {
             override fun onDeviceAdded(device: MidiDeviceInfo) {
                 if (running) {
+                    requestUsbHostPermissionForAttachedDevices()
                     openUsbDevice(device)
                     schedulePortCountNotify(200)
                 }
@@ -300,6 +312,34 @@ object UsbMidiBridge {
             TAG,
             "MIDI device id=${info.id} type=${info.type} outCount=${info.outputPortCount} inCount=${info.inputPortCount}$pi",
         )
+    }
+
+    /** Human-readable labels for currently opened USB MIDI devices (for WebView popup / status). */
+    private fun connectedUsbDeviceDisplayNames(): String {
+        synchronized(openedDevices) {
+            if (openedDevices.isEmpty()) return ""
+            val labels = linkedSetOf<String>()
+            for (d in openedDevices.values) {
+                try {
+                    val info = d.info
+                    val props = info.properties
+                    var label = props.getString(MidiDeviceInfo.PROPERTY_NAME)
+                    if (label.isNullOrBlank()) {
+                        val mfr = props.getString(MidiDeviceInfo.PROPERTY_MANUFACTURER)
+                        val prod = props.getString(MidiDeviceInfo.PROPERTY_PRODUCT)
+                        label = listOfNotNull(
+                            mfr?.takeIf { it.isNotBlank() },
+                            prod?.takeIf { it.isNotBlank() },
+                        ).joinToString(" ")
+                    }
+                    if (label.isBlank()) label = "USB MIDI device"
+                    labels.add(label)
+                } catch (_: Exception) {
+                    labels.add("USB MIDI device")
+                }
+            }
+            return labels.joinToString(" · ")
+        }
     }
 
     private fun stopInternal() {
