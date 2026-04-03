@@ -280,7 +280,7 @@
     /* Synthesizer tab: quick instrument grid (16 slots) */
     .quick-ins-wrap {
       width: 100%;
-      max-width: 360px;
+      max-width: 420px;
       margin: 0 auto 24px;
     }
     .quick-ins-wrap h3 {
@@ -296,13 +296,13 @@
       width: 100%;
       max-width: none;
       margin: 0;
-      padding: 8px 4px 6px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 4px;
-      min-height: 72px;
+      padding: 0;
+      display: grid;
+      grid-template-rows: auto auto;
+      align-items: stretch;
+      justify-items: stretch;
+      gap: 0;
+      overflow: hidden;
       background: linear-gradient(180deg, #fff 0%, #f0eef5 100%);
       color: var(--purple);
       border: 2px solid rgba(72, 44, 118, 0.22);
@@ -323,29 +323,60 @@
       color: #8a5a00;
       box-shadow: 0 0 0 2px rgba(238, 168, 3, 0.35);
     }
+    .quick-ins-grid .quick-ins-btn.active .quick-ins-label {
+      background: linear-gradient(180deg, rgba(255, 249, 230, 0.98) 0%, #ffeec2 100%);
+    }
     .quick-ins-grid .quick-ins-btn:disabled {
       opacity: 0.55;
       cursor: wait;
     }
+    /* Image fills full width of the cell; square crop keeps grid even. */
     .quick-ins-grid .quick-ins-btn .quick-ins-icon {
-      width: 36px;
-      height: 36px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      min-height: 0;
+      overflow: hidden;
+      background: rgba(72, 44, 118, 0.06);
+      border-radius: calc(var(--radius-sm) - 2px) calc(var(--radius-sm) - 2px) 0 0;
+    }
+    .quick-ins-grid .quick-ins-btn .quick-ins-icon img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      object-position: center;
     }
     .quick-ins-grid .quick-ins-btn .quick-ins-icon svg {
-      width: 34px;
-      height: 34px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 72%;
+      height: 72%;
+      max-width: 100%;
+      max-height: 100%;
       display: block;
     }
-    .quick-ins-label {
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding: 0 1px;
+    .quick-ins-grid .quick-ins-btn .quick-ins-label {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 6px 4px 8px;
+      text-align: center;
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      color: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.97) 0%, #f5f2fa 100%);
+      border-top: 1px solid rgba(72, 44, 118, 0.12);
     }
     .synth-soundfont-block {
       width: 100%;
@@ -874,6 +905,21 @@
       </div>
     </div>
 
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Sympathetic resonance" data-help-body="When On, other open strings that match the played pitch (unison or octave) sound quietly on MIDI channel 16. Use the slider to set sympathetic note volume as a percent of the main strum velocity." aria-label="Help: Sympathetic resonance">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Sympathetic resonance:</legend>
+          <label><input type="radio" name="resonateRadioGroup" value="on" disabled> On</label>
+          <label><input type="radio" name="resonateRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
+        <div style="margin-top:10px;">
+          <label id="sympatheticVolumeLabel" for="sympatheticVolumeSlider" disabled>Sympathetic volume: 50%</label>
+          <input type="range" id="sympatheticVolumeSlider" min="0" max="100" value="50" step="1" disabled aria-labelledby="sympatheticVolumeLabel">
+        </div>
+      </div>
+    </div>
+
   </div>
 
 
@@ -1241,6 +1287,9 @@
       let vibratoSlider = document.getElementById('vibratoSlider');
       let sustainRadioButtons = document.getElementsByName('sustainRadioGroup');
       let chordsRadioButtons = document.getElementsByName('chordsRadioGroup');
+      let resonateRadioButtons = document.getElementsByName('resonateRadioGroup');
+      let sympatheticVolumeLabel = document.getElementById('sympatheticVolumeLabel');
+      let sympatheticVolumeSlider = document.getElementById('sympatheticVolumeSlider');
       let leftHandRadioButtons = document.getElementsByName('leftHandRadioGroup');
       let quarterTonesRadioButtons = document.getElementsByName('quarterTonesRadioGroup');
       let dynamicsRadioButtons = document.getElementsByName('dynamicsRadioGroup');
@@ -1300,6 +1349,8 @@
       let resetSettingsButton = document.getElementById('resetSettingsButton');
       let connectedDevice = null;
       let device = null;
+      /** Chrome / Web Bluetooth: map id → BluetoothDevice from each successful scan (Connect must use the selected id, not only the last `device`). */
+      const bleDeviceById = new Map();
 
       // List of instrument names
       const instrumentNames = [
@@ -1678,6 +1729,12 @@
             instrumentsDropdown.selectedIndex = im;
           }
           if (typeof obj.chords === 'number') setRadioCheckedByName(chordsRadioButtons, obj.chords !== 0);
+          if (typeof obj.resonate === 'number') setRadioCheckedByName(resonateRadioButtons, obj.resonate !== 0);
+          if (typeof obj.sympatheticVolume === 'number') {
+            const sv = Math.max(0, Math.min(100, obj.sympatheticVolume | 0));
+            sympatheticVolumeSlider.value = String(sv);
+            sympatheticVolumeLabel.textContent = `Sympathetic volume: ${sv}%`;
+          }
           if (typeof obj.tuning === 'number') tuningsDropdown.selectedIndex = Math.max(0, Math.min(tuningNames.length - 1, obj.tuning | 0));
           if (typeof obj.pitchSystem === 'number') pitchSystemsDropdown.selectedIndex = Math.max(0, Math.min(pitchSystemsNames.length - 1, obj.pitchSystem | 0));
           if (typeof obj.midiChannel === 'number') midiChannelsDropdown.selectedIndex = Math.max(0, Math.min(midiChannelsNames.length - 1, obj.midiChannel | 0));
@@ -1842,7 +1899,7 @@
       let bleMidiSynthReady = false;
       let bleMidiSynthInitPromise = null;
       /** Bundled GM-ish bank used when no custom file is loaded or when custom load fails. */
-      const BLE_MIDI_DEFAULT_SF2 = 'synth/VintageDreamsWaves-v2.sf2';
+      const BLE_MIDI_DEFAULT_SF2 = 'synth/instruments/DijiApp2026.sf2';
 
       /** If set, used instead of bundled default .sf2 */
       let bleMidiCustomFontBuffer = null;
@@ -1878,6 +1935,23 @@
       let bleMidiLastSf2ArrayBuffer = null;
       /** After custom SF2 fails, next populate shows this instead of only "Bundled soundfont". */
       let bleMidiShowBundledFallbackLabel = false;
+      /**
+       * Normalized asset path of the SF2 currently loaded in FluidSynth (WASM), or '__user__' for a file-picked font.
+       * Used to skip reloading the same bytes when switching quick instruments.
+       */
+      let bleMidiLoadedSf2Key = null;
+      /** Last bundled asset path passed to Android native USB synth loadSoundfont; avoids duplicate native reloads. */
+      let bleMidiNativeLoadedSf2Key = null;
+
+      function normalizeSf2AssetKey(p) {
+        if (p == null || p === '') return '';
+        return String(p).trim().replace(/\\/g, '/').replace(/\/+/g, '/');
+      }
+
+      function bleMidiSf2KeysEqual(a, b) {
+        if (a === '__user__' || b === '__user__') return a === b;
+        return normalizeSf2AssetKey(a) === normalizeSf2AssetKey(b);
+      }
 
       function assetUrl(rel) {
         return new URL(rel, document.baseURI).href;
@@ -2184,21 +2258,33 @@
         applySynthInstrumentSelection();
       }
 
-      async function reloadBleMidiSynthWithUserBuffer(buf) {
+      /**
+       * @param loadedSf2Key optional identity for [bleMidiLoadedSf2Key]: bundled/relative path, or '__user__' for picked files.
+       */
+      async function reloadBleMidiSynthWithUserBuffer(buf, loadedSf2Key) {
         bleMidiCustomFontBuffer = buf;
         shutdownBleMidiSynth();
         bleMidiSynthInitPromise = null;
         bleMidiSynthInitPromise = (async () => {
           try {
             await initBleMidiSynthWithArrayBuffer(buf.slice(0));
+            if (loadedSf2Key === '__user__') {
+              bleMidiLoadedSf2Key = '__user__';
+            } else if (loadedSf2Key != null && String(loadedSf2Key).trim() !== '') {
+              bleMidiLoadedSf2Key = normalizeSf2AssetKey(loadedSf2Key);
+            } else {
+              bleMidiLoadedSf2Key = '__user__';
+            }
           } catch (e) {
             console.warn('BleMidi synth reload (custom soundfont)', e);
             bleMidiCustomFontBuffer = null;
+            bleMidiLoadedSf2Key = null;
             bleMidiSoundfontDisplayName = soundfontFileNameFromPath(BLE_MIDI_DEFAULT_SF2);
             try {
               const bundled = await fetchBundledBleMidiFontBuffer();
               bleMidiShowBundledFallbackLabel = true;
               await initBleMidiSynthWithArrayBuffer(bundled);
+              bleMidiLoadedSf2Key = normalizeSf2AssetKey(BLE_MIDI_DEFAULT_SF2);
               try {
                 alert('Could not load that soundfont. Using the built-in soundfont instead.');
               } catch (a) { /* ignore */ }
@@ -2214,29 +2300,32 @@
 
       /**
        * Quick instruments (Synthesizer tab): 16 slots. Edit here — paths are Flutter asset keys
-       * (same style as synth/VintageDreamsWaves-v2.sf2). Add matching .sf2 files under assets/
+       * (same style as synth/instruments/DijiApp2026.sf2). Add matching .sf2 files under assets/
        * and include assets/synth/instruments/ in pubspec.yaml. The path must match the
-       * bundled filename exactly (e.g. eTar2024.sf2) — Flutter’s asset server is case-sensitive.
+       * bundled filename exactly (e.g. DijiApp2026.sf2) — Flutter’s asset server is case-sensitive.
        * sf2Asset: string path, or null/'' to use the bundled default SoundFont.
        * bank / program: SoundFont bank and MIDI preset (program) number.
+       * iconAsset: optional path to a bundled image under assets/ (PNG recommended), e.g. icons/quick_instruments/persian_setar.png.
+       *            If omitted, falls back to inline [quickInstrumentIconSvg] via [icon] key.
+       * sustainPedal: 0 or 1 — after loading the preset, send MIDI CC64 off (0) or on (127) on all channels (FluidSynth + Android native synth).
        */
       const DIJI_QUICK_INSTRUMENTS = [
-        { label: 'Setar', sf2Asset: 'synth/instruments/eTar2024.sf2', bank: 0, program: 1, icon: 'setar' },
-        { label: 'Tar', sf2Asset: 'synth/instruments/eTar2024.sf2', bank: 0, program: 0, icon: 'tar' },
-        { label: 'Santoor', sf2Asset: 'synth/instruments/eTar2024.sf2', bank: 0, program: 3, icon: 'santoor' },
-        { label: 'Oud', sf2Asset: 'synth/instruments/oud.sf2', bank: 0, program: 4, icon: 'oud' },
-        { label: 'Ukulele', sf2Asset: 'synth/instruments/ukulele.sf2', bank: 0, program: 0, icon: 'ukulele' },
-        { label: 'Guitar', sf2Asset: 'synth/instruments/guitar.sf2', bank: 0, program: 0, icon: 'guitar' },
-        { label: 'Banjo', sf2Asset: 'synth/instruments/banjo.sf2', bank: 0, program: 0, icon: 'banjo' },
-        { label: 'Mandolin', sf2Asset: 'synth/instruments/mandolin.sf2', bank: 0, program: 0, icon: 'mandolin' },
-        { label: 'Slot 9', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
-        { label: 'Slot 10', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
-        { label: 'Slot 11', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
-        { label: 'Slot 12', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
-        { label: 'Slot 13', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
-        { label: 'Slot 14', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
-        { label: 'Slot 15', sf2Asset: null, bank: 0, program: 0, icon: 'note' },
-        { label: 'Slot 16', sf2Asset: null, bank: 0, program: 0, icon: 'note' }
+        { label: 'Persian Setar', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 1, sustainPedal: 1, iconAsset: 'icons/quick_instruments/persian_setar.png' },
+        { label: 'Persian Tar', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 0, sustainPedal: 1, iconAsset: 'icons/quick_instruments/persian_tar.png' },
+        { label: 'Persian Santour', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 3, sustainPedal: 1, iconAsset: 'icons/quick_instruments/persian_santour.png' },
+        { label: 'Persian Oud', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 10, sustainPedal: 1, iconAsset: 'icons/quick_instruments/persian_oud.png' },
+        { label: 'Persian Kamancheh', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 5, sustainPedal: 0, iconAsset: 'icons/quick_instruments/persian_kamancheh.png' },
+        { label: 'Persian Tonbak', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 4, sustainPedal: 1, iconAsset: 'icons/quick_instruments/persian_tonbak.png' },
+        { label: 'Persian Ney', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 6, sustainPedal: 0, iconAsset: 'icons/quick_instruments/persian_ney.png' },
+        { label: 'Persian Tanbour', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 2, sustainPedal: 1, iconAsset: 'icons/quick_instruments/persian_tanbour.png' },
+        { label: 'Ukulele', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 9, sustainPedal: 1, iconAsset: 'icons/quick_instruments/ukulele.png' },
+        { label: 'Acoustic Guitar', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 13, sustainPedal: 1, iconAsset: 'icons/quick_instruments/acoustic_guitar.png' },
+        { label: 'Banjo', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 14, sustainPedal: 1, iconAsset: 'icons/quick_instruments/banjo.png' },
+        { label: 'Mandolin', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 12, sustainPedal: 1, iconAsset: 'icons/quick_instruments/mandolin.png' },
+        { label: 'Indian Sitar', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 11, sustainPedal: 1, iconAsset: 'icons/quick_instruments/indian_sitar.png' },
+        { label: 'Violin', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 8, sustainPedal: 0, iconAsset: 'icons/quick_instruments/violin.png' },
+        { label: 'Trumpet', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 15, sustainPedal: 0, iconAsset: 'icons/quick_instruments/trumpet.png' },
+        { label: 'Pan flute', sf2Asset: 'synth/instruments/DijiApp2026.sf2', bank: 0, program: 7, sustainPedal: 0, iconAsset: 'icons/quick_instruments/pan_flute.png' }
       ];
 
       let quickInstrumentsActiveIndex = -1;
@@ -2259,6 +2348,22 @@
         return o + (p[kind] || p.guitar) + c;
       }
 
+      /** Prefer [iconAsset] image (PNG/WebP/SVG) from Flutter assets; else inline [quickInstrumentIconSvg] via [icon]. */
+      function setQuickInstrumentIconInWrap(iconWrap, entry) {
+        iconWrap.innerHTML = '';
+        const rel = entry && entry.iconAsset ? String(entry.iconAsset).trim() : '';
+        if (rel) {
+          const img = document.createElement('img');
+          img.src = assetUrl(rel);
+          img.alt = '';
+          img.decoding = 'async';
+          img.loading = 'lazy';
+          iconWrap.appendChild(img);
+          return;
+        }
+        iconWrap.innerHTML = quickInstrumentIconSvg(entry && entry.icon ? entry.icon : 'guitar');
+      }
+
       function selectSynthPresetInDropdown(bank, presetNum) {
         const sel = document.getElementById('synthInstrumentDropdown');
         if (!sel) return false;
@@ -2273,13 +2378,30 @@
         return false;
       }
 
-      function forceSynthInstrumentBankProg(bank, presetNum) {
+      /** Quick instruments: 0 = CC64 off, 1 = CC64 on (all channels). Omitted elsewhere = leave pedal unchanged on native. */
+      function quickInstrumentSustainPedal01(entry) {
+        return entry && Number(entry.sustainPedal) === 1 ? 1 : 0;
+      }
+
+      function applyBleMidiSustainAllChannels(sustain01) {
+        const synth = bleMidiSynth;
+        if (!synth || typeof synth.midiControl !== 'function') return;
+        const v = sustain01 === 1 ? 127 : 0;
+        for (let c = 0; c < 16; c++) {
+          synth.midiControl(c, 64, v);
+        }
+      }
+
+      function forceSynthInstrumentBankProg(bank, presetNum, sustainPedalOpt) {
         bleMidiUiInstrumentBank = bank;
         bleMidiUiInstrumentProg = presetNum;
+        const hasSp = sustainPedalOpt === 0 || sustainPedalOpt === 1;
         try {
           var bridge = window.flutter_inappwebview;
           if (bridge && typeof bridge.callHandler === 'function') {
-            bridge.callHandler('nativeUsbSynthInstrument', JSON.stringify({ bank: bank, preset: presetNum }));
+            const payload = { bank: bank, preset: presetNum };
+            if (hasSp) payload.sustainPedal = sustainPedalOpt;
+            bridge.callHandler('nativeUsbSynthInstrument', JSON.stringify(payload));
           }
         } catch (e) {
           console.warn('nativeUsbSynthInstrument', e);
@@ -2287,6 +2409,7 @@
         const synth = bleMidiSynth;
         if (!synth || bleMidiLoadedSfontId == null || bleMidiLoadedSfontId < 0) return;
         applyBleMidiUiInstrumentToAllChannels(synth, bleMidiLoadedSfontId, bank, presetNum);
+        if (hasSp) applyBleMidiSustainAllChannels(sustainPedalOpt);
       }
 
       function isLikelySf2ArrayBuffer(buf) {
@@ -2301,8 +2424,8 @@
         const lower = list[0].toLowerCase();
         const slash = list[0].lastIndexOf('/');
         const dir = slash >= 0 ? list[0].slice(0, slash + 1) : '';
-        if (lower.endsWith('etar2024.sf2')) {
-          list.push(dir + 'eTar2024.sf2', dir + 'etar2024.sf2', dir + 'ETAR2024.SF2');
+        if (lower.endsWith('DijiApp2026.sf2')) {
+          list.push(dir + 'DijiApp2026.sf2', dir + 'DijiApp2026.sf2', dir + 'DijiApp2026.SF2');
         }
         return [...new Set(list)];
       }
@@ -2342,6 +2465,7 @@
           if (p != null && typeof p.then === 'function') {
             await p;
           }
+          bleMidiNativeLoadedSf2Key = normalizeSf2AssetKey(assetRelative);
         } catch (e) {
           console.warn('syncNativeUsbBundledSf2', e);
         }
@@ -2350,7 +2474,58 @@
       async function loadQuickInstrumentSlot(index, entry) {
         resumeBleMidiAudioContext();
         const useBundled = entry.sf2Asset == null || String(entry.sf2Asset).trim() === '';
+        const targetSf2Key = useBundled
+          ? normalizeSf2AssetKey(BLE_MIDI_DEFAULT_SF2)
+          : normalizeSf2AssetKey(entry.sf2Asset);
+        const bank = Number.isFinite(Number(entry.bank)) ? Number(entry.bank) : 0;
+        const prog = Number.isFinite(Number(entry.program)) ? Number(entry.program) : 0;
+        const sp = quickInstrumentSustainPedal01(entry);
         const synthReady = waitForBleMidiJSSynth();
+        try {
+          await synthReady;
+        } catch (e) {
+          console.warn('Quick instrument: synthesizer engine not ready', e);
+          try {
+            alert((entry.label || 'Instrument') + ': synthesizer is still loading. Try again in a moment.');
+          } catch (a) { /* ignore */ }
+          return;
+        }
+        /* Same SoundFont already in WASM — only bank/program + sustain (no new ArrayBuffer / loadSFont). */
+        if (bleMidiSynthReady && bleMidiSynth && bleMidiLoadedSf2Key != null && bleMidiSf2KeysEqual(bleMidiLoadedSf2Key, targetSf2Key)) {
+          bleMidiSoundfontDisplayName = useBundled
+            ? soundfontFileNameFromPath(BLE_MIDI_DEFAULT_SF2)
+            : soundfontFileNameFromPath(entry.sf2Asset);
+          const nameElFast = document.getElementById('synthSoundfontName');
+          if (nameElFast) nameElFast.textContent = bleMidiSoundfontDisplayName;
+          const assetRelForNative = useBundled ? BLE_MIDI_DEFAULT_SF2 : String(entry.sf2Asset).trim();
+          if (
+            bleMidiNativeLoadedSf2Key == null ||
+            !bleMidiSf2KeysEqual(bleMidiNativeLoadedSf2Key, assetRelForNative)
+          ) {
+            await syncNativeUsbBundledSf2(assetRelForNative);
+          }
+          if (!selectSynthPresetInDropdown(bank, prog)) {
+            forceSynthInstrumentBankProg(bank, prog, sp);
+          } else {
+            applyBleMidiSustainAllChannels(sp);
+            try {
+              var bridgeSpF = window.flutter_inappwebview;
+              if (bridgeSpF && typeof bridgeSpF.callHandler === 'function') {
+                bridgeSpF.callHandler(
+                  'nativeUsbSynthInstrument',
+                  JSON.stringify({ bank: bank, preset: prog, sustainPedal: sp })
+                );
+              }
+            } catch (e) {
+              console.warn('nativeUsbSynthInstrument (sustain)', e);
+            }
+          }
+          quickInstrumentsActiveIndex = index;
+          document.querySelectorAll('#quickInstrumentsGrid .quick-ins-btn').forEach(function (b, i) {
+            b.classList.toggle('active', i === index);
+          });
+          return;
+        }
         let buf;
         let sf2PathForLabel = entry.sf2Asset;
         try {
@@ -2371,30 +2546,38 @@
           } catch (a) { /* ignore */ }
           return;
         }
-        try {
-          await synthReady;
-        } catch (e) {
-          console.warn('Quick instrument: synthesizer engine not ready', e);
-          try {
-            alert((entry.label || 'Instrument') + ': synthesizer is still loading. Try again in a moment.');
-          } catch (a) { /* ignore */ }
-          return;
-        }
-        const bank = Number.isFinite(Number(entry.bank)) ? Number(entry.bank) : 0;
-        const prog = Number.isFinite(Number(entry.program)) ? Number(entry.program) : 0;
         bleMidiSoundfontDisplayName = useBundled
           ? soundfontFileNameFromPath(BLE_MIDI_DEFAULT_SF2)
           : soundfontFileNameFromPath(sf2PathForLabel);
+        const keyForSynth = useBundled ? BLE_MIDI_DEFAULT_SF2 : sf2PathForLabel;
         try {
-          await reloadBleMidiSynthWithUserBuffer(buf.slice(0));
+          await reloadBleMidiSynthWithUserBuffer(buf.slice(0), keyForSynth);
         } catch (e) {
           console.warn('Quick instrument synth reload', e);
           return;
         }
         const assetRelForNative = useBundled ? BLE_MIDI_DEFAULT_SF2 : sf2PathForLabel;
-        await syncNativeUsbBundledSf2(assetRelForNative);
+        if (
+          bleMidiNativeLoadedSf2Key == null ||
+          !bleMidiSf2KeysEqual(bleMidiNativeLoadedSf2Key, assetRelForNative)
+        ) {
+          await syncNativeUsbBundledSf2(assetRelForNative);
+        }
         if (!selectSynthPresetInDropdown(bank, prog)) {
-          forceSynthInstrumentBankProg(bank, prog);
+          forceSynthInstrumentBankProg(bank, prog, sp);
+        } else {
+          applyBleMidiSustainAllChannels(sp);
+          try {
+            var bridgeSp = window.flutter_inappwebview;
+            if (bridgeSp && typeof bridgeSp.callHandler === 'function') {
+              bridgeSp.callHandler(
+                'nativeUsbSynthInstrument',
+                JSON.stringify({ bank: bank, preset: prog, sustainPedal: sp })
+              );
+            }
+          } catch (e) {
+            console.warn('nativeUsbSynthInstrument (sustain)', e);
+          }
         }
         quickInstrumentsActiveIndex = index;
         document.querySelectorAll('#quickInstrumentsGrid .quick-ins-btn').forEach(function (b, i) {
@@ -2486,8 +2669,19 @@
               s.midiNoteOff(ch, note);
               continue;
             }
-            if (cmd === 0xB0 && i + 1 < len) {
+            if (cmd === 0xA0) {
+              if (i + 1 >= len) break;
+              const note = b;
+              const pr = u8[i + 1];
               i += 2;
+              if (typeof s.midiKeyPressure === 'function') s.midiKeyPressure(ch, note, pr);
+              continue;
+            }
+            if (cmd === 0xB0 && i + 1 < len) {
+              const cc = b;
+              const val = u8[i + 1];
+              i += 2;
+              if (typeof s.midiControl === 'function') s.midiControl(ch, cc, val);
               continue;
             }
             if (cmd === 0xC0 && i < len) {
@@ -2505,11 +2699,17 @@
               continue;
             }
             if (cmd === 0xE0 && i + 1 < len) {
+              const lsb = b;
+              const msb = u8[i + 1];
               i += 2;
+              const bend14 = ((msb & 0x7F) << 7) | (lsb & 0x7F);
+              if (typeof s.midiPitchBend === 'function') s.midiPitchBend(ch, bend14);
               continue;
             }
             if (cmd === 0xD0 && i < len) {
+              const pr = b;
               i += 1;
+              if (typeof s.midiChannelPressure === 'function') s.midiChannelPressure(ch, pr);
               continue;
             }
             i++;
@@ -2541,8 +2741,16 @@
             s.midiNoteOff(ch, note);
             continue;
           }
+          if (cmd === 0xA0 && i + 1 < len) {
+            const note = u8[i++];
+            const pr = u8[i++];
+            if (typeof s.midiKeyPressure === 'function') s.midiKeyPressure(ch, note, pr);
+            continue;
+          }
           if (cmd === 0xB0 && i + 1 < len) {
-            i += 2;
+            const cc = u8[i++];
+            const val = u8[i++];
+            if (typeof s.midiControl === 'function') s.midiControl(ch, cc, val);
             continue;
           }
           if (cmd === 0xC0 && i < len) {
@@ -2559,11 +2767,15 @@
             continue;
           }
           if (cmd === 0xE0 && i + 1 < len) {
-            i += 2;
+            const lsb = u8[i++];
+            const msb = u8[i++];
+            const bend14 = ((msb & 0x7F) << 7) | (lsb & 0x7F);
+            if (typeof s.midiPitchBend === 'function') s.midiPitchBend(ch, bend14);
             continue;
           }
           if (cmd === 0xD0 && i < len) {
-            i += 1;
+            const pr = u8[i++];
+            if (typeof s.midiChannelPressure === 'function') s.midiChannelPressure(ch, pr);
             continue;
           }
         }
@@ -2896,14 +3108,19 @@
             await waitForBleMidiJSSynth();
             const buf = await getBleMidiFontBuffer();
             await initBleMidiSynthWithArrayBuffer(buf);
+            bleMidiLoadedSf2Key = bleMidiCustomFontBuffer
+              ? '__user__'
+              : normalizeSf2AssetKey(BLE_MIDI_DEFAULT_SF2);
           } catch (e) {
             console.warn('BleMidi synth init', e);
+            bleMidiLoadedSf2Key = null;
             if (bleMidiCustomFontBuffer) {
               bleMidiCustomFontBuffer = null;
               try {
                 const bundled = await fetchBundledBleMidiFontBuffer();
                 bleMidiShowBundledFallbackLabel = true;
                 await initBleMidiSynthWithArrayBuffer(bundled);
+                bleMidiLoadedSf2Key = normalizeSf2AssetKey(BLE_MIDI_DEFAULT_SF2);
               } catch (e2) {
                 console.warn('BleMidi bundled fallback after init failure', e2);
                 bleMidiShowBundledFallbackLabel = false;
@@ -2936,13 +3153,15 @@
           if (bleMidiSynthAudioCtx) bleMidiSynthAudioCtx.close();
         } catch (e) { /* ignore */ }
         bleMidiSynthAudioCtx = null;
+        bleMidiLoadedSf2Key = null;
+        bleMidiNativeLoadedSf2Key = null;
       }
 
       function applySoundfontArrayBufferFromUser(ab, displayName) {
         resumeBleMidiAudioContext();
         if (!(ab instanceof ArrayBuffer) || ab.byteLength === 0) return;
         bleMidiSoundfontDisplayName = displayName ? String(displayName) : '';
-        reloadBleMidiSynthWithUserBuffer(ab);
+        reloadBleMidiSynthWithUserBuffer(ab, '__user__');
       }
 
       window.__dijiOnNativeSoundfont = function (payload) {
@@ -3016,7 +3235,7 @@
           btn.setAttribute('aria-label', 'Load ' + (entry.label || 'instrument'));
           const iconWrap = document.createElement('span');
           iconWrap.className = 'quick-ins-icon';
-          iconWrap.innerHTML = quickInstrumentIconSvg(entry.icon || 'guitar');
+          setQuickInstrumentIconInWrap(iconWrap, entry);
           const lab = document.createElement('span');
           lab.className = 'quick-ins-label';
           lab.textContent = entry.label || ('Slot ' + (index + 1));
@@ -3079,12 +3298,23 @@
               filters: [{ services: ['03b80e5a-ede8-4b33-a751-6ce34ec4c700'] }],
             });
 
-            // Add discovered device to the list
-            const option = document.createElement('option');
-            option.value = device.id;
-            option.textContent = device.name || 'Unknown Device';
-            deviceListDropdown.appendChild(option);
-            // Enable the connectButton 
+            bleDeviceById.set(device.id, device);
+
+            let opt = null;
+            for (let i = 0; i < deviceListDropdown.options.length; i++) {
+              if (deviceListDropdown.options[i].value === device.id) {
+                opt = deviceListDropdown.options[i];
+                break;
+              }
+            }
+            if (!opt) {
+              opt = document.createElement('option');
+              opt.value = device.id;
+              deviceListDropdown.appendChild(opt);
+            }
+            opt.textContent = device.name || 'Unknown Device';
+            deviceListDropdown.value = device.id;
+
             connectButton.disabled = false;
           } catch (error) {
             console.error('Error requesting Bluetooth device:', error);
@@ -3097,13 +3327,16 @@
 
           if (deviceId) {
             try {
-              // Web Audio + FluidSynth must start after a user gesture (iOS / Android).
+              const btDevice = bleDeviceById.get(deviceId) || (device && device.id === deviceId ? device : null);
+              if (!btDevice || !btDevice.gatt) {
+                alert('No device handle for this selection. Tap “Find Dijilele” and choose the instrument in the browser dialog again (Chrome cannot reconnect using only OS pairing).');
+                return;
+              }
+
               resumeBleMidiAudioContext();
-              await ensureBleMidiSynth();
 
-              // Connect to the selected device
-
-              const server = await device.gatt.connect();
+              /* GATT first: on Chrome / Flutter web, loading the SF2 for FluidSynth can be slow or fail CORS — that must not block BLE connect. */
+              const server = await btDevice.gatt.connect();
 
               // Get the MIDI service
               const midiService = await server.getPrimaryService('03b80e5a-ede8-4b33-a751-6ce34ec4c700');
@@ -3112,7 +3345,7 @@
               const midiCharacteristic = await midiService.getCharacteristic('7772e5db-3868-4112-a1a9-f2669d106bf3');
 
               // Keep track of connected device
-              connectedDevice = { device, server, midiService, midiCharacteristic };
+              connectedDevice = { device: btDevice, server, midiService, midiCharacteristic };
               bleSettingsRxLen = 0;
               bleSettingsMidSysex = false;
               resetBleSettingsDeferred();
@@ -3137,6 +3370,10 @@
 
                 // Start receiving notifications/indications
                 await midiCharacteristic.startNotifications(); // Use startIndications() if your device uses indications instead
+
+              void ensureBleMidiSynth().catch(function (e) {
+                console.warn('BleMidi synth after BLE connect', e);
+              });
 
               // Enable the disconnect button
               disconnectButton.disabled = false;
@@ -3169,6 +3406,10 @@
                 sustainRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < chordsRadioButtons.length; i++)
                 chordsRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < resonateRadioButtons.length; i++)
+                resonateRadioButtons[i].removeAttribute('disabled');
+              sympatheticVolumeSlider.disabled = false;
+              sympatheticVolumeLabel.removeAttribute('disabled');
               for (let i = 0; i < leftHandRadioButtons.length; i++)
                 leftHandRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < quarterTonesRadioButtons.length; i++)
@@ -3195,14 +3436,16 @@
               string4RadioButtons[i].removeAttribute('disabled');
 
 
-              // Perform actions with the connected device
-              console.log('Connected to MIDI device:', device.name);
-              // You can interact with the device here
-              // For example, discover services
-              // For more detailed interactions, you can explore characteristics, descriptors, etc.
+              console.log('Connected to MIDI device:', btDevice.name || deviceId);
 
             } catch (error) {
               console.error('Error connecting to device:', error);
+              const msg = (error && error.message) ? error.message : String(error);
+              let hint = '';
+              if (/NetworkError|GATT Server/i.test(msg)) {
+                hint = '\n\nTry: turn the instrument off and on, use “Find Dijilele” again, or remove the device in system Bluetooth settings and re-pair from this page.';
+              }
+              alert('Bluetooth connection failed: ' + msg + hint);
             }
           } else {
             alert('Please select a BLE device');
@@ -3246,6 +3489,10 @@
               sustainRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < chordsRadioButtons.length; i++)
               chordsRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < resonateRadioButtons.length; i++)
+              resonateRadioButtons[i].setAttribute('disabled', 'disabled');
+            sympatheticVolumeSlider.disabled = true;
+            sympatheticVolumeLabel.setAttribute('disabled', 'disabled');
             for (let i = 0; i < leftHandRadioButtons.length; i++)
               leftHandRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < quarterTonesRadioButtons.length; i++)
@@ -3794,6 +4041,44 @@
 
           });
         }
+
+        for (let i = 0; i < resonateRadioButtons.length; i++) {
+          resonateRadioButtons[i].addEventListener('change', async function () {
+            try {
+              if (connectedDevice) {
+                if (syncingFromFirmware) return;
+                let data = new Uint8Array(5);
+                data[0] = 0xbf;
+                data[1] = 0x8c;
+                data[2] = 0xfe;
+                data[3] = 0x1a;
+                data[4] = this.value === 'on' ? 1 : 0;
+                await connectedDevice.midiCharacteristic.writeValue(data);
+              }
+            } catch (error) {
+              console.error('Error sending resonate to the device:', error);
+            }
+          });
+        }
+
+        sympatheticVolumeSlider.addEventListener('input', async () => {
+          const sv = Math.max(0, Math.min(100, parseInt(sympatheticVolumeSlider.value, 10) || 0));
+          sympatheticVolumeLabel.textContent = `Sympathetic volume: ${sv}%`;
+          try {
+            if (connectedDevice) {
+              if (syncingFromFirmware) return;
+              let data = new Uint8Array(5);
+              data[0] = 0xbf;
+              data[1] = 0x8c;
+              data[2] = 0xfe;
+              data[3] = 0x56;
+              data[4] = sv;
+              await connectedDevice.midiCharacteristic.writeValue(data);
+            }
+          } catch (error) {
+            console.error('Error sending sympathetic volume to the device:', error);
+          }
+        });
 
         // Add an event listener to the leftHandRadioButtons
 
