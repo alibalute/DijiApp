@@ -259,6 +259,47 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     }
   }
 
+  /// Playback tab: load .mid into WebView list (same Storage Access Framework path as [pickSoundfont]).
+  Future<void> _pickMidiFileForWebView(InAppWebViewController controller) async {
+    debugPrint('pickMidiFile: opening native file picker');
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        withData: true,
+        allowCompression: false,
+      );
+      if (!mounted) return;
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      final lower = file.name.toLowerCase();
+      if (!lower.endsWith('.mid') && !lower.endsWith('.midi')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please choose a MIDI file (.mid or .midi).')),
+        );
+        return;
+      }
+      final bytes = file.bytes;
+      if (bytes == null || bytes.isEmpty) {
+        debugPrint('pickMidiFile: empty file bytes');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not read that file. Try a smaller file or copy it to local storage.')),
+          );
+        }
+        return;
+      }
+      final payload = jsonEncode({'name': file.name, 'b64': base64Encode(bytes)});
+      _runJs(controller, 'window.__dijiOnNativeMidiFile($payload);');
+    } catch (e) {
+      debugPrint('pickMidiFile error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open file picker: $e')),
+        );
+      }
+    }
+  }
+
   /// [delta] +1 = next tab, -1 = previous (wraps).
   void _nudgeTab(int delta) {
     final c = _controller;
@@ -309,12 +350,18 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     _runJs(c, 'window.__dijiNativeUsbMidi=true;window.__dijiNativeSoundfontPicker=true;');
   }
 
-  void _notifyNativeUsbSynthInstrument(int bank, int preset) {
+  void _notifyNativeUsbSynthInstrument(int bank, int preset, {int? sustainPedal}) {
+    final args = <String, dynamic>{
+      'bank': bank,
+      'preset': preset,
+    };
+    if (sustainPedal != null) {
+      args['sustainPedal'] = sustainPedal.clamp(0, 1);
+    }
     unawaited(
-      _nativeUsbSynth.invokeMethod<void>('applyInstrument', <String, int>{
-        'bank': bank,
-        'preset': preset,
-      }).catchError((Object e) => debugPrint('native applyInstrument: $e')),
+      _nativeUsbSynth.invokeMethod<void>('applyInstrument', args).catchError(
+            (Object e) => debugPrint('native applyInstrument: $e'),
+          ),
     );
   }
 
@@ -325,7 +372,12 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
       final m = Map<String, dynamic>.from(decoded);
       final bank = (m['bank'] as num?)?.toInt() ?? 0;
       final preset = (m['preset'] as num?)?.toInt() ?? 0;
-      _notifyNativeUsbSynthInstrument(bank, preset);
+      int? sustainPedal;
+      if (m.containsKey('sustainPedal')) {
+        final v = m['sustainPedal'];
+        if (v is num) sustainPedal = v.toInt().clamp(0, 1);
+      }
+      _notifyNativeUsbSynthInstrument(bank, preset, sustainPedal: sustainPedal);
     } catch (e) {
       debugPrint('nativeUsbSynthInstrument: $e');
     }
@@ -554,6 +606,14 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                             final c = _controller;
                             if (c == null) return;
                             unawaited(_pickSoundfontForWebView(c));
+                          },
+                        );
+                        controller.addJavaScriptHandler(
+                          handlerName: 'pickMidiFile',
+                          callback: (_) {
+                            final c = _controller;
+                            if (c == null) return;
+                            unawaited(_pickMidiFileForWebView(c));
                           },
                         );
                         controller.addJavaScriptHandler(

@@ -28,10 +28,10 @@ flutter:
     - assets/qui-skinned.html
     - assets/logo.png
     - assets/icons/instagram.svg
+    - assets/icons/quick_instruments/
     - assets/js/libfluidsynth-2.4.6.js
     - assets/js/js-synthesizer.min.js
     - assets/js/js-synthesizer.worklet.min.js
-    - assets/synth/VintageDreamsWaves-v2.sf2
     # Any .sf2 you put here is bundled (e.g. eTar2024.sf2). Do not list a path in pubspec
     # unless the file exists — Flutter fails the build if an asset entry is missing.
     - assets/synth/instruments/

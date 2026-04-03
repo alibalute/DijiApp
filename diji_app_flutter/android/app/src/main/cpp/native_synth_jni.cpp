@@ -187,7 +187,7 @@ Java_com_example_diji_1app_1flutter_NativeUsbSynthEngine_nativeLoadSoundfont(JNI
 
 JNIEXPORT void JNICALL
 Java_com_example_diji_1app_1flutter_NativeUsbSynthEngine_nativeApplyInstrument(JNIEnv* env, jclass, jint bank,
-                                                                               jint preset) {
+                                                                               jint preset, jint sustainPedal) {
     (void)env;
     std::lock_guard<std::mutex> lock(g_lock);
     if (!g_tsf) {
@@ -197,6 +197,13 @@ Java_com_example_diji_1app_1flutter_NativeUsbSynthEngine_nativeApplyInstrument(J
     const int p = preset < 0 ? 0 : preset;
     for (int ch = 0; ch < 16; ch++) {
         tsf_channel_set_bank_preset(g_tsf, ch, b, p);
+    }
+    // sustainPedal: -1 = leave CC64 unchanged; 0 = off; 1 = on (CC64 = 127)
+    if (sustainPedal == 0 || sustainPedal == 1) {
+        const int cc64 = sustainPedal ? 127 : 0;
+        for (int ch = 0; ch < 16; ch++) {
+            tsf_channel_midi_control(g_tsf, ch, 64, cc64);
+        }
     }
 }
 

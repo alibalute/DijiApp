@@ -39,7 +39,12 @@ object NativeUsbSynthChannel {
                     is Number -> p.toInt()
                     else -> 0
                 }
-                NativeUsbSynthEngine.applyInstrument(bank, preset)
+                val sustainPedal = when (val s = map?.get("sustainPedal")) {
+                    is Int -> s.coerceIn(0, 1)
+                    is Number -> s.toInt().coerceIn(0, 1)
+                    else -> null
+                }
+                NativeUsbSynthEngine.applyInstrument(bank, preset, sustainPedal)
                 result.success(null)
             }
             else -> result.notImplemented()

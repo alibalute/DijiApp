@@ -21,7 +21,7 @@ object NativeUsbSynthEngine {
     private const val SAMPLE_RATE = 48_000
     /** Small render quantum (~2.7 ms @ 48 kHz) to reduce USB MIDI → speaker latency. */
     private const val FRAMES_PER_CHUNK = 64
-    private const val BUNDLED_SF2 = "assets/synth/VintageDreamsWaves-v2.sf2"
+    private const val BUNDLED_SF2 = "assets/synth/instruments/DijiApp2026.sf2"
 
     private val loadStarted = AtomicBoolean(false)
     private val audioRunning = AtomicBoolean(false)
@@ -50,7 +50,7 @@ object NativeUsbSynthEngine {
     private external fun nativePushMidi(data: ByteArray, offset: Int, length: Int)
 
     @JvmStatic
-    private external fun nativeApplyInstrument(bank: Int, preset: Int)
+    private external fun nativeApplyInstrument(bank: Int, preset: Int, sustainPedal: Int)
 
     @JvmStatic
     private external fun nativeRender(outPcm: ShortArray): Int
@@ -62,11 +62,14 @@ object NativeUsbSynthEngine {
         nativePushMidi(bytes, 0, bytes.size)
     }
 
-    /** SF2 bank + MIDI program (preset number) for all 16 channels — used when WebView instrument list changes. */
-    fun applyInstrument(bank: Int, preset: Int) {
+    /**
+     * SF2 bank + MIDI program for all 16 channels.
+     * [sustainPedal]: null = do not change CC64; 0 = sustain off; 1 = sustain on (sent to all channels).
+     */
+    fun applyInstrument(bank: Int, preset: Int, sustainPedal: Int? = null) {
         if (!nativeReady.get()) return
         try {
-            nativeApplyInstrument(bank, preset)
+            nativeApplyInstrument(bank, preset, sustainPedal ?: -1)
         } catch (e: Exception) {
             Log.e(TAG, "applyInstrument", e)
         }

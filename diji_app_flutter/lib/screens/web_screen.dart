@@ -276,6 +276,36 @@ class _WebScreenState extends State<WebScreen> {
     }
   }
 
+  /// Playback tab: load .mid into WebView list (same [FilePicker] path as soundfont on iOS/desktop embedder).
+  Future<void> _pickMidiFileForWebView(InAppWebViewController controller) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        withData: true,
+        allowCompression: false,
+      );
+      if (!mounted) return;
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      final lower = file.name.toLowerCase();
+      if (!lower.endsWith('.mid') && !lower.endsWith('.midi')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please choose a MIDI file (.mid or .midi).')),
+        );
+        return;
+      }
+      final bytes = file.bytes;
+      if (bytes == null || bytes.isEmpty) {
+        debugPrint('pickMidiFile: empty file bytes');
+        return;
+      }
+      final payload = jsonEncode({'name': file.name, 'b64': base64Encode(bytes)});
+      _runJs(controller, 'window.__dijiOnNativeMidiFile($payload);');
+    } catch (e) {
+      debugPrint('pickMidiFile error: $e');
+    }
+  }
+
   UnmodifiableListView<UserScript> _initialUserScripts() {
     final list = <UserScript>[];
     // Flutter web (Chrome): keep the browser's real Web Bluetooth. qui-skinned only
@@ -473,6 +503,12 @@ class _WebScreenState extends State<WebScreen> {
                           controller.addJavaScriptHandler(
                             handlerName: 'pickSoundfont',
                             callback: (_) => _pickSoundfontForWebView(controller),
+                          );
+                        } catch (_) {}
+                        try {
+                          controller.addJavaScriptHandler(
+                            handlerName: 'pickMidiFile',
+                            callback: (_) => _pickMidiFileForWebView(controller),
                           );
                         } catch (_) {}
                         // Android-only native USB synth; JS always calls these when the bridge exists.

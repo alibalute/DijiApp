@@ -30,6 +30,13 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
+  # file_picker → DKImagePickerController. CocoaPods trunk archives have sometimes shipped an
+  # incomplete tree (missing Resource/DKImagePickerControllerResource.swift -> Swift build error
+  # "Cannot find DKImagePickerControllerResource in scope"). Pin the tag from GitHub so Resource sources exist.
+  pod 'DKImagePickerController',
+      :git => 'https://github.com/zhangao0086/DKImagePickerController.git',
+      :tag => '4.3.9'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths

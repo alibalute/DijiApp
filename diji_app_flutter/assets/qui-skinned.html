@@ -429,6 +429,20 @@
       word-break: break-word;
       max-width: 100%;
     }
+    .playback-midi-load-row {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 10px;
+    }
+    .playback-midi-load-row #loadMidiFileButton,
+    .playback-midi-load-row #uploadMidiToDeviceButton {
+      width: auto;
+      max-width: none;
+      min-width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
     button.help-icon:hover:not(:disabled) {
       transform: translateY(-1px);
       background: linear-gradient(180deg, #e8eaed 0%, #d8dce2 100%);
@@ -961,9 +975,14 @@
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="Choose a MIDI file stored on the device or loaded into the list for backing tracks or practice." aria-label="Help: MIDI file">?</button>
+      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="Load MIDI file opens the same kind of file chooser as Load soundfont on the Synthesizer tab. Pick a Standard MIDI File (.mid). Each load is assigned to the next device slot (1–4) in rotation; the list label updates. Upload to SPIFFS (when connected) copies that slot’s file over Bluetooth into the instrument flash as /spiffs/1.mid … /spiffs/4.mid (max 256 KB). Then choose the slot and use Play." aria-label="Help: MIDI file">?</button>
       <div class="control-with-help-main">
-        <label for="midiFileLabel">Select MIDI File:</label>
+        <input type="file" id="midiFilePickerInput" accept=".mid,.midi,audio/midi,audio/x-midi" style="display:none" />
+        <div class="playback-midi-load-row align-center">
+          <button type="button" id="loadMidiFileButton" disabled>Load MIDI file</button>
+          <button type="button" id="uploadMidiToDeviceButton" disabled>Upload to SPIFFS</button>
+        </div>
+        <label for="midiFileDropdown" id="midiFileLabel">Select MIDI File:</label>
         <select id="midiFileDropdown" disabled></select>
       </div>
     </div>
@@ -975,6 +994,17 @@
         <button id="playButton">Play</button>
         <button id="pauseButton" onclick="pause()" disabled>Pause</button>
         <button id="stopButton" onclick="stop()" disabled>Stop</button>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Strum step" data-help-body="Off: play notes from the strings as usual. On: each strum plays the next note-on from the MIDI file chosen in “Select MIDI File” above (the same file used for Play). Pick the file first, set Strum step to On, then strum at your own pace. Timed playback with Play is not used in this mode." aria-label="Help: Strum step">?</button>
+      <div class="control-with-help-main">
+        <fieldset>
+          <legend>Strum step:</legend>
+          <label><input type="radio" name="strumStepRadioGroup" value="on" disabled> On</label>
+          <label><input type="radio" name="strumStepRadioGroup" value="off" checked disabled> Off</label>
+        </fieldset>
       </div>
     </div>
 
@@ -1298,6 +1328,7 @@
       let tappingRadioButtons = document.getElementsByName('tappingRadioGroup');
       let tapWithoutStrumRadioButtons = document.getElementsByName('tapWithoutStrumRadioGroup');
       let metronomeRadioButtons = document.getElementsByName('metronomeRadioGroup');
+      let strumStepRadioButtons = document.getElementsByName('strumStepRadioGroup');
       let tempoLabel = document.getElementById('tempoLabel');
       let tempoSlider = document.getElementById('tempoSlider');
       let metronomeVolLabel = document.getElementById('metronomeVolLabel');
@@ -3259,6 +3290,217 @@
         });
       })();
 
+      /** Device slots 1–4 ↔ /spiffs/N.mid; labels update when user loads a .mid from disk (same picker pattern as Load soundfont). */
+      const userMidiBySlot = { 1: null, 2: null, 3: null, 4: null };
+      let nextMidiUserSlot = 1;
+      // Slot that will be uploaded to when you press "Upload to SPIFFS".
+      // We set this when the user loads a MIDI file so upload doesn't depend on which dropdown option is currently selected.
+      let pendingMidiSlot = null;
+      function midiBasename(path) {
+        const s = String(path || '').replace(/\\/g, '/');
+        const i = s.lastIndexOf('/');
+        return i >= 0 ? s.slice(i + 1) : s;
+      }
+      function isMidiFileHeader(ab) {
+        if (!ab || ab.byteLength < 4) return false;
+        const u8 = new Uint8Array(ab, 0, 4);
+        return u8[0] === 0x4d && u8[1] === 0x54 && u8[2] === 0x68 && u8[3] === 0x64;
+      }
+
+      function delayMs(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+      function be32BigEndian(n) {
+        return [(n >>> 24) & 0xff, (n >>> 16) & 0xff, (n >>> 8) & 0xff, n & 0xff];
+      }
+      // Encode a 32-bit value into 4 bytes that are always < 0x80 so they survive BLE-MIDI SysEx framing.
+      function encodeSize7Bit(n) {
+        // Uses 4x7 bits => 28 bits; enough for our <= 256 KB max.
+        return [
+          (n >>> 21) & 0x7f,
+          (n >>> 14) & 0x7f,
+          (n >>> 7) & 0x7f,
+          n & 0x7f,
+        ];
+      }
+      /** BLE MIDI packet: timestamp bytes + SysEx (F0 … F7). Payload after F0 must be 7-bit (base64 OK). */
+      function buildBleMidiSysexPacket(payloadAfterF0) {
+        const a = new Uint8Array(2 + 1 + payloadAfterF0.length + 1);
+        a[0] = 0xbf;
+        a[1] = 0x8c;
+        a[2] = 0xf0;
+        a.set(payloadAfterF0, 3);
+        a[3 + payloadAfterF0.length] = 0xf7;
+        return a;
+      }
+      function refreshUploadMidiButton() {
+        const btn = document.getElementById('uploadMidiToDeviceButton');
+        const dd = document.getElementById('midiFileDropdown');
+        if (!btn || !dd) return;
+        const slot = pendingMidiSlot != null ? pendingMidiSlot : parseInt(dd.value, 10);
+        const has = userMidiBySlot[slot] && userMidiBySlot[slot].buffer;
+        btn.disabled = !connectedDevice || !has;
+      }
+      async function uploadUserMidiToSpiffs() {
+        if (!connectedDevice || !connectedDevice.midiCharacteristic) {
+          alert('Connect to the instrument first.');
+          return;
+        }
+        const dd = document.getElementById('midiFileDropdown');
+        const slot = pendingMidiSlot != null ? pendingMidiSlot : parseInt(dd && dd.value, 10);
+        if (slot < 1 || slot > 4) return;
+        const entry = userMidiBySlot[slot];
+        if (!entry || !entry.buffer) {
+          alert('Load a MIDI file for this slot first (Load MIDI file).');
+          return;
+        }
+        const u8 = new Uint8Array(entry.buffer);
+        if (u8.length > 256 * 1024) {
+          alert('File is too large (max 256 KB).');
+          return;
+        }
+        const ubtn = document.getElementById('uploadMidiToDeviceButton');
+        const chunkRaw = 32;
+        try {
+          if (ubtn) {
+            ubtn.disabled = true;
+            ubtn.textContent = 'Uploading…';
+          }
+          const sz = u8.length;
+          const size7 = encodeSize7Bit(sz);
+          const beginPayload = new Uint8Array(9);
+          beginPayload[0] = 0x7d;
+          beginPayload[1] = 0x4d;
+          beginPayload[2] = 0x49;
+          beginPayload[3] = 0x01;
+          beginPayload[4] = slot;
+          beginPayload[5] = size7[0];
+          beginPayload[6] = size7[1];
+          beginPayload[7] = size7[2];
+          beginPayload[8] = size7[3];
+          await connectedDevice.midiCharacteristic.writeValue(buildBleMidiSysexPacket(beginPayload).buffer);
+          await delayMs(25);
+          for (let off = 0; off < u8.length; off += chunkRaw) {
+            const slice = u8.subarray(off, Math.min(off + chunkRaw, u8.length));
+            let bin = '';
+            for (let i = 0; i < slice.length; i++) bin += String.fromCharCode(slice[i]);
+            const b64 = btoa(bin);
+            const b64bytes = new Uint8Array(b64.length);
+            for (let j = 0; j < b64.length; j++) b64bytes[j] = b64.charCodeAt(j);
+            const dataPayload = new Uint8Array(5 + b64bytes.length);
+            dataPayload[0] = 0x7d;
+            dataPayload[1] = 0x4d;
+            dataPayload[2] = 0x49;
+            dataPayload[3] = 0x02;
+            dataPayload[4] = slot;
+            dataPayload.set(b64bytes, 5);
+            await connectedDevice.midiCharacteristic.writeValue(buildBleMidiSysexPacket(dataPayload).buffer);
+            await delayMs(25);
+          }
+          const commitPayload = new Uint8Array(5);
+          commitPayload[0] = 0x7d;
+          commitPayload[1] = 0x4d;
+          commitPayload[2] = 0x49;
+          commitPayload[3] = 0x03;
+          commitPayload[4] = slot;
+          await connectedDevice.midiCharacteristic.writeValue(buildBleMidiSysexPacket(commitPayload).buffer);
+          await delayMs(25);
+          alert('Upload finished. The instrument saved /spiffs/' + slot + '.mid');
+          // After upload, select the newly-uploaded slot on the UI and on the device
+          // so the next "Play" uses the expected file.
+          if (dd) {
+            dd.selectedIndex = slot - 1;
+            try {
+              dd.dispatchEvent(new Event('change'));
+            } catch (_) {}
+          }
+        } catch (e) {
+          console.error('MIDI upload', e);
+          alert('Upload failed: ' + (e && e.message ? e.message : String(e)));
+        } finally {
+          if (ubtn) ubtn.textContent = 'Upload to SPIFFS';
+          refreshUploadMidiButton();
+        }
+      }
+
+      function applyUserMidiFromArrayBuffer(ab, displayName) {
+        const dd = document.getElementById('midiFileDropdown');
+        if (!dd || !(ab instanceof ArrayBuffer) || !isMidiFileHeader(ab)) {
+          alert('Please choose a Standard MIDI file (.mid) with an MThd header.');
+          return;
+        }
+        const slot = nextMidiUserSlot;
+        nextMidiUserSlot = (nextMidiUserSlot % 4) + 1;
+        userMidiBySlot[slot] = { name: displayName || 'file.mid', buffer: ab.slice(0) };
+        pendingMidiSlot = slot;
+        const opt = dd.querySelector('option[value="' + slot + '"]');
+        if (opt) {
+          opt.textContent = midiBasename(displayName) + ' (slot ' + slot + ')';
+        }
+        refreshUploadMidiButton();
+      }
+      window.__dijiOnNativeMidiFile = function (payload) {
+        try {
+          if (!payload || !payload.b64) return;
+          const name = payload.name || 'file.mid';
+          const binary = atob(payload.b64);
+          const len = binary.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+          applyUserMidiFromArrayBuffer(bytes.buffer, name);
+        } catch (e) {
+          console.warn('Native MIDI decode', e);
+        }
+      };
+      (function setupPlaybackMidiLoad() {
+        const fileInput = document.getElementById('midiFilePickerInput');
+        const loadBtn = document.getElementById('loadMidiFileButton');
+        if (!fileInput || !loadBtn) return;
+        loadBtn.addEventListener('click', function () {
+          var bridge = window.flutter_inappwebview;
+          var fh = bridge && typeof bridge.callHandler === 'function';
+          if (window.__dijiNativeSoundfontPicker && fh) {
+            try {
+              var ret = bridge.callHandler('pickMidiFile', '');
+              if (ret != null && typeof ret.then === 'function') {
+                ret.catch(function (err) { console.warn('pickMidiFile handler', err); });
+              }
+            } catch (e) {
+              console.warn('pickMidiFile callHandler', e);
+            }
+            return;
+          }
+          try {
+            fileInput.click();
+          } catch (e) {
+            console.warn('MIDI file input', e);
+          }
+        });
+        fileInput.addEventListener('change', function () {
+          const f = fileInput.files && fileInput.files[0];
+          if (!f) return;
+          const reader = new FileReader();
+          reader.onload = function () {
+            const ab = reader.result;
+            if (ab instanceof ArrayBuffer) {
+              applyUserMidiFromArrayBuffer(ab, f.name);
+            }
+          };
+          reader.onerror = function () {
+            console.warn('MIDI file read failed');
+            alert('Could not read that file.');
+          };
+          reader.readAsArrayBuffer(f);
+          fileInput.value = '';
+        });
+        const uploadBtn = document.getElementById('uploadMidiToDeviceButton');
+        if (uploadBtn) {
+          uploadBtn.addEventListener('click', function () { void uploadUserMidiToSpiffs(); });
+        }
+        const ddMidiRefresh = document.getElementById('midiFileDropdown');
+        if (ddMidiRefresh) ddMidiRefresh.addEventListener('change', refreshUploadMidiButton);
+      })();
+
       /** Android: USB MIDI is independent of BLE — start listening as soon as the WebView bridge exists. */
       (function autoStartNativeUsbMidi() {
         function tryStart() {
@@ -3386,6 +3628,9 @@
               pitchSystemsDropdown.disabled = false;
               midiChannelsDropdown.disabled = false;
               midiFileDropdown.disabled = false;
+              const loadMidiBtn = document.getElementById('loadMidiFileButton');
+              if (loadMidiBtn) loadMidiBtn.disabled = false;
+              refreshUploadMidiButton();
 
 
               transposeSlider.disabled = false;
@@ -3431,6 +3676,8 @@
                 tapWithoutStrumRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < metronomeRadioButtons.length; i++)
                 metronomeRadioButtons[i].removeAttribute('disabled');
+              for (let i = 0; i < strumStepRadioButtons.length; i++)
+                strumStepRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < string1RadioButtons.length; i++)
               string1RadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < string2RadioButtons.length; i++)
@@ -3478,6 +3725,20 @@
             tempoSlider.disabled = true;
             metronomeVolSlider.disabled = true;
             midiFileDropdown.disabled = true;
+            const loadMidiBtnDisc = document.getElementById('loadMidiFileButton');
+            if (loadMidiBtnDisc) loadMidiBtnDisc.disabled = true;
+            const uploadMidiBtnDisc = document.getElementById('uploadMidiToDeviceButton');
+            if (uploadMidiBtnDisc) {
+              uploadMidiBtnDisc.disabled = true;
+              uploadMidiBtnDisc.textContent = 'Upload to SPIFFS';
+            }
+            for (let mi = 0; mi < midiFilesNames.length; mi++) {
+              const opt = midiFileDropdown.querySelector('option[value="' + (mi + 1) + '"]');
+              if (opt) opt.textContent = midiFilesNames[mi];
+            }
+            for (let s = 1; s <= 4; s++) userMidiBySlot[s] = null;
+            nextMidiUserSlot = 1;
+            pendingMidiSlot = null;
             playButton.disabled = true;
             pauseButton.disabled = true;
             stopButton.disabled = true;
@@ -3515,6 +3776,12 @@
               tapWithoutStrumRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < metronomeRadioButtons.length; i++)
               metronomeRadioButtons[i].setAttribute('disabled', 'disabled');
+            for (let i = 0; i < strumStepRadioButtons.length; i++)
+              strumStepRadioButtons[i].setAttribute('disabled', 'disabled');
+            if (strumStepRadioButtons.length >= 2) {
+              strumStepRadioButtons[0].checked = false;
+              strumStepRadioButtons[1].checked = true;
+            }
             for (let i = 0; i < percussionRadioButtons.length; i++)
               percussionRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < string1RadioButtons.length; i++)
@@ -4580,6 +4847,23 @@
 
 
         });
+
+        for (let i = 0; i < strumStepRadioButtons.length; i++) {
+          strumStepRadioButtons[i].addEventListener('change', async function () {
+            try {
+              if (!connectedDevice || syncingFromFirmware) return;
+              const data = new Uint8Array(5);
+              data[0] = 0xbf;
+              data[1] = 0x8c;
+              data[2] = 0xfe;
+              data[3] = 0x57;
+              data[4] = this.value === 'on' ? 1 : 0;
+              await connectedDevice.midiCharacteristic.writeValue(data);
+            } catch (error) {
+              console.error('Error sending strum-step mode to device:', error);
+            }
+          });
+        }
 
         document.getElementById('turnoffButton').addEventListener('click', async () => {
 
