@@ -969,8 +969,9 @@
     </div>
 
     <div class="control-with-help align-center">
-      <button type="button" class="help-icon" data-help-title="Playback controls" data-help-body="Play starts playback, Pause holds the current position, and Stop resets playback. Connect to the instrument first." aria-label="Help: Playback">?</button>
+      <button type="button" class="help-icon" data-help-title="Playback controls" data-help-body="Record tells the instrument to capture your playing into a temporary MIDI file until you press Stop. Stop saves that recording on the device and stops playback. Play plays the selected MIDI file (after recording, Play uses the captured take until you change files on the device). Pause holds playback. Connect first." aria-label="Help: Playback">?</button>
       <div class="control-with-help-main">
+        <button type="button" id="recordButton" disabled>Record</button>
         <button id="playButton">Play</button>
         <button id="pauseButton" onclick="pause()" disabled>Pause</button>
         <button id="stopButton" onclick="stop()" disabled>Stop</button>
@@ -1306,6 +1307,9 @@
       let playButton = document.getElementById('playButton');
       let stopButton = document.getElementById('stopButton');
       let pauseButton = document.getElementById('pauseButton');
+      let recordButton = document.getElementById('recordButton');
+      /** True after app sent firmware record (0x52,0) until Stop disconnects or user presses Stop. */
+      let appMidiRecording = false;
       let string1TuningLabel = document.getElementById('string1TuningLabel');
       let string1TuningSlider = document.getElementById('string1TuningSlider');
       let string2TuningLabel = document.getElementById('string2TuningLabel');
@@ -3397,6 +3401,7 @@
               metronomeNumBeatsSlider.disabled = false;
 
               playButton.disabled = false;
+              recordButton.disabled = false;
               turnoffButton.disabled = false;
               saveSettingsButton.disabled = false;
               resetSettingsButton.disabled = false;
@@ -3476,6 +3481,9 @@
             playButton.disabled = true;
             pauseButton.disabled = true;
             stopButton.disabled = true;
+            recordButton.disabled = true;
+            appMidiRecording = false;
+            recordButton.textContent = 'Record';
             string1TuningSlider.disabled = true;
             string2TuningSlider.disabled = true;
             string3TuningSlider.disabled = true;
@@ -4474,6 +4482,37 @@
           });
         }
 
+        /** @returns {Promise<boolean>} true if the write was sent */
+        async function sendMidiTransportCommand(subcmd) {
+          if (!connectedDevice || syncingFromFirmware) return false;
+          const data = new Uint8Array(5);
+          data[0] = 0xbf;
+          data[1] = 0x8c;
+          data[2] = 0xfe;
+          data[3] = 0x52;
+          data[4] = subcmd;
+          await connectedDevice.midiCharacteristic.writeValue(data);
+          return true;
+        }
+
+        recordButton.addEventListener('click', async () => {
+          try {
+            const sent = await sendMidiTransportCommand(0);
+            if (!sent) return;
+            appMidiRecording = true;
+            recordButton.disabled = true;
+            recordButton.textContent = 'Recording…';
+            playButton.disabled = true;
+            pauseButton.disabled = true;
+            stopButton.disabled = false;
+          } catch (error) {
+            console.error('Error starting firmware MIDI record:', error);
+            appMidiRecording = false;
+            recordButton.disabled = false;
+            recordButton.textContent = 'Record';
+          }
+        });
+
         document.getElementById('playButton').addEventListener('click', async () => {
 
           // Enable/disable buttons based on the context
@@ -4483,20 +4522,9 @@
 
 
           try {
-            // Disconnect from the connected device
             if (connectedDevice) {
               if (syncingFromFirmware) return;
-
-              //make a  MIDI message as a Uint8Array
-              let data = new Uint8Array(5);
-              data[0] = 0xbf; //dummy timestamp 1st byte
-              data[1] = 0x8c; //dummy timestamp 2nd byte
-              data[2] = 0xfe; //custom midi status byte for controling etar through ble
-              data[3] = 0x52;   //rec/play/pause/stop control
-              data[4] = 2; //play index
-
-              await connectedDevice.midiCharacteristic.writeValue(data);
-
+              await sendMidiTransportCommand(2);
             }
 
           } catch (error) {
@@ -4512,23 +4540,17 @@
           playButton.disabled = false;
           pauseButton.disabled = true;
           stopButton.disabled = true;
+          if (appMidiRecording) {
+            appMidiRecording = false;
+            recordButton.disabled = false;
+            recordButton.textContent = 'Record';
+          }
 
 
           try {
-            // Disconnect from the connected device
             if (connectedDevice) {
               if (syncingFromFirmware) return;
-
-              //make a  MIDI message as a Uint8Array
-              let data = new Uint8Array(5);
-              data[0] = 0xbf; //dummy timestamp 1st byte
-              data[1] = 0x8c; //dummy timestamp 2nd byte
-              data[2] = 0xfe; //custom midi status byte for controling etar through ble
-              data[3] = 0x52;   //rec/play/pause/stop control
-              data[4] = 1; //stop index
-
-              await connectedDevice.midiCharacteristic.writeValue(data);
-
+              await sendMidiTransportCommand(1);
             }
 
           } catch (error) {
@@ -4547,20 +4569,9 @@
 
 
           try {
-            // Disconnect from the connected device
             if (connectedDevice) {
               if (syncingFromFirmware) return;
-
-              //make a  MIDI message as a Uint8Array
-              let data = new Uint8Array(5);
-              data[0] = 0xbf; //dummy timestamp 1st byte
-              data[1] = 0x8c; //dummy timestamp 2nd byte
-              data[2] = 0xfe; //custom midi status byte for controling etar through ble
-              data[3] = 0x52;   //rec/play/pause/stop control
-              data[4] = 3; //pause index
-
-              await connectedDevice.midiCharacteristic.writeValue(data);
-
+              await sendMidiTransportCommand(3);
             }
 
           } catch (error) {
