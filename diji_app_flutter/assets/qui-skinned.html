@@ -3360,7 +3360,8 @@
           return;
         }
         const ubtn = document.getElementById('uploadMidiToDeviceButton');
-        const chunkRaw = 32;
+        /* Larger chunks = fewer BLE writes (less GATT/JS pressure). Firmware uses a static decode buffer (768 B). */
+        const chunkRaw = 120;
         try {
           if (ubtn) {
             ubtn.disabled = true;
@@ -3379,7 +3380,7 @@
           beginPayload[7] = size7[2];
           beginPayload[8] = size7[3];
           await connectedDevice.midiCharacteristic.writeValue(buildBleMidiSysexPacket(beginPayload).buffer);
-          await delayMs(25);
+          await delayMs(15);
           for (let off = 0; off < u8.length; off += chunkRaw) {
             const slice = u8.subarray(off, Math.min(off + chunkRaw, u8.length));
             let bin = '';
@@ -3395,7 +3396,7 @@
             dataPayload[4] = slot;
             dataPayload.set(b64bytes, 5);
             await connectedDevice.midiCharacteristic.writeValue(buildBleMidiSysexPacket(dataPayload).buffer);
-            await delayMs(25);
+            await delayMs(15);
           }
           const commitPayload = new Uint8Array(5);
           commitPayload[0] = 0x7d;
@@ -3404,7 +3405,7 @@
           commitPayload[3] = 0x03;
           commitPayload[4] = slot;
           await connectedDevice.midiCharacteristic.writeValue(buildBleMidiSysexPacket(commitPayload).buffer);
-          await delayMs(25);
+          await delayMs(15);
           alert('Upload finished. The instrument saved /spiffs/' + slot + '.mid');
           // After upload, select the newly-uploaded slot on the UI and on the device
           // so the next "Play" uses the expected file.
