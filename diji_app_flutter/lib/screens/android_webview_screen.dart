@@ -80,7 +80,7 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
 })();
 ''';
 
-  void _onBleMessage(String jsonStr) async {
+  Future<void> _onBleMessage(String jsonStr) async {
     final controller = _controller;
     if (controller == null) return;
     try {
@@ -136,8 +136,9 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
           _bleBridge.disconnect();
           break;
       }
-    } catch (e) {
-      debugPrint('BLE bridge error: $e');
+    } catch (e, st) {
+      debugPrint('BLE bridge error: $e\n$st');
+      rethrow;
     }
   }
 
@@ -586,9 +587,9 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                         );
                         controller.addJavaScriptHandler(
                           handlerName: 'ble',
-                          callback: (args) {
+                          callback: (args) async {
                             if (args.isNotEmpty && args.first != null) {
-                              _onBleMessage(args.first.toString());
+                              await _onBleMessage(args.first.toString());
                             }
                           },
                         );

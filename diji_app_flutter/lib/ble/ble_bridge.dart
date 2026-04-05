@@ -244,6 +244,7 @@ class BleBridge {
       }
     } catch (e, st) {
       debugPrint('BLE write failed: $e\n$st');
+      rethrow;
     }
   }
 

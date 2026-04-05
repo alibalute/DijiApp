@@ -585,7 +585,12 @@
                   var bytes = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : new Uint8Array(buffer.buffer || buffer);
                   var binary = '';
                   for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-                  window.AndroidBLE.writeValueBase64(btoa(binary));
+                  var b64 = btoa(binary);
+                  /* Must await native BLE: otherwise upload chunks run ahead of writes and reorder (large .mid fails). */
+                  if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                    return window.flutter_inappwebview.callHandler('ble', JSON.stringify({ method: 'writeValueBase64', base64: b64 }));
+                  }
+                  window.AndroidBLE.writeValueBase64(b64);
                   return Promise.resolve();
                 },
                 startNotifications: function() {
@@ -975,12 +980,12 @@
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="Load MIDI file opens the same kind of file chooser as Load soundfont on the Synthesizer tab. Pick a Standard MIDI File (.mid). Each load is assigned to the next device slot (1–4) in rotation; the list label updates. Upload to SPIFFS (when connected) copies that slot’s file over Bluetooth into the instrument flash as /spiffs/1.mid … /spiffs/4.mid (max 256 KB). Then choose the slot and use Play." aria-label="Help: MIDI file">?</button>
+      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="Open MIDI file opens the same kind of file chooser as Load soundfont on the Synthesizer tab. Pick a Standard MIDI File (.mid). Each load is assigned to the next device slot (1–4) in rotation; the list label updates. Upload to Dijilele (when connected) copies that slot’s file over Bluetooth into the instrument flash as /spiffs/1.mid … /spiffs/4.mid (max 256 KB). Then choose the slot and use Play." aria-label="Help: MIDI file">?</button>
       <div class="control-with-help-main">
         <input type="file" id="midiFilePickerInput" accept=".mid,.midi,audio/midi,audio/x-midi" style="display:none" />
         <div class="playback-midi-load-row align-center">
-          <button type="button" id="loadMidiFileButton" disabled>Load MIDI file</button>
-          <button type="button" id="uploadMidiToDeviceButton" disabled>Upload to SPIFFS</button>
+          <button type="button" id="loadMidiFileButton" disabled>Open MIDI file</button>
+          <button type="button" id="uploadMidiToDeviceButton" disabled>Upload to Dijilele</button>
         </div>
         <label for="midiFileDropdown" id="midiFileLabel">Select MIDI File:</label>
         <select id="midiFileDropdown" disabled></select>
@@ -3293,7 +3298,7 @@
       /** Device slots 1–4 ↔ /spiffs/N.mid; labels update when user loads a .mid from disk (same picker pattern as Load soundfont). */
       const userMidiBySlot = { 1: null, 2: null, 3: null, 4: null };
       let nextMidiUserSlot = 1;
-      // Slot that will be uploaded to when you press "Upload to SPIFFS".
+      // Slot that will be uploaded to when you press "Upload to Dijilele".
       // We set this when the user loads a MIDI file so upload doesn't depend on which dropdown option is currently selected.
       let pendingMidiSlot = null;
       function midiBasename(path) {
@@ -3351,7 +3356,7 @@
         if (slot < 1 || slot > 4) return;
         const entry = userMidiBySlot[slot];
         if (!entry || !entry.buffer) {
-          alert('Load a MIDI file for this slot first (Load MIDI file).');
+          alert('Open a MIDI file for this slot first (Open MIDI file).');
           return;
         }
         const u8 = new Uint8Array(entry.buffer);
@@ -3360,7 +3365,7 @@
           return;
         }
         const ubtn = document.getElementById('uploadMidiToDeviceButton');
-        /* Larger chunks = fewer BLE writes (less GATT/JS pressure). Firmware uses a static decode buffer (768 B). */
+        /* Larger chunks = fewer BLE writes. Firmware static decode buffer is 768 B. */
         const chunkRaw = 120;
         try {
           if (ubtn) {
@@ -3419,7 +3424,7 @@
           console.error('MIDI upload', e);
           alert('Upload failed: ' + (e && e.message ? e.message : String(e)));
         } finally {
-          if (ubtn) ubtn.textContent = 'Upload to SPIFFS';
+          if (ubtn) ubtn.textContent = 'Upload to Dijilele';
           refreshUploadMidiButton();
         }
       }
@@ -3731,7 +3736,7 @@
             const uploadMidiBtnDisc = document.getElementById('uploadMidiToDeviceButton');
             if (uploadMidiBtnDisc) {
               uploadMidiBtnDisc.disabled = true;
-              uploadMidiBtnDisc.textContent = 'Upload to SPIFFS';
+              uploadMidiBtnDisc.textContent = 'Upload to Dijilele';
             }
             for (let mi = 0; mi < midiFilesNames.length; mi++) {
               const opt = midiFileDropdown.querySelector('option[value="' + (mi + 1) + '"]');

@@ -79,7 +79,7 @@ class _WebScreenState extends State<WebScreen> {
 })();
 ''';
 
-  void _onBleMessage(String jsonStr) async {
+  Future<void> _onBleMessage(String jsonStr) async {
     final controller = _webViewController;
     if (controller == null) return;
     try {
@@ -134,8 +134,9 @@ class _WebScreenState extends State<WebScreen> {
           _bleBridge.disconnect();
           break;
       }
-    } catch (e) {
-      debugPrint('BLE bridge error: $e');
+    } catch (e, st) {
+      debugPrint('BLE bridge error: $e\n$st');
+      rethrow;
     }
   }
 
@@ -491,9 +492,9 @@ class _WebScreenState extends State<WebScreen> {
                           try {
                             controller.addJavaScriptHandler(
                               handlerName: 'ble',
-                              callback: (args) {
+                              callback: (args) async {
                                 if (args.isNotEmpty && args.first != null) {
-                                  _onBleMessage(args.first.toString());
+                                  await _onBleMessage(args.first.toString());
                                 }
                               },
                             );
