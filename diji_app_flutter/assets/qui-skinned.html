@@ -910,6 +910,14 @@
           <label><input type="radio" name="tappingRadioGroup" value="on" disabled> On</label>
           <label><input type="radio" name="tappingRadioGroup" value="off" checked disabled> Off</label>
         </fieldset>
+        <div style="margin-top:10px;">
+          <label id="hammerOnVelocityLabel" for="hammerOnVelocitySlider" disabled>Hammer-on velocity: 75% of last strum</label>
+          <input type="range" id="hammerOnVelocitySlider" min="0" max="100" value="75" step="1" disabled aria-labelledby="hammerOnVelocityLabel">
+        </div>
+        <div style="margin-top:10px;">
+          <label id="hammerPostStrumGuardLabel" for="hammerPostStrumGuardSlider" disabled>Post-strum guard: 35 ticks</label>
+          <input type="range" id="hammerPostStrumGuardSlider" min="0" max="255" value="35" step="1" disabled aria-labelledby="hammerPostStrumGuardLabel">
+        </div>
       </div>
     </div>
 
@@ -1331,6 +1339,10 @@
       let dynamicsRadioButtons = document.getElementsByName('dynamicsRadioGroup');
       let staccatoRadioButtons = document.getElementsByName('staccatoRadioGroup');
       let tappingRadioButtons = document.getElementsByName('tappingRadioGroup');
+      let hammerOnVelocityLabel = document.getElementById('hammerOnVelocityLabel');
+      let hammerOnVelocitySlider = document.getElementById('hammerOnVelocitySlider');
+      let hammerPostStrumGuardLabel = document.getElementById('hammerPostStrumGuardLabel');
+      let hammerPostStrumGuardSlider = document.getElementById('hammerPostStrumGuardSlider');
       let tapWithoutStrumRadioButtons = document.getElementsByName('tapWithoutStrumRadioGroup');
       let metronomeRadioButtons = document.getElementsByName('metronomeRadioGroup');
       let strumStepRadioButtons = document.getElementsByName('strumStepRadioGroup');
@@ -1775,6 +1787,16 @@
             sympatheticVolumeSlider.value = String(sv);
             sympatheticVolumeLabel.textContent = `Sympathetic volume: ${sv}%`;
           }
+          if (typeof obj.hammerOnVelocity === 'number') {
+            const hv = Math.max(0, Math.min(100, obj.hammerOnVelocity | 0));
+            hammerOnVelocitySlider.value = String(hv);
+            hammerOnVelocityLabel.textContent = `Hammer-on velocity: ${hv}% of last strum`;
+          }
+          if (typeof obj.hammerPostStrumGuardTicks === 'number') {
+            const gt = Math.max(0, Math.min(255, obj.hammerPostStrumGuardTicks | 0));
+            hammerPostStrumGuardSlider.value = String(gt);
+            hammerPostStrumGuardLabel.textContent = `Post-strum guard: ${gt} ticks`;
+          }
           if (typeof obj.tuning === 'number') tuningsDropdown.selectedIndex = Math.max(0, Math.min(tuningNames.length - 1, obj.tuning | 0));
           if (typeof obj.pitchSystem === 'number') pitchSystemsDropdown.selectedIndex = Math.max(0, Math.min(pitchSystemsNames.length - 1, obj.pitchSystem | 0));
           if (typeof obj.midiChannel === 'number') midiChannelsDropdown.selectedIndex = Math.max(0, Math.min(midiChannelsNames.length - 1, obj.midiChannel | 0));
@@ -1807,7 +1829,8 @@
           if (typeof obj.staccato === 'number') setRadioCheckedByName(staccatoRadioButtons, obj.staccato !== 0);
           if (typeof obj.leftHand === 'number') setRadioCheckedByName(leftHandRadioButtons, obj.leftHand !== 0);
           if (typeof obj.quarterTones === 'number') setRadioCheckedByName(quarterTonesRadioButtons, obj.quarterTones !== 0);
-          if (typeof obj.constantVelocity === 'number') setRadioCheckedByName(dynamicsRadioButtons, obj.constantVelocity !== 0);
+          /* Firmware: 0x45 data 0 => constantVelocity off (variable velocity / dynamics); nonzero => constant velocity on */
+          if (typeof obj.constantVelocity === 'number') setRadioCheckedByName(dynamicsRadioButtons, obj.constantVelocity === 0);
           if (typeof obj.tapWithoutStrum === 'number') setRadioCheckedByName(tapWithoutStrumRadioButtons, obj.tapWithoutStrum !== 0);
           if (typeof obj.percussion === 'number') setRadioCheckedByName(percussionRadioButtons, obj.percussion !== 0);
           if (typeof obj.string1 === 'number') setRadioCheckedByName(string1RadioButtons, obj.string1 !== 0);
@@ -3678,6 +3701,10 @@
                 percussionRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < tappingRadioButtons.length; i++)
                 tappingRadioButtons[i].removeAttribute('disabled');
+              hammerOnVelocitySlider.disabled = false;
+              hammerOnVelocityLabel.removeAttribute('disabled');
+              hammerPostStrumGuardSlider.disabled = false;
+              hammerPostStrumGuardLabel.removeAttribute('disabled');
               for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
                 tapWithoutStrumRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < metronomeRadioButtons.length; i++)
@@ -3778,6 +3805,10 @@
               staccatoRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < tappingRadioButtons.length; i++)
               tappingRadioButtons[i].setAttribute('disabled', 'disabled');
+            hammerOnVelocitySlider.disabled = true;
+            hammerOnVelocityLabel.setAttribute('disabled', 'disabled');
+            hammerPostStrumGuardSlider.disabled = true;
+            hammerPostStrumGuardLabel.setAttribute('disabled', 'disabled');
             for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
               tapWithoutStrumRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < metronomeRadioButtons.length; i++)
@@ -4474,11 +4505,11 @@
                 data[0] = 0xbf; //dummy timestamp 1st byte
                 data[1] = 0x8c; //dummy timestamp 2nd byte
                 data[2] = 0xfe; //custom midi status byte for controling etar through ble
-                data[3] = 0x45;   //dynamics
+                data[3] = 0x45;   // dynamics (matches util.c 0x45: 0 = variable velocity, 1 = constant)
                 if (this.value == 'on')
-                  data[4] = 1; //enable dynamics
+                  data[4] = 0;
                 else
-                  data[4] = 0; //disable dynamics
+                  data[4] = 1;
 
 
                 await connectedDevice.midiCharacteristic.writeValue(data);
@@ -4556,6 +4587,45 @@
 
           });
         }
+
+        hammerOnVelocitySlider.addEventListener('input', async () => {
+          const hv = Math.max(0, Math.min(100, parseInt(hammerOnVelocitySlider.value, 10) || 0));
+          hammerOnVelocityLabel.textContent = `Hammer-on velocity: ${hv}% of last strum`;
+          try {
+            if (connectedDevice) {
+              if (syncingFromFirmware) return;
+              let data = new Uint8Array(5);
+              data[0] = 0xbf;
+              data[1] = 0x8c;
+              data[2] = 0xfe;
+              data[3] = 0x0a;
+              data[4] = hv;
+              await connectedDevice.midiCharacteristic.writeValue(data);
+            }
+          } catch (error) {
+            console.error('Error sending hammer-on velocity to the device:', error);
+          }
+        });
+
+        hammerPostStrumGuardSlider.addEventListener('input', async () => {
+          const gt = Math.max(0, Math.min(255, parseInt(hammerPostStrumGuardSlider.value, 10) || 0));
+          hammerPostStrumGuardLabel.textContent = `Post-strum guard: ${gt} ticks`;
+          try {
+            if (connectedDevice) {
+              if (syncingFromFirmware) return;
+              let data = new Uint8Array(5);
+              data[0] = 0xbf;
+              data[1] = 0x8c;
+              data[2] = 0xfe;
+              data[3] = 0x0c;
+              data[4] = gt;
+              await connectedDevice.midiCharacteristic.writeValue(data);
+            }
+          } catch (error) {
+            console.error('Error sending hammer post-strum guard to the device:', error);
+          }
+        });
+
         // Add an event listener to the tapWithoutStrumRadioButtons
 
         for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++) {
