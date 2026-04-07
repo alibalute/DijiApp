@@ -60,9 +60,20 @@ class BleBridge {
     Timer? settleTimer;
     StreamSubscription<List<ScanResult>>? sub;
 
-    bool nameHasDijiele(String name) => name.toLowerCase().contains('dijiele');
+    /// Match the real product name "Dijilele" (not the typo "dijiele").
+    bool nameLooksLikeDijilele(String name) =>
+        name.toLowerCase().contains('dijilele');
 
-    bool hasPreferredName() => seen.values.any((e) => nameHasDijiele(e.name));
+    int digitCount(String s) => RegExp(r'\d').allMatches(s).length;
+
+    /// Prefer finishing the scan once we see a plausible full name (brand + serial),
+    /// not a truncated or mis-decoded first advertisement.
+    bool hasPreferredName() => seen.values.any((e) {
+      final n = e.name;
+      if (!nameLooksLikeDijilele(n)) return false;
+      if (digitCount(n) >= 2) return true;
+      return n.length >= 12;
+    });
 
     /// iOS: peripherals already known to the OS (e.g. previously paired) appear
     /// here without waiting for an active scan (flutter_blue_plus documents this path).
@@ -77,9 +88,18 @@ class BleBridge {
         }
         if (seen.isNotEmpty) {
           final list = seen.entries.toList();
-          final dijiele =
-              list.where((e) => nameHasDijiele(e.value.name)).toList();
-          final entry = dijiele.isNotEmpty ? dijiele.first : list.first;
+          final preferred = list
+              .where((e) => nameLooksLikeDijilele(e.value.name))
+              .toList()
+            ..sort(
+              (a, b) => b.value.name.length.compareTo(a.value.name.length),
+            );
+          final entry = preferred.isNotEmpty
+              ? preferred.first
+              : list.reduce(
+                  (a, b) =>
+                      a.value.name.length >= b.value.name.length ? a : b,
+                );
           final d = entry.value.device;
           _scannedDevices[d.remoteId.str] = d;
           return DeviceResult(id: d.remoteId.str, name: entry.value.name);
@@ -92,11 +112,21 @@ class BleBridge {
     void merge(List<ScanResult> list) {
       for (final r in list) {
         final id = r.device.remoteId.str;
-        if (seen.containsKey(id)) continue;
         final name = r.advertisementData.advName.isNotEmpty
             ? r.advertisementData.advName
             : (r.device.platformName.isNotEmpty ? r.device.platformName : '');
-        seen[id] = (device: r.device, name: name.isNotEmpty ? name : 'Dijilele');
+        final resolved = name.isNotEmpty ? name : 'Dijilele';
+
+        if (seen.containsKey(id)) {
+          final prev = seen[id]!;
+          final better = resolved.length > prev.name.length ||
+              digitCount(resolved) > digitCount(prev.name);
+          if (better) {
+            seen[id] = (device: r.device, name: resolved);
+          }
+          continue;
+        }
+        seen[id] = (device: r.device, name: resolved);
       }
     }
 
@@ -140,10 +170,17 @@ class BleBridge {
 
     if (seen.isEmpty) return null;
 
-    // Prefer device whose name contains "Dijilele" (case-insensitive), otherwise pick first.
+    // Prefer "Dijilele" in the name (correct spelling); among matches, longest name (serial suffix).
     final list = seen.entries.toList();
-    final dijiele = list.where((e) => nameHasDijiele(e.value.name)).toList();
-    final entry = dijiele.isNotEmpty ? dijiele.first : list.first;
+    final preferred = list
+        .where((e) => nameLooksLikeDijilele(e.value.name))
+        .toList()
+      ..sort((a, b) => b.value.name.length.compareTo(a.value.name.length));
+    final entry = preferred.isNotEmpty
+        ? preferred.first
+        : list.reduce(
+            (a, b) => a.value.name.length >= b.value.name.length ? a : b,
+          );
 
     final d = entry.value.device;
     _scannedDevices[d.remoteId.str] = d;

@@ -177,7 +177,8 @@ Java_com_example_diji_1app_1flutter_NativeUsbSynthEngine_nativeLoadSoundfont(JNI
     }
     tsf_set_output(g_tsf, TSF_STEREO_INTERLEAVED, g_sample_rate, 0.0f);
     tsf_set_volume(g_tsf, 0.55f);
-    tsf_set_max_voices(g_tsf, 2);
+    /* Was 2 for minimal RAM; strumming needs many simultaneous notes (Web FluidSynth has no such cap). */
+    tsf_set_max_voices(g_tsf, 64);
     for (int c = 0; c < 16; c++) {
         tsf_channel_set_presetnumber(g_tsf, c, 0, c == 9 ? 1 : 0);
     }

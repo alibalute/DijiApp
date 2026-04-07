@@ -227,6 +227,13 @@
       transition: width 0.3s ease, background-color 0.3s ease;
     }
     #battery-bar { min-height: 10px; }
+    /* Battery readout (label + bar) when BLE disconnected — no device data */
+    #batteryReadoutBlock.battery-readout--disconnected {
+      opacity: 0.48;
+      pointer-events: none;
+      filter: grayscale(0.45);
+      user-select: none;
+    }
     h3 {
       color: var(--text);
       margin: 20px 0 12px;
@@ -748,8 +755,10 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Battery" data-help-body="Approximate battery level reported by the instrument. Charge when low for best performance." aria-label="Help: Battery">?</button>
       <div class="control-with-help-main">
-        <label id="batteryLabel" disabled>Battery: 0</label>
-        <div class="bar" id="battery-bar">‌</div>
+        <div id="batteryReadoutBlock" class="battery-readout battery-readout--disconnected">
+          <label id="batteryLabel" disabled>Battery: 0</label>
+          <div class="bar" id="battery-bar">‌</div>
+        </div>
       </div>
     </div>
 
@@ -888,6 +897,20 @@
           <label><input type="radio" name="dynamicsRadioGroup" value="on"  disabled> On</label>
           <label><input type="radio" name="dynamicsRadioGroup" value="off" checked disabled> Off</label>
         </fieldset>
+        <div class="control-with-help" style="margin-top:10px;">
+          <button type="button" class="help-icon" data-help-title="Strum velocity minimum" data-help-body="Softest strum maps to this MIDI velocity (0–127). Raise it so very light strums stay audible; lower it for a wider dynamic range down to silence." aria-label="Help: Strum velocity minimum">?</button>
+          <div class="control-with-help-main">
+            <label id="strumVelOutMinLabel" for="strumVelOutMinSlider" disabled>Strum velocity min (MIDI): 10</label>
+            <input type="range" id="strumVelOutMinSlider" min="0" max="127" value="10" step="1" disabled aria-labelledby="strumVelOutMinLabel">
+          </div>
+        </div>
+        <div class="control-with-help" style="margin-top:10px;">
+          <button type="button" class="help-icon" data-help-title="Strum velocity maximum" data-help-body="Hardest strum maps to this MIDI velocity (0–127). Lower it to cap how loud fortissimo strums can get." aria-label="Help: Strum velocity maximum">?</button>
+          <div class="control-with-help-main">
+            <label id="strumVelOutMaxLabel" for="strumVelOutMaxSlider" disabled>Strum velocity max (MIDI): 127</label>
+            <input type="range" id="strumVelOutMaxSlider" min="0" max="127" value="127" step="1" disabled aria-labelledby="strumVelOutMaxLabel">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -913,15 +936,15 @@
         <div class="control-with-help" style="margin-top:10px;">
           <button type="button" class="help-icon" data-help-title="Hammer-on velocity" data-help-body="MIDI velocity for hammer-on notes, as a percent of the velocity from the last strum on that string. Higher values track the strum more closely; lower values produce softer hammer-ons." aria-label="Help: Hammer-on velocity">?</button>
           <div class="control-with-help-main">
-            <label id="hammerOnVelocityLabel" for="hammerOnVelocitySlider" disabled>Hammer-on velocity: 75% of last strum</label>
-            <input type="range" id="hammerOnVelocitySlider" min="0" max="100" value="75" step="1" disabled aria-labelledby="hammerOnVelocityLabel">
+            <label id="hammerOnVelocityLabel" for="hammerOnVelocitySlider" disabled>Hammer-on velocity: 50% of last strum</label>
+            <input type="range" id="hammerOnVelocitySlider" min="0" max="100" value="50" step="1" disabled aria-labelledby="hammerOnVelocityLabel">
           </div>
         </div>
         <div class="control-with-help" style="margin-top:10px;">
           <button type="button" class="help-icon" data-help-title="Post-strum guard" data-help-body="Extra time after a strum (in firmware ticks) before hammer-on notes can register. Increase if fingerboard noise right after a strum triggers unwanted hammer-ons; decrease to allow hammer-ons sooner after the strum." aria-label="Help: Post-strum guard">?</button>
           <div class="control-with-help-main">
-            <label id="hammerPostStrumGuardLabel" for="hammerPostStrumGuardSlider" disabled>Post-strum guard: 35 ticks</label>
-            <input type="range" id="hammerPostStrumGuardSlider" min="0" max="255" value="35" step="1" disabled aria-labelledby="hammerPostStrumGuardLabel">
+            <label id="hammerPostStrumGuardLabel" for="hammerPostStrumGuardSlider" disabled>Post-strum guard: 5 ticks</label>
+            <input type="range" id="hammerPostStrumGuardSlider" min="0" max="255" value="5" step="1" disabled aria-labelledby="hammerPostStrumGuardLabel">
           </div>
         </div>
       </div>
@@ -1010,7 +1033,7 @@
       <button type="button" class="help-icon" data-help-title="Playback controls" data-help-body="Record tells the instrument to capture your playing into a temporary MIDI file until you press Stop. Stop saves that recording on the device and stops playback. Play plays the selected MIDI file (after recording, Play uses the captured take until you change files on the device). Pause holds playback. Connect first." aria-label="Help: Playback">?</button>
       <div class="control-with-help-main">
         <button type="button" id="recordButton" disabled>Record</button>
-        <button id="playButton">Play</button>
+        <button type="button" id="playButton" disabled>Play</button>
         <button id="pauseButton" onclick="pause()" disabled>Pause</button>
         <button id="stopButton" onclick="stop()" disabled>Stop</button>
       </div>
@@ -1134,7 +1157,7 @@
   <div id="tab-content5" class="tab-content">
 
     <div class="control-with-help synth-usb-midi-top">
-      <button type="button" class="help-icon" data-help-title="USB MIDI" data-help-body="Independent of Bluetooth. Android: class-compliant USB MIDI starts automatically (OTG if needed; approve USB if prompted). iPhone / iPad app: Core MIDI sources (USB via Camera Adapter, hub, or compatible interfaces) are connected automatically like Android — WKWebView does not use Web MIDI. Chrome / Flutter web: Web MIDI is requested when supported; tap once if the browser asks for permission. The Dijilele BLE link is only for the instrument’s own settings and MIDI — not required for USB controllers." aria-label="Help: USB MIDI">?</button>
+      <button type="button" class="help-icon" data-help-title="USB MIDI" data-help-body="Connect a USB cable to your Dijilele to enjoy the sound of instruments in this page." aria-label="Help: USB MIDI">?</button>
       <div class="control-with-help-main">
         <h3>USB MIDI</h3>
         <div id="usbMidiDeviceName" class="synth-usb-midi-device" aria-live="polite">Starting…</div>
@@ -1153,7 +1176,7 @@
       <div class="control-with-help align-center synth-soundfont-load-row">
         <button type="button" class="help-icon" data-help-title="SoundFont" data-help-body="Choose a SoundFont 2 (.sf2) file. It loads into the in-app synthesizer for USB MIDI and, when enabled, Bluetooth MIDI. Large files may take a moment to parse. On Android, the system file picker opens when you tap Load soundfont. In Chrome (Flutter web) and on iOS, the app opens a file picker for .sf2 files." aria-label="Help: SoundFont">?</button>
         <div class="control-with-help-main">
-          <button type="button" id="loadSoundfontButton">Load soundfont</button>
+          <button type="button" id="loadSoundfontButton" disabled>Load soundfont</button>
         </div>
       </div>
       <div id="synthSoundfontName" class="synth-sf-name" aria-live="polite"></div>
@@ -1343,6 +1366,10 @@
       let leftHandRadioButtons = document.getElementsByName('leftHandRadioGroup');
       let quarterTonesRadioButtons = document.getElementsByName('quarterTonesRadioGroup');
       let dynamicsRadioButtons = document.getElementsByName('dynamicsRadioGroup');
+      let strumVelOutMinLabel = document.getElementById('strumVelOutMinLabel');
+      let strumVelOutMinSlider = document.getElementById('strumVelOutMinSlider');
+      let strumVelOutMaxLabel = document.getElementById('strumVelOutMaxLabel');
+      let strumVelOutMaxSlider = document.getElementById('strumVelOutMaxSlider');
       let staccatoRadioButtons = document.getElementsByName('staccatoRadioGroup');
       let tappingRadioButtons = document.getElementsByName('tappingRadioGroup');
       let hammerOnVelocityLabel = document.getElementById('hammerOnVelocityLabel');
@@ -1406,6 +1433,29 @@
       let saveSettingsButton = document.getElementById('saveSettingsButton');
       let resetSettingsButton = document.getElementById('resetSettingsButton');
       let connectedDevice = null;
+      /** Strum vel min/max only apply when Dynamics is On (variable velocity); grey out when Off or disconnected. */
+      function updateStrumVelOutRangeControlsEnabled() {
+        if (!connectedDevice) {
+          strumVelOutMinSlider.disabled = true;
+          strumVelOutMaxSlider.disabled = true;
+          strumVelOutMinLabel.setAttribute('disabled', 'disabled');
+          strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
+          return;
+        }
+        const sel = document.querySelector('input[name="dynamicsRadioGroup"]:checked');
+        const dynamicsOn = sel && sel.value === 'on';
+        if (dynamicsOn) {
+          strumVelOutMinSlider.disabled = false;
+          strumVelOutMaxSlider.disabled = false;
+          strumVelOutMinLabel.removeAttribute('disabled');
+          strumVelOutMaxLabel.removeAttribute('disabled');
+        } else {
+          strumVelOutMinSlider.disabled = true;
+          strumVelOutMaxSlider.disabled = true;
+          strumVelOutMinLabel.setAttribute('disabled', 'disabled');
+          strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
+        }
+      }
       let device = null;
       /** Chrome / Web Bluetooth: map id → BluetoothDevice from each successful scan (Connect must use the selected id, not only the last `device`). */
       const bleDeviceById = new Map();
@@ -1837,6 +1887,16 @@
           if (typeof obj.quarterTones === 'number') setRadioCheckedByName(quarterTonesRadioButtons, obj.quarterTones !== 0);
           /* Firmware: 0x45 data 0 => constantVelocity off (variable velocity / dynamics); nonzero => constant velocity on */
           if (typeof obj.constantVelocity === 'number') setRadioCheckedByName(dynamicsRadioButtons, obj.constantVelocity === 0);
+          if (typeof obj.strumVelOutMin === 'number') {
+            const sm = Math.max(0, Math.min(127, obj.strumVelOutMin | 0));
+            strumVelOutMinSlider.value = String(sm);
+            strumVelOutMinLabel.textContent = `Strum velocity min (MIDI): ${sm}`;
+          }
+          if (typeof obj.strumVelOutMax === 'number') {
+            const sx = Math.max(0, Math.min(127, obj.strumVelOutMax | 0));
+            strumVelOutMaxSlider.value = String(sx);
+            strumVelOutMaxLabel.textContent = `Strum velocity max (MIDI): ${sx}`;
+          }
           if (typeof obj.tapWithoutStrum === 'number') setRadioCheckedByName(tapWithoutStrumRadioButtons, obj.tapWithoutStrum !== 0);
           if (typeof obj.percussion === 'number') setRadioCheckedByName(percussionRadioButtons, obj.percussion !== 0);
           if (typeof obj.string1 === 'number') setRadioCheckedByName(string1RadioButtons, obj.string1 !== 0);
@@ -1845,6 +1905,7 @@
           if (typeof obj.string4 === 'number') setRadioCheckedByName(string4RadioButtons, obj.string4 !== 0);
         } finally {
           syncingFromFirmware = false;
+          updateStrumVelOutRangeControlsEnabled();
         }
       }
 
@@ -2206,10 +2267,10 @@
           }
         }
         if (sel.options.length > 1) {
-          sel.disabled = false;
           sel.selectedIndex = 1;
           applySynthInstrumentSelection();
         }
+        if (typeof syncSynthTabUsbControls === 'function') syncSynthTabUsbControls();
       }
 
       function applySynthInstrumentSelection() {
@@ -2883,6 +2944,58 @@
       let webMidiGestureRetryScheduled = false;
       /** Avoid overlapping requestMIDIAccess from auto-start timers. */
       let webMidiOpening = false;
+      window.__dijiUsbMidiLastPortCount = 0;
+      window.__dijiUsbMidiLastNames = '';
+
+      function looksLikeDijileleInUsbMidiText(s) {
+        if (s == null || typeof s !== 'string') return false;
+        const t = String(s).toLowerCase();
+        if (t.indexOf('dijilele') >= 0) return true;
+        if (t.indexOf('dijiware') >= 0) return true;
+        if (/\betar\b/.test(t) || t.indexOf('e-tar') >= 0 || t.indexOf('e tar') >= 0) return true;
+        return false;
+      }
+
+      function isUsbDijilelePresentForSynthTab() {
+        const pc = typeof window.__dijiUsbMidiLastPortCount === 'number'
+          ? window.__dijiUsbMidiLastPortCount
+          : parseInt(window.__dijiUsbMidiLastPortCount, 10) || 0;
+        if (pc <= 0) return false;
+        const usbLive = usbMidiNativeActive || usbMidiAccess ||
+          (window.__dijiNativeUsbMidi === true && pc > 0);
+        if (!usbLive) return false;
+        let blob = (window.__dijiUsbMidiLastNames || '') + ' ';
+        const st = document.getElementById('usbMidiDeviceName');
+        if (st) blob += (st.textContent || '');
+        return looksLikeDijileleInUsbMidiText(blob);
+      }
+
+      function syncSynthTabUsbControls() {
+        const ok = isUsbDijilelePresentForSynthTab();
+        const tab5 = document.getElementById('tab-content5');
+        if (!tab5) return;
+        const grid = document.getElementById('quickInstrumentsGrid');
+        if (grid) {
+          grid.querySelectorAll('.quick-ins-btn').forEach(function (btn) {
+            btn.disabled = !ok || quickInstrumentLoading;
+          });
+        }
+        tab5.querySelectorAll('button').forEach(function (btn) {
+          if (btn.classList && btn.classList.contains('quick-ins-btn')) return;
+          if (btn.classList && btn.classList.contains('help-icon')) {
+            btn.disabled = false;
+            return;
+          }
+          btn.disabled = !ok;
+        });
+        const instSel = document.getElementById('synthInstrumentDropdown');
+        if (instSel) {
+          const canPreset = instSel.options.length > 1;
+          instSel.disabled = !ok || !canPreset;
+        }
+        const sf = document.getElementById('synthSoundfontFile');
+        if (sf) sf.disabled = !ok;
+      }
 
       window._nativeUsbMidiMessage = function (b64) {
         try {
@@ -2906,6 +3019,11 @@
           names = deviceNamesJson;
         }
         window.__dijiUsbMidiLastPortCount = count;
+        if (count === 0) {
+          window.__dijiUsbMidiLastNames = '';
+        } else if (names) {
+          window.__dijiUsbMidiLastNames = String(names).trim();
+        }
         const st = document.getElementById('usbMidiDeviceName');
         if (st) {
           if (count > 0) {
@@ -2932,6 +3050,7 @@
           try { clearTimeout(window.__dijiUsbMidiZeroPortTimer); } catch (e) { /* ignore */ }
           window.__dijiUsbMidiZeroPortTimer = null;
         }
+        syncSynthTabUsbControls();
       };
 
       window._usbMidiNativeStarted = function (ok, arg2) {
@@ -2962,6 +3081,7 @@
           const msg = typeof arg2 === 'string' ? arg2 : String(arg2 || 'unknown error');
           alert('Could not start USB MIDI: ' + msg);
         }
+        syncSynthTabUsbControls();
       };
 
       window._usbMidiNativeStopped = function () {
@@ -2974,6 +3094,7 @@
         usbMidiDeviceNameAlertShown = false;
         const st = document.getElementById('usbMidiDeviceName');
         if (st) st.textContent = 'Not connected';
+        syncSynthTabUsbControls();
       };
 
       function feedUsbMidiToSynth(data) {
@@ -3022,9 +3143,12 @@
           });
         } catch (e) { /* ignore */ }
         const sz = access.inputs.size;
+        window.__dijiUsbMidiLastPortCount = sz;
+        window.__dijiUsbMidiLastNames = portNames.length ? portNames.join(', ') : '';
         st.textContent = portNames.length
           ? portNames.join(', ')
           : (sz > 0 ? ('Web MIDI (' + sz + ' input port' + (sz === 1 ? '' : 's') + ')') : 'No MIDI input ports');
+        syncSynthTabUsbControls();
       }
 
       function scheduleWebMidiAutoRetryOnGesture() {
@@ -3063,6 +3187,9 @@
         const st = document.getElementById('usbMidiDeviceName');
         if (st) st.textContent = 'Not connected';
         usbMidiDeviceNameAlertShown = false;
+        window.__dijiUsbMidiLastPortCount = 0;
+        window.__dijiUsbMidiLastNames = '';
+        syncSynthTabUsbControls();
       }
 
       /**
@@ -3087,6 +3214,7 @@
           } catch (e) {
             console.warn('USB MIDI native start', e);
           }
+          syncSynthTabUsbControls();
           return;
         }
         if (typeof navigator.requestMIDIAccess !== 'function') {
@@ -3095,6 +3223,9 @@
           }
           const st0 = document.getElementById('usbMidiDeviceName');
           if (st0) st0.textContent = 'Web MIDI not available';
+          window.__dijiUsbMidiLastPortCount = 0;
+          window.__dijiUsbMidiLastNames = '';
+          syncSynthTabUsbControls();
           return;
         }
         if (webMidiOpening) return;
@@ -3129,6 +3260,9 @@
                 ? 'Tap anywhere to allow MIDI access'
                 : 'Not connected';
             }
+            window.__dijiUsbMidiLastPortCount = 0;
+            window.__dijiUsbMidiLastNames = '';
+            syncSynthTabUsbControls();
             return;
           }
           if (quiet) {
@@ -3146,7 +3280,7 @@
               } catch (a) { /* ignore */ }
               return;
             }
-          } catch (e) {
+            } catch (e) {
             console.warn('USB MIDI synth', e);
             try {
               alert('Synthesizer did not start: ' + (e && e.message ? e.message : String(e)));
@@ -3154,6 +3288,7 @@
           }
         } finally {
           webMidiOpening = false;
+          syncSynthTabUsbControls();
         }
       }
 
@@ -3317,11 +3452,12 @@
             all.forEach(function (b) { b.disabled = true; });
             loadQuickInstrumentSlot(index, entry).finally(function () {
               quickInstrumentLoading = false;
-              all.forEach(function (b) { b.disabled = false; });
+              if (typeof syncSynthTabUsbControls === 'function') syncSynthTabUsbControls();
             });
           });
           grid.appendChild(btn);
         });
+        if (typeof syncSynthTabUsbControls === 'function') syncSynthTabUsbControls();
       })();
 
       /** Device slots 1–4 ↔ /spiffs/N.mid; labels update when user loads a .mid from disk (same picker pattern as Load soundfont). */
@@ -3678,7 +3814,10 @@
 
 
               metronomeVolSlider.disabled = false;
+              metronomeVolLabel.removeAttribute('disabled');
               metronomeNumBeatsSlider.disabled = false;
+              metronomeNumBeatsLabel.removeAttribute('disabled');
+              document.getElementById('batteryReadoutBlock').classList.remove('battery-readout--disconnected');
 
               playButton.disabled = false;
               recordButton.disabled = false;
@@ -3701,6 +3840,7 @@
                 quarterTonesRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < dynamicsRadioButtons.length; i++)
                 dynamicsRadioButtons[i].removeAttribute('disabled');
+              updateStrumVelOutRangeControlsEnabled();
               for (let i = 0; i < staccatoRadioButtons.length; i++)
                 staccatoRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < percussionRadioButtons.length; i++)
@@ -3763,6 +3903,10 @@
             pitchSlider.disabled = true;
             tempoSlider.disabled = true;
             metronomeVolSlider.disabled = true;
+            metronomeVolLabel.setAttribute('disabled', 'disabled');
+            metronomeNumBeatsSlider.disabled = true;
+            metronomeNumBeatsLabel.setAttribute('disabled', 'disabled');
+            document.getElementById('batteryReadoutBlock').classList.add('battery-readout--disconnected');
             midiFileDropdown.disabled = true;
             const loadMidiBtnDisc = document.getElementById('loadMidiFileButton');
             if (loadMidiBtnDisc) loadMidiBtnDisc.disabled = true;
@@ -3807,6 +3951,10 @@
               quarterTonesRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < dynamicsRadioButtons.length; i++)
               dynamicsRadioButtons[i].setAttribute('disabled', 'disabled');
+            strumVelOutMinSlider.disabled = true;
+            strumVelOutMinLabel.setAttribute('disabled', 'disabled');
+            strumVelOutMaxSlider.disabled = true;
+            strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
             for (let i = 0; i < staccatoRadioButtons.length; i++)
               staccatoRadioButtons[i].setAttribute('disabled', 'disabled');
             for (let i = 0; i < tappingRadioButtons.length; i++)
@@ -3909,7 +4057,7 @@
         // Add an event listener to the 'midiFile' dropdown
         midiFileDropdown.addEventListener('change', async () => {
 
-          playButton.disabled = false; //when a midi file is selected, make the play button available
+          playButton.disabled = !connectedDevice;
 
           // Get the selected index
           const index = midiFileDropdown.selectedIndex;
@@ -4524,10 +4672,51 @@
 
             } catch (error) {
               console.error('Error sending note to the device:', error);
+            } finally {
+              updateStrumVelOutRangeControlsEnabled();
             }
 
           });
         }
+
+        async function sendStrumVelOutRangeBle() {
+          if (!connectedDevice || syncingFromFirmware) return;
+          let rawMn = Math.max(0, Math.min(127, parseInt(strumVelOutMinSlider.value, 10) || 0));
+          let rawMx = Math.max(0, Math.min(127, parseInt(strumVelOutMaxSlider.value, 10) || 0));
+          const mn = Math.min(rawMn, rawMx);
+          const mx = Math.max(rawMn, rawMx);
+          strumVelOutMinSlider.value = String(mn);
+          strumVelOutMaxSlider.value = String(mx);
+          strumVelOutMinLabel.textContent = `Strum velocity min (MIDI): ${mn}`;
+          strumVelOutMaxLabel.textContent = `Strum velocity max (MIDI): ${mx}`;
+          const pkt = (cmd, val) => {
+            const d = new Uint8Array(5);
+            d[0] = 0xbf;
+            d[1] = 0x8c;
+            d[2] = 0xfe;
+            d[3] = cmd;
+            d[4] = val;
+            return d;
+          };
+          await connectedDevice.midiCharacteristic.writeValue(pkt(0x5a, mn));
+          await connectedDevice.midiCharacteristic.writeValue(pkt(0x5b, mx));
+        }
+
+        strumVelOutMinSlider.addEventListener('input', async () => {
+          try {
+            await sendStrumVelOutRangeBle();
+          } catch (error) {
+            console.error('Error sending strum velocity range to the device:', error);
+          }
+        });
+
+        strumVelOutMaxSlider.addEventListener('input', async () => {
+          try {
+            await sendStrumVelOutRangeBle();
+          } catch (error) {
+            console.error('Error sending strum velocity range to the device:', error);
+          }
+        });
 
         // Add an event listener to the staccatoRadioButtons
 
@@ -4886,7 +5075,7 @@
         document.getElementById('stopButton').addEventListener('click', async () => {
 
           // Enable/disable buttons based on the context
-          playButton.disabled = false;
+          playButton.disabled = !connectedDevice;
           pauseButton.disabled = true;
           stopButton.disabled = true;
           if (appMidiRecording) {
@@ -4912,7 +5101,7 @@
         document.getElementById('pauseButton').addEventListener('click', async () => {
 
           // Enable/disable buttons based on the context
-          playButton.disabled = false;
+          playButton.disabled = !connectedDevice;
           pauseButton.disabled = true;
           stopButton.disabled = true;
 
