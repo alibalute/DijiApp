@@ -910,13 +910,19 @@
           <label><input type="radio" name="tappingRadioGroup" value="on" disabled> On</label>
           <label><input type="radio" name="tappingRadioGroup" value="off" checked disabled> Off</label>
         </fieldset>
-        <div style="margin-top:10px;">
-          <label id="hammerOnVelocityLabel" for="hammerOnVelocitySlider" disabled>Hammer-on velocity: 75% of last strum</label>
-          <input type="range" id="hammerOnVelocitySlider" min="0" max="100" value="75" step="1" disabled aria-labelledby="hammerOnVelocityLabel">
+        <div class="control-with-help" style="margin-top:10px;">
+          <button type="button" class="help-icon" data-help-title="Hammer-on velocity" data-help-body="MIDI velocity for hammer-on notes, as a percent of the velocity from the last strum on that string. Higher values track the strum more closely; lower values produce softer hammer-ons." aria-label="Help: Hammer-on velocity">?</button>
+          <div class="control-with-help-main">
+            <label id="hammerOnVelocityLabel" for="hammerOnVelocitySlider" disabled>Hammer-on velocity: 75% of last strum</label>
+            <input type="range" id="hammerOnVelocitySlider" min="0" max="100" value="75" step="1" disabled aria-labelledby="hammerOnVelocityLabel">
+          </div>
         </div>
-        <div style="margin-top:10px;">
-          <label id="hammerPostStrumGuardLabel" for="hammerPostStrumGuardSlider" disabled>Post-strum guard: 35 ticks</label>
-          <input type="range" id="hammerPostStrumGuardSlider" min="0" max="255" value="35" step="1" disabled aria-labelledby="hammerPostStrumGuardLabel">
+        <div class="control-with-help" style="margin-top:10px;">
+          <button type="button" class="help-icon" data-help-title="Post-strum guard" data-help-body="Extra time after a strum (in firmware ticks) before hammer-on notes can register. Increase if fingerboard noise right after a strum triggers unwanted hammer-ons; decrease to allow hammer-ons sooner after the strum." aria-label="Help: Post-strum guard">?</button>
+          <div class="control-with-help-main">
+            <label id="hammerPostStrumGuardLabel" for="hammerPostStrumGuardSlider" disabled>Post-strum guard: 35 ticks</label>
+            <input type="range" id="hammerPostStrumGuardSlider" min="0" max="255" value="35" step="1" disabled aria-labelledby="hammerPostStrumGuardLabel">
+          </div>
         </div>
       </div>
     </div>
