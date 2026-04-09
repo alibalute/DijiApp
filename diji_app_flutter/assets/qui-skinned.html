@@ -744,15 +744,23 @@
       max-width: 360px;
       margin: 0 auto 10px;
     }
-    .playback-midi-load-row #loadMidiFileButton,
-    .playback-midi-load-row #midiLibraryButton,
-    .playback-midi-load-row #uploadMidiToDeviceButton {
-      width: auto;
-      max-width: none;
-      min-width: 200px;
+    .playback-midi-load-row #midiLibraryButton {
+      /* Match global button + select width (80% / max 320px) */
+      width: 80%;
+      max-width: 320px;
       margin-left: auto;
       margin-right: auto;
       display: block;
+    }
+    .midi-library-upload-status {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 10px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+      min-height: 1.35em;
+      word-break: break-word;
     }
     /* Play + Loop share one row: 70% / 30% */
     .playback-loop-play-row {
@@ -1431,34 +1439,46 @@
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="MIDI library opens bundled Standard MIDI files in a simple folder view (edit assets/midi_library/midi_manifest.json to add paths). Open MIDI file uses the system file picker (same pattern as Load soundfont on the Synthesizer tab). Each load is assigned to the next device slot (1–4) in rotation. Upload to Dijilele (when connected) copies that slot’s file over Bluetooth into the instrument flash as /spiffs/1.mid … /spiffs/4.mid (max 256 KB)." aria-label="Help: MIDI file">?</button>
+      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="Select MIDI file opens MIDI files either from the provided library or from the device, then uploads it to Dijilele." aria-label="Help: MIDI file">?</button>
       <div class="control-with-help-main">
         <input type="file" id="midiFilePickerInput" accept=".mid,.midi,audio/midi,audio/x-midi" style="display:none" />
         <div class="playback-midi-load-row align-center">
-          <button type="button" id="midiLibraryButton" disabled>MIDI library</button>
-          <button type="button" id="loadMidiFileButton" disabled>Open MIDI file</button>
-          <button type="button" id="uploadMidiToDeviceButton" disabled>Upload to Dijilele</button>
+          <button type="button" id="midiLibraryButton" disabled>Select MIDI file</button>
         </div>
-        <label for="midiFileDropdown" id="midiFileLabel">Select MIDI File:</label>
-        <select id="midiFileDropdown" disabled></select>
+        <div id="midiLibraryUploadStatus" class="midi-library-upload-status" aria-live="polite"></div>
       </div>
     </div>
 
     <div class="control-with-help align-center">
-      <button type="button" class="help-icon" data-help-title="Playback controls" data-help-body="Record tells the instrument to capture your playing into a temporary MIDI file until you press Stop. Stop saves that recording on the device and stops playback. Play plays the selected MIDI file (after recording, Play uses the captured take until you change files on the device). Pause holds playback. Connect first." aria-label="Help: Playback">?</button>
+      <button type="button" class="help-icon" data-help-title="Play" data-help-body="Starts playback of the MIDI file stored on the instrument from the slot you last uploaded (Select MIDI file). The instrument must be connected. If Loop is on, playback repeats until Stop. After a recording, Play may use the new take until you load another file." aria-label="Help: Play">?</button>
       <div class="control-with-help-main">
-        <button type="button" id="recordButton" disabled>Record</button>
         <div class="playback-loop-play-row">
           <button type="button" id="playButton" disabled>Play</button>
           <button type="button" id="midiLoopButton" class="midi-loop-btn" disabled aria-pressed="false" title="Loop: repeat the selected MIDI file until Stop">Loop</button>
         </div>
-        <button id="pauseButton" onclick="pause()" disabled>Pause</button>
-        <button id="stopButton" onclick="stop()" disabled>Stop</button>
+      </div>
+    </div>
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Record" data-help-body="Tells the instrument to capture your playing into a temporary MIDI file. Press Stop to finish: the recording is saved on the device and playback stops. Connect first." aria-label="Help: Record">?</button>
+      <div class="control-with-help-main">
+        <button type="button" id="recordButton" disabled>Record</button>
+      </div>
+    </div>
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Pause" data-help-body="Pauses MIDI file playback. Press Play again to resume from where you paused." aria-label="Help: Pause">?</button>
+      <div class="control-with-help-main">
+        <button type="button" id="pauseButton" onclick="pause()" disabled>Pause</button>
+      </div>
+    </div>
+    <div class="control-with-help align-center">
+      <button type="button" class="help-icon" data-help-title="Stop" data-help-body="Stops MIDI playback if it is running. If you were recording, this finalizes the recording and saves it on the device." aria-label="Help: Stop">?</button>
+      <div class="control-with-help-main">
+        <button type="button" id="stopButton" onclick="stop()" disabled>Stop</button>
       </div>
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="Strum step" data-help-body="Off: play notes from the strings as usual. On: each strum plays the next note-on from the MIDI file chosen in “Select MIDI File” above (the same file used for Play). Pick the file first, set Strum step to On, then strum at your own pace. Timed playback with Play is not used in this mode." aria-label="Help: Strum step">?</button>
+      <button type="button" class="help-icon" data-help-title="Strum step" data-help-body="Off: play notes from the strings as usual. On: each strum plays the next note-on from the MIDI file you loaded with Select MIDI file (the same file used for Play). Load a file first, set Strum step to On, then strum at your own pace. Timed playback with Play is not used in this mode." aria-label="Help: Strum step">?</button>
       <div class="control-with-help-main">
         <fieldset class="fieldset--segmented">
           <legend>Strum step:</legend>
@@ -1782,8 +1802,6 @@
       let tuningsDropdown = document.getElementById('tuningsDropdown');
       let pitchSystemsDropdown = document.getElementById('pitchSystemsDropdown');
       let midiChannelsDropdown = document.getElementById('midiChannelsDropdown');
-      let midiFileDropdown = document.getElementById('midiFileDropdown');
-
 
       let transposeLabel = document.getElementById('transposeLabel');
       let transposeSlider = document.getElementById('transposeSlider');
@@ -2150,14 +2168,8 @@
         "15,16"
       ];
 
-      const midiFilesNames = [
-        "MIDI File 1",
-        "MIDI File 2",
-        "MIDI File 3",
-        "MIDI File 4"
-      ];
-
-
+      /** SPIFFS MIDI slots on device (/spiffs/N.mid); keep in sync with firmware DIJI_MIDI_SPIFFS_SLOTS. */
+      const DIJI_MIDI_SPIFFS_SLOTS = 10;
 
       // Add the instrument names to the dropdown
       instrumentNames.forEach((instrument, index) => {
@@ -2170,18 +2182,6 @@
 
         // Append the option to the dropdown
         instrumentsDropdown.appendChild(option);
-      });
-      // Add the instrument names to the dropdown
-      midiFilesNames.forEach((midiFile, index) => {
-        // Create an option element
-        let option = document.createElement('option');
-
-        // Set the value and text content for the option
-        option.value = index + 1; // Values start from 1
-        option.textContent = midiFile;
-
-        // Append the option to the dropdown
-        midiFileDropdown.appendChild(option);
       });
 
       // Add the tuning names to the dropdown
@@ -3952,11 +3952,12 @@
         if (typeof syncSynthTabUsbControls === 'function') syncSynthTabUsbControls();
       })();
 
-      /** Device slots 1–4 ↔ /spiffs/N.mid; labels update when user loads a .mid from disk (same picker pattern as Load soundfont). */
-      const userMidiBySlot = { 1: null, 2: null, 3: null, 4: null };
+      /** Device slots 1..DIJI_MIDI_SPIFFS_SLOTS ↔ /spiffs/N.mid; labels update when user loads a .mid from disk. */
+      const userMidiBySlot = Object.fromEntries(
+        Array.from({ length: DIJI_MIDI_SPIFFS_SLOTS }, function (_, i) { return [i + 1, null]; })
+      );
       let nextMidiUserSlot = 1;
-      // Slot that will be uploaded to when you press "Upload to Dijilele".
-      // We set this when the user loads a MIDI file so upload doesn't depend on which dropdown option is currently selected.
+      // SPIFFS slot for the last loaded MIDI (used for upload + 0x53 file select).
       let pendingMidiSlot = null;
       function midiBasename(path) {
         const s = String(path || '').replace(/\\/g, '/');
@@ -3995,25 +3996,49 @@
         a[3 + payloadAfterF0.length] = 0xf7;
         return a;
       }
-      function refreshUploadMidiButton() {
-        const btn = document.getElementById('uploadMidiToDeviceButton');
-        const dd = document.getElementById('midiFileDropdown');
-        if (!btn || !dd) return;
-        const slot = pendingMidiSlot != null ? pendingMidiSlot : parseInt(dd.value, 10);
-        const has = userMidiBySlot[slot] && userMidiBySlot[slot].buffer;
-        btn.disabled = !connectedDevice || !has;
+      async function sendBleMidiFileSlotSelect(slot) {
+        if (!connectedDevice || !connectedDevice.midiCharacteristic) return;
+        if (syncingFromFirmware) return;
+        if (!Number.isFinite(slot) || slot < 1 || slot > DIJI_MIDI_SPIFFS_SLOTS) return;
+        try {
+          const data = new Uint8Array(5);
+          data[0] = 0xbf;
+          data[1] = 0x8c;
+          data[2] = 0xfe;
+          data[3] = 0x53;
+          data[4] = slot;
+          await connectedDevice.midiCharacteristic.writeValue(data);
+        } catch (e) {
+          console.error('MIDI file slot select', e);
+        }
       }
-      async function uploadUserMidiToSpiffs() {
+
+      function setMidiLibraryUploadStatus(text) {
+        const el = document.getElementById('midiLibraryUploadStatus');
+        if (el) el.textContent = text || '';
+      }
+
+      async function uploadUserMidiToSpiffs(opts) {
+        const o = opts || {};
         if (!connectedDevice || !connectedDevice.midiCharacteristic) {
-          alert('Connect to the instrument first.');
+          if (!o.suppressNoConnectionAlert) {
+            alert('Connect to the instrument first.');
+          }
           return;
         }
-        const dd = document.getElementById('midiFileDropdown');
-        const slot = pendingMidiSlot != null ? pendingMidiSlot : parseInt(dd && dd.value, 10);
-        if (slot < 1 || slot > 4) return;
+        let slot = pendingMidiSlot;
+        if (slot == null || slot < 1 || slot > DIJI_MIDI_SPIFFS_SLOTS) {
+          for (let s = 1; s <= DIJI_MIDI_SPIFFS_SLOTS; s++) {
+            if (userMidiBySlot[s] && userMidiBySlot[s].buffer) {
+              slot = s;
+              break;
+            }
+          }
+        }
+        if (slot == null || slot < 1 || slot > DIJI_MIDI_SPIFFS_SLOTS) return;
         const entry = userMidiBySlot[slot];
         if (!entry || !entry.buffer) {
-          alert('Open a MIDI file for this slot first (Open MIDI file).');
+          alert('Load a MIDI file first (Select MIDI file).');
           return;
         }
         const u8 = new Uint8Array(entry.buffer);
@@ -4021,14 +4046,10 @@
           alert('File is too large (max 256 KB).');
           return;
         }
-        const ubtn = document.getElementById('uploadMidiToDeviceButton');
         /* Larger chunks = fewer BLE writes. Firmware static decode buffer is 768 B. */
         const chunkRaw = 120;
         try {
-          if (ubtn) {
-            ubtn.disabled = true;
-            ubtn.textContent = 'Uploading…';
-          }
+          setMidiLibraryUploadStatus('Uploading..');
           const sz = u8.length;
           const size7 = encodeSize7Bit(sz);
           const beginPayload = new Uint8Array(9);
@@ -4068,39 +4089,32 @@
           commitPayload[4] = slot;
           await connectedDevice.midiCharacteristic.writeValue(buildBleMidiSysexPacket(commitPayload).buffer);
           await delayMs(15);
-          alert('Upload finished. The instrument saved /spiffs/' + slot + '.mid');
-          // After upload, select the newly-uploaded slot on the UI and on the device
-          // so the next "Play" uses the expected file.
-          if (dd) {
-            dd.selectedIndex = slot - 1;
-            try {
-              dd.dispatchEvent(new Event('change'));
-            } catch (_) {}
-          }
+          setMidiLibraryUploadStatus(midiBasename(entry.name));
+          await sendBleMidiFileSlotSelect(slot);
         } catch (e) {
           console.error('MIDI upload', e);
+          setMidiLibraryUploadStatus('');
           alert('Upload failed: ' + (e && e.message ? e.message : String(e)));
-        } finally {
-          if (ubtn) ubtn.textContent = 'Upload to Dijilele';
-          refreshUploadMidiButton();
         }
       }
 
+      async function autoUploadAfterMidiLibraryPick(displayName) {
+        if (!connectedDevice || !connectedDevice.midiCharacteristic) {
+          setMidiLibraryUploadStatus(midiBasename(displayName) + ' — connect to upload');
+          return;
+        }
+        await uploadUserMidiToSpiffs({ suppressNoConnectionAlert: true });
+      }
+
       function applyUserMidiFromArrayBuffer(ab, displayName) {
-        const dd = document.getElementById('midiFileDropdown');
-        if (!dd || !(ab instanceof ArrayBuffer) || !isMidiFileHeader(ab)) {
+        if (!(ab instanceof ArrayBuffer) || !isMidiFileHeader(ab)) {
           alert('Please choose a Standard MIDI file (.mid) with an MThd header.');
           return;
         }
         const slot = nextMidiUserSlot;
-        nextMidiUserSlot = (nextMidiUserSlot % 4) + 1;
+        nextMidiUserSlot = (nextMidiUserSlot % DIJI_MIDI_SPIFFS_SLOTS) + 1;
         userMidiBySlot[slot] = { name: displayName || 'file.mid', buffer: ab.slice(0) };
         pendingMidiSlot = slot;
-        const opt = dd.querySelector('option[value="' + slot + '"]');
-        if (opt) {
-          opt.textContent = midiBasename(displayName) + ' (slot ' + slot + ')';
-        }
-        refreshUploadMidiButton();
       }
       window.__dijiOnNativeMidiFile = function (payload) {
         try {
@@ -4111,34 +4125,14 @@
           const bytes = new Uint8Array(len);
           for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
           applyUserMidiFromArrayBuffer(bytes.buffer, name);
+          void autoUploadAfterMidiLibraryPick(name);
         } catch (e) {
           console.warn('Native MIDI decode', e);
         }
       };
       (function setupPlaybackMidiLoad() {
         const fileInput = document.getElementById('midiFilePickerInput');
-        const loadBtn = document.getElementById('loadMidiFileButton');
-        if (!fileInput || !loadBtn) return;
-        loadBtn.addEventListener('click', function () {
-          var bridge = window.flutter_inappwebview;
-          var fh = bridge && typeof bridge.callHandler === 'function';
-          if (window.__dijiNativeSoundfontPicker && fh) {
-            try {
-              var ret = bridge.callHandler('pickMidiFile', '');
-              if (ret != null && typeof ret.then === 'function') {
-                ret.catch(function (err) { console.warn('pickMidiFile handler', err); });
-              }
-            } catch (e) {
-              console.warn('pickMidiFile callHandler', e);
-            }
-            return;
-          }
-          try {
-            fileInput.click();
-          } catch (e) {
-            console.warn('MIDI file input', e);
-          }
-        });
+        if (!fileInput) return;
         fileInput.addEventListener('change', function () {
           const f = fileInput.files && fileInput.files[0];
           if (!f) return;
@@ -4147,6 +4141,7 @@
             const ab = reader.result;
             if (ab instanceof ArrayBuffer) {
               applyUserMidiFromArrayBuffer(ab, f.name);
+              void autoUploadAfterMidiLibraryPick(f.name);
             }
           };
           reader.onerror = function () {
@@ -4156,16 +4151,10 @@
           reader.readAsArrayBuffer(f);
           fileInput.value = '';
         });
-        const uploadBtn = document.getElementById('uploadMidiToDeviceButton');
-        if (uploadBtn) {
-          uploadBtn.addEventListener('click', function () { void uploadUserMidiToSpiffs(); });
-        }
-        const ddMidiRefresh = document.getElementById('midiFileDropdown');
-        if (ddMidiRefresh) ddMidiRefresh.addEventListener('change', refreshUploadMidiButton);
       })();
 
       (function setupMidiLibraryBrowser() {
-        var midiLibState = { manifest: null, path: [], rootLabel: 'MIDI Library' };
+        var midiLibState = { manifest: null, path: [], rootLabel: 'Select MIDI file' };
         var ov = document.getElementById('midiLibraryOverlay');
         var listEl = document.getElementById('midiLibList');
         var crumbEl = document.getElementById('midiLibBreadcrumb');
@@ -4183,7 +4172,7 @@
         function midiLibGetNode() {
           var m = midiLibState.manifest;
           if (!m || !m.children) return null;
-          var node = { children: m.children, label: m.rootLabel || 'MIDI Library' };
+          var node = { children: m.children, label: m.rootLabel || 'Select MIDI file' };
           for (var i = 0; i < midiLibState.path.length; i++) {
             var seg = midiLibState.path[i];
             var ch = node.children;
@@ -4204,8 +4193,8 @@
         function renderMidiLibraryView() {
           var node = midiLibGetNode();
           if (!node || !listEl) return;
-          if (titleEl) titleEl.textContent = node.label || midiLibState.rootLabel || 'MIDI Library';
-          var trail = '/' + (midiLibState.rootLabel || 'MIDI Library');
+          if (titleEl) titleEl.textContent = node.label || midiLibState.rootLabel || 'Select MIDI file';
+          var trail = '/' + (midiLibState.rootLabel || 'Select MIDI file');
           for (var p = 0; p < midiLibState.path.length; p++) {
             trail += '/' + midiLibState.path[p];
           }
@@ -4289,7 +4278,7 @@
               console.warn('midiLibraryManifest bridge', e);
             }
           }
-          return { version: 1, rootLabel: 'MIDI Library', children: [] };
+          return { version: 1, rootLabel: 'Select MIDI file', children: [] };
         }
 
         async function loadMidiLibraryAsset(assetKey) {
@@ -4302,6 +4291,7 @@
             if (r.ok) {
               applyUserMidiFromArrayBuffer(await r.arrayBuffer(), name);
               closeMidiLibraryBrowser();
+              await autoUploadAfterMidiLibraryPick(name);
               return;
             }
           } catch (e) {
@@ -4314,6 +4304,7 @@
             if (r2.ok) {
               applyUserMidiFromArrayBuffer(await r2.arrayBuffer(), name);
               closeMidiLibraryBrowser();
+              await autoUploadAfterMidiLibraryPick(name);
               return;
             }
           } catch (e2) {
@@ -4343,7 +4334,7 @@
 
         async function openMidiLibraryBrowser() {
           midiLibState.manifest = await loadMidiLibraryManifest();
-          midiLibState.rootLabel = (midiLibState.manifest && midiLibState.manifest.rootLabel) || 'MIDI Library';
+          midiLibState.rootLabel = (midiLibState.manifest && midiLibState.manifest.rootLabel) || 'Select MIDI file';
           midiLibState.path = [];
           if (ov) ov.classList.add('help-overlay--open');
           renderMidiLibraryView();
@@ -4361,8 +4352,27 @@
         if (devBtn) {
           devBtn.addEventListener('click', function () {
             closeMidiLibraryBrowser();
-            var loadBtn = document.getElementById('loadMidiFileButton');
-            if (loadBtn) loadBtn.click();
+            var bridge = window.flutter_inappwebview;
+            var fh = bridge && typeof bridge.callHandler === 'function';
+            if (window.__dijiNativeSoundfontPicker && fh) {
+              try {
+                var ret = bridge.callHandler('pickMidiFile', '');
+                if (ret != null && typeof ret.then === 'function') {
+                  ret.catch(function (err) { console.warn('pickMidiFile handler', err); });
+                }
+              } catch (e) {
+                console.warn('pickMidiFile callHandler', e);
+              }
+              return;
+            }
+            var fin = document.getElementById('midiFilePickerInput');
+            if (fin) {
+              try {
+                fin.click();
+              } catch (e) {
+                console.warn('MIDI file input', e);
+              }
+            }
           });
         }
         openBtn.addEventListener('click', function () {
@@ -4438,21 +4448,9 @@
         metronomeNumBeatsSlider.disabled = true;
         metronomeNumBeatsLabel.setAttribute('disabled', 'disabled');
         document.getElementById('batteryReadoutBlock').classList.add('battery-readout--disconnected');
-        midiFileDropdown.disabled = true;
-        const loadMidiBtnDisc = document.getElementById('loadMidiFileButton');
-        if (loadMidiBtnDisc) loadMidiBtnDisc.disabled = true;
         const midiLibBtnDisc = document.getElementById('midiLibraryButton');
         if (midiLibBtnDisc) midiLibBtnDisc.disabled = true;
-        const uploadMidiBtnDisc = document.getElementById('uploadMidiToDeviceButton');
-        if (uploadMidiBtnDisc) {
-          uploadMidiBtnDisc.disabled = true;
-          uploadMidiBtnDisc.textContent = 'Upload to Dijilele';
-        }
-        for (let mi = 0; mi < midiFilesNames.length; mi++) {
-          const opt = midiFileDropdown.querySelector('option[value="' + (mi + 1) + '"]');
-          if (opt) opt.textContent = midiFilesNames[mi];
-        }
-        for (let s = 1; s <= 4; s++) userMidiBySlot[s] = null;
+        for (let s = 1; s <= DIJI_MIDI_SPIFFS_SLOTS; s++) userMidiBySlot[s] = null;
         nextMidiUserSlot = 1;
         pendingMidiSlot = null;
         playButton.disabled = true;
@@ -4533,6 +4531,7 @@
         resetBleSettingsDeferred();
 
         connectedDevice = null;
+        setMidiLibraryUploadStatus('');
         if (typeof syncSynthTabUsbControls === 'function') syncSynthTabUsbControls();
       }
       window.__dijiOnBleDisconnected = async function() {
@@ -4641,13 +4640,8 @@
               tuningsDropdown.disabled = false;
               pitchSystemsDropdown.disabled = false;
               midiChannelsDropdown.disabled = false;
-              midiFileDropdown.disabled = false;
-              const loadMidiBtn = document.getElementById('loadMidiFileButton');
-              if (loadMidiBtn) loadMidiBtn.disabled = false;
               const midiLibBtn = document.getElementById('midiLibraryButton');
               if (midiLibBtn) midiLibBtn.disabled = false;
-              refreshUploadMidiButton();
-
 
               transposeSlider.disabled = false;
               pitchSlider.disabled = false;
@@ -4808,35 +4802,6 @@
           }
         });
 
-        // Add an event listener to the 'midiFile' dropdown
-        midiFileDropdown.addEventListener('change', async () => {
-
-          playButton.disabled = !connectedDevice;
-          if (midiLoopButton) midiLoopButton.disabled = !connectedDevice;
-
-          // Get the selected index
-          const index = midiFileDropdown.selectedIndex;
-          try {
-            // Disconnect from the connected device
-            if (connectedDevice) {
-              if (syncingFromFirmware) return;
-
-              //make a  MIDI message as a Uint8Array
-              let data = new Uint8Array(5);
-              data[0] = 0xbf; //dummy timestamp 1st byte
-              data[1] = 0x8c; //dummy timestamp 2nd byte
-              data[2] = 0xfe; //custom midi status byte for controling etar through ble
-              data[3] = 0x53;   //midi file selection
-              data[4] = index + 1; //midi file index. Since index starts from zero, but file names start from 1.mid ...
-
-              await connectedDevice.midiCharacteristic.writeValue(data);
-
-            }
-
-          } catch (error) {
-            console.error('Error sending note to the device:', error);
-          }
-        });
         // Add an event listener to the 'tunings' dropdown
         tuningsDropdown.addEventListener('change', async () => {
           // Get the selected index
@@ -5916,7 +5881,7 @@
   <div id="midiLibraryOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="midiLibTitle" onclick="if(event.target===this && typeof window.closeMidiLibraryBrowser==='function')window.closeMidiLibraryBrowser()">
     <div class="help-dialog midi-lib-dialog-wide" onclick="event.stopPropagation()">
       <div class="help-dialog-header">
-        <h2 id="midiLibTitle" class="help-dialog-title">MIDI Library</h2>
+        <h2 id="midiLibTitle" class="help-dialog-title">Select MIDI file</h2>
         <button type="button" class="help-close" onclick="if(typeof window.closeMidiLibraryBrowser==='function')window.closeMidiLibraryBrowser()" aria-label="Close">&times;</button>
       </div>
       <div id="midiLibBreadcrumb" class="midi-lib-breadcrumb"></div>
