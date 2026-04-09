@@ -31,6 +31,17 @@
       --slider-thumb-ring: #fff;
       --slider-thumb-shadow: 0 2px 10px rgba(32, 118, 122, 0.45), 0 1px 3px rgba(0, 0, 0, 0.12);
       --slider-focus-ring: rgba(32, 118, 122, 0.45);
+      /* Segmented On/Off: On = orange buttons, Off = slider-thumb green */
+      --segment-active-fg: #fff;
+      --segment-focus-ring-off: var(--teal-light);
+      --segment-focus-ring-on: rgba(238, 168, 3, 0.95);
+      --segment-inactive-fg: #6b7280;
+      --segment-border: rgba(31, 41, 51, 0.22);
+      --segment-track-bg: rgba(255, 255, 255, 0.65);
+      /* Selected segment when disconnected (matches disabled buttons / grey sliders) */
+      --segment-disabled-selected-top: #eceef1;
+      --segment-disabled-selected-bottom: #d5d8dc;
+      --segment-disabled-selected-fg: var(--text-muted);
     }
     * { box-sizing: border-box; }
     body {
@@ -142,6 +153,118 @@
     fieldset label:has(input:disabled) {
       cursor: not-allowed;
       opacity: 0.72;
+    }
+
+    /* Pill segmented control (replaces native radio chrome for On/Off groups) */
+    fieldset.fieldset--segmented {
+      padding-top: 10px;
+      padding-bottom: 11px;
+    }
+    .radio-segmented {
+      display: flex;
+      width: 100%;
+      max-width: 224px;
+      margin: 5px auto 0;
+      border: 1.5px solid var(--segment-border);
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--segment-track-bg);
+      box-sizing: border-box;
+    }
+    /* Stretch invisible radio over the whole label so taps hit the control (not the fieldset behind). */
+    .radio-segmented input[type="radio"] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 1;
+      border: 0;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 8px 11px;
+      min-height: 35px;
+      border-radius: 0;
+      font-weight: 700;
+      font-size: 0.76rem;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      color: var(--segment-inactive-fg);
+      background: transparent;
+      transition: background 0.18s ease, color 0.18s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Inactive side: neutral (no thumb fill) */
+    fieldset.fieldset--segmented label.radio-segmented__opt:not(:has(input:checked)):hover:has(input:not(:disabled)) {
+      background: rgba(31, 41, 51, 0.06);
+      color: var(--text);
+    }
+    /* On selected — same orange gradient as primary buttons (only when interactive; not disconnected/disabled) */
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input[value="on"]:checked:not(:disabled)) {
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 2px 8px rgba(238, 168, 3, 0.38);
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input[value="on"]:checked:not(:disabled)):hover:has(input:not(:disabled)) {
+      background: linear-gradient(180deg, #f4bc20 0%, #d99402 100%);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 3px 12px rgba(238, 168, 3, 0.48);
+    }
+    /* Off selected — same green/teal gradient as range slider thumbs */
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input[value="off"]:checked:not(:disabled)) {
+      background: linear-gradient(180deg, var(--slider-thumb-top) 0%, var(--slider-thumb-bottom) 100%);
+      color: var(--segment-active-fg);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 6px rgba(32, 118, 122, 0.35);
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input[value="off"]:checked:not(:disabled)):hover:has(input:not(:disabled)) {
+      background: linear-gradient(180deg, #4cb4bb 0%, #20767a 100%);
+      color: var(--segment-active-fg);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 10px rgba(32, 118, 122, 0.45);
+    }
+    /* Selected segment while disconnected (radios disabled): light grey like disabled buttons / sliders */
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input[value="on"]:checked:disabled),
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input[value="off"]:checked:disabled) {
+      background: linear-gradient(180deg, var(--segment-disabled-selected-top) 0%, var(--segment-disabled-selected-bottom) 100%);
+      color: var(--segment-disabled-selected-fg);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      opacity: 1;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:disabled) {
+      cursor: not-allowed;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:disabled):not(:has(input:checked)) {
+      opacity: 0.55;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:focus-visible) {
+      z-index: 1;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:focus-visible):not(:has(input:checked)) {
+      outline: 1.5px solid rgba(31, 41, 51, 0.4);
+      outline-offset: 1px;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:focus-visible):has(input[value="on"]:checked:not(:disabled)) {
+      outline: 1.5px solid var(--segment-focus-ring-on);
+      outline-offset: 1px;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:focus-visible):has(input[value="off"]:checked:not(:disabled)) {
+      outline: 1.5px solid var(--segment-focus-ring-off);
+      outline-offset: 1px;
+    }
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:focus-visible):has(input[value="on"]:checked:disabled),
+    fieldset.fieldset--segmented label.radio-segmented__opt:has(input:focus-visible):has(input[value="off"]:checked:disabled) {
+      outline: 1.5px solid rgba(31, 41, 51, 0.28);
+      outline-offset: 1px;
     }
 
     /* Range — colored track body + teal thumb when enabled */
@@ -1073,10 +1196,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Sustain pedal" data-help-body="When On, sustain pedal behavior matches a traditional guitar sustain pedal where supported." aria-label="Help: Sustain pedal">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Sustain Pedal:</legend>
-          <label><input type="radio" name="sustainRadioGroup" value="on" checked disabled> On</label>
-          <label><input type="radio" name="sustainRadioGroup" value="off" disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Sustain Pedal">
+            <label class="radio-segmented__opt"><input type="radio" name="sustainRadioGroup" value="on" checked disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="sustainRadioGroup" value="off" disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1084,10 +1209,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Chords mode" data-help-body="When on, strumming the string will play chords instead of individual notes. Upward struming plays minor triad and downward struming plays major triad. " aria-label="Help: Chords mode">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Chords Mode:</legend>
-          <label><input type="radio" name="chordsRadioGroup" value="on" disabled> On</label>
-          <label><input type="radio" name="chordsRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Chords Mode">
+            <label class="radio-segmented__opt"><input type="radio" name="chordsRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="chordsRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1095,10 +1222,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Quarter tones" data-help-body="When On, quarter-tone intervals are available where the firmware supports them." aria-label="Help: Quarter tones">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Quarter Tones:</legend>
-          <label><input type="radio" name="quarterTonesRadioGroup" value="on" checked disabled> On</label>
-          <label><input type="radio" name="quarterTonesRadioGroup" value="off" disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Quarter Tones">
+            <label class="radio-segmented__opt"><input type="radio" name="quarterTonesRadioGroup" value="on" checked disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="quarterTonesRadioGroup" value="off" disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1157,10 +1286,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Left hand mode" data-help-body="When On, string order gets changed to suit left-handed players." aria-label="Help: Left hand mode">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Left Hand Mode:</legend>
-          <label><input type="radio" name="leftHandRadioGroup" value="on" disabled> On</label>
-          <label><input type="radio" name="leftHandRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Left Hand Mode">
+            <label class="radio-segmented__opt"><input type="radio" name="leftHandRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="leftHandRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1168,10 +1299,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Dynamics" data-help-body="When On, note velocity reflects how hard you play; when Off, dynamics may be fixed or simplified." aria-label="Help: Dynamics">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Dynamics:</legend>
-          <label><input type="radio" name="dynamicsRadioGroup" value="on"  disabled> On</label>
-          <label><input type="radio" name="dynamicsRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Dynamics">
+            <label class="radio-segmented__opt"><input type="radio" name="dynamicsRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="dynamicsRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1190,10 +1323,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Staccato" data-help-body="Shortens note length for a detached, crisp articulation when enabled." aria-label="Help: Staccato">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Staccato:</legend>
-          <label><input type="radio" name="staccatoRadioGroup" value="on"  disabled> On</label>
-          <label><input type="radio" name="staccatoRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Staccato">
+            <label class="radio-segmented__opt"><input type="radio" name="staccatoRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="staccatoRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1201,10 +1336,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Hammer-on" data-help-body="Enables hammer-on and tapping gestures on the fingerboard to trigger notes without a new pluck or strum." aria-label="Help: Hammer-on">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Hammer-on:</legend>
-          <label><input type="radio" name="tappingRadioGroup" value="on" disabled> On</label>
-          <label><input type="radio" name="tappingRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Hammer-on">
+            <label class="radio-segmented__opt"><input type="radio" name="tappingRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="tappingRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1220,10 +1357,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Tapping without strumming" data-help-body="When On, tapping can register notes without requiring an accompanying strum." aria-label="Help: Tapping without strumming">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Tapping Without Strumming:</legend>
-          <label><input type="radio" name="tapWithoutStrumRadioGroup" value="on" disabled> On</label>
-          <label><input type="radio" name="tapWithoutStrumRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Tapping Without Strumming">
+            <label class="radio-segmented__opt"><input type="radio" name="tapWithoutStrumRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="tapWithoutStrumRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1231,10 +1370,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Sympathetic resonance" data-help-body="When On, other open strings that match the played pitch (unison or octave) sound quietly on MIDI channel 16." aria-label="Help: Sympathetic resonance">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Sympathetic resonance:</legend>
-          <label><input type="radio" name="resonateRadioGroup" value="on" disabled> On</label>
-          <label><input type="radio" name="resonateRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Sympathetic resonance">
+            <label class="radio-segmented__opt"><input type="radio" name="resonateRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="resonateRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1255,10 +1396,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Metronome" data-help-body="Turns the built-in click or beat sound on or off while practicing or playing along." aria-label="Help: Metronome">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Metronome:</legend>
-          <label><input type="radio" name="metronomeRadioGroup" value="on" disabled> On</label>
-          <label><input type="radio" name="metronomeRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Metronome">
+            <label class="radio-segmented__opt"><input type="radio" name="metronomeRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="metronomeRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1317,10 +1460,12 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="Strum step" data-help-body="Off: play notes from the strings as usual. On: each strum plays the next note-on from the MIDI file chosen in “Select MIDI File” above (the same file used for Play). Pick the file first, set Strum step to On, then strum at your own pace. Timed playback with Play is not used in this mode." aria-label="Help: Strum step">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>Strum step:</legend>
-          <label><input type="radio" name="strumStepRadioGroup" value="on" disabled> On</label>
-          <label><input type="radio" name="strumStepRadioGroup" value="off" checked disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="Strum step">
+            <label class="radio-segmented__opt"><input type="radio" name="strumStepRadioGroup" value="on" disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="strumStepRadioGroup" value="off" checked disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1333,40 +1478,40 @@
   <div id="tab-content4" class="tab-content ">
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="Individual string tuning" data-help-body="Each slider sets the MIDI note number for that string so you can detune or set custom open-string pitches. Values typically span the playable range of the instrument." aria-label="Help: String tuning section">?</button>
+      <button type="button" class="help-icon" data-help-title="Individual string tuning" data-help-body="Each slider sends an instrument pitch index to the device (not a standard GM MIDI note: on the firmware, middle C is index 120, not 60). Steps are along the instrument’s fine pitch grid, so +1 is not always one Western semitone. The min/max (48–192) are app limits; the Persian-style labels are aligned to that index range for display." aria-label="Help: String tuning section">?</button>
       <div class="control-with-help-main">
         <h3>Individual String Tuning</h3>
       </div>
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="String 1 tuning" data-help-body="MIDI note number for the first string (usually the highest or thinnest string, depending on your setup)." aria-label="Help: String 1 tuning">?</button>
+      <button type="button" class="help-icon" data-help-title="String 1 tuning" data-help-body="Open-string pitch index for string 1 (device uses the same index scale as factory tuning, e.g. 120 = C). Labels are a display map over 48–192, not GM MIDI note numbers." aria-label="Help: String 1 tuning">?</button>
       <div class="control-with-help-main">
-        <label id="string1TuningLabel" disabled>String 1 Note Number: 120</label>
+        <label id="string1TuningLabel" disabled>String 1: C4 (120)</label>
         <input type="range" id="string1TuningSlider" min="48" max="192" value="120" step="1" disabled>
       </div>
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="String 2 tuning" data-help-body="MIDI note number for the second string." aria-label="Help: String 2 tuning">?</button>
+      <button type="button" class="help-icon" data-help-title="String 2 tuning" data-help-body="Open-string pitch index for string 2. Same index scale as string 1; see help on Individual string tuning for why numbers are not standard MIDI." aria-label="Help: String 2 tuning">?</button>
       <div class="control-with-help-main">
-        <label id="string2TuningLabel" disabled>String 2 Note Number: 120</label>
+        <label id="string2TuningLabel" disabled>String 2: C4 (120)</label>
         <input type="range" id="string2TuningSlider" min="48" max="192" value="120" step="1" disabled>
       </div>
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="String 3 tuning" data-help-body="MIDI note number for the third string." aria-label="Help: String 3 tuning">?</button>
+      <button type="button" class="help-icon" data-help-title="String 3 tuning" data-help-body="Open-string pitch index for string 3. Same index scale as the other strings; labels are not GM MIDI." aria-label="Help: String 3 tuning">?</button>
       <div class="control-with-help-main">
-        <label id="string3TuningLabel" disabled>String 3 Note Number: 120</label>
+        <label id="string3TuningLabel" disabled>String 3: C4 (120)</label>
         <input type="range" id="string3TuningSlider" min="48" max="192" value="120" step="1" disabled>
       </div>
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="String 4 tuning" data-help-body="MIDI note number for the fourth string." aria-label="Help: String 4 tuning">?</button>
+      <button type="button" class="help-icon" data-help-title="String 4 tuning" data-help-body="Open-string pitch index for string 4. Same index scale as the other strings; labels are not GM MIDI." aria-label="Help: String 4 tuning">?</button>
       <div class="control-with-help-main">
-        <label id="string4TuningLabel" disabled>String 4 Note Number: 120</label>
+        <label id="string4TuningLabel" disabled>String 4: C4</label>
         <input type="range" id="string4TuningSlider" min="48" max="192" value="120" step="1" disabled>
       </div>
     </div>
@@ -1381,40 +1526,48 @@
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="String 1 on/off" data-help-body="When Off, the first string does not sound; when On, it behaves normally." aria-label="Help: String 1 on/off">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>String 1:</legend>
-          <label><input type="radio" name="string1RadioGroup" value="on" checked disabled> On</label>
-          <label><input type="radio" name="string1RadioGroup" value="off"  disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="String 1">
+            <label class="radio-segmented__opt"><input type="radio" name="string1RadioGroup" value="on" checked disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="string1RadioGroup" value="off" disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="String 2 on/off" data-help-body="When Off, the second string does not sound; when On, it behaves normally." aria-label="Help: String 2 on/off">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>String 2:</legend>
-          <label><input type="radio" name="string2RadioGroup" value="on" checked disabled> On</label>
-          <label><input type="radio" name="string2RadioGroup" value="off"  disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="String 2">
+            <label class="radio-segmented__opt"><input type="radio" name="string2RadioGroup" value="on" checked disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="string2RadioGroup" value="off" disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="String 3 on/off" data-help-body="When Off, the third string does not sound; when On, it behaves normally." aria-label="Help: String 3 on/off">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>String 3:</legend>
-          <label><input type="radio" name="string3RadioGroup" value="on" checked disabled> On</label>
-          <label><input type="radio" name="string3RadioGroup" value="off"  disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="String 3">
+            <label class="radio-segmented__opt"><input type="radio" name="string3RadioGroup" value="on" checked disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="string3RadioGroup" value="off" disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
     <div class="control-with-help">
       <button type="button" class="help-icon" data-help-title="String 4 on/off" data-help-body="When Off, the fourth string does not sound; when On, it behaves normally." aria-label="Help: String 4 on/off">?</button>
       <div class="control-with-help-main">
-        <fieldset>
+        <fieldset class="fieldset--segmented">
           <legend>String 4:</legend>
-          <label><input type="radio" name="string4RadioGroup" value="on" checked disabled> On</label>
-          <label><input type="radio" name="string4RadioGroup" value="off"  disabled> Off</label>
+          <div class="radio-segmented" role="radiogroup" aria-label="String 4">
+            <label class="radio-segmented__opt"><input type="radio" name="string4RadioGroup" value="on" checked disabled><span class="radio-segmented__text">On</span></label>
+            <label class="radio-segmented__opt"><input type="radio" name="string4RadioGroup" value="off" disabled><span class="radio-segmented__text">Off</span></label>
+          </div>
         </fieldset>
       </div>
     </div>
@@ -1685,6 +1838,28 @@
       let string3TuningSlider = document.getElementById('string3TuningSlider');
       let string4TuningLabel = document.getElementById('string4TuningLabel');
       let string4TuningSlider = document.getElementById('string4TuningSlider');
+
+      /** Set false to hide “(index)” after the name. */
+      const STRING_TUNING_SHOW_SLIDER_INDEX = true;
+
+      /** Maps 48–192 pitch index to Persian-style labels (tab 4). Indices are device tuning values (fw C4=120), not GM MIDI. Note+octave, then space + sori/koron. */
+      const STRING_TUNING_NOTE_NAMES = [
+        'C1', 'C1 sori', 'C#/Db1', 'D1 koron', 'D1', 'D1 sori', 'D#/Eb1', 'E1 koron', 'E1', 'E1 sori / F1 koron', 'F1', 'F1 sori', 'F#/Gb1', 'G1 koron', 'G1', 'G1 sori', 'G#/Ab1', 'A1 koron', 'A1', 'A1 sori', 'A#/Bb1', 'B1 koron', 'B1', 'B1 sori / C2 koron',
+        'C2', 'C2 sori', 'C#/Db2', 'D2 koron', 'D2', 'D2 sori', 'D#/Eb2', 'E2 koron', 'E2', 'E2 sori / F2 koron', 'F2', 'F2 sori', 'F#/Gb2', 'G2 koron', 'G2', 'G2 sori', 'G#/Ab2', 'A2 koron', 'A2', 'A2 sori', 'A#/Bb2', 'B2 koron', 'B2', 'B2 sori / C3 koron',
+        'C3', 'C3 sori', 'C#/Db3', 'D3 koron', 'D3', 'D3 sori', 'D#/Eb3', 'E3 koron', 'E3', 'E3 sori / F3 koron', 'F3', 'F3 sori', 'F#/Gb3', 'G3 koron', 'G3', 'G3 sori', 'G#/Ab3', 'A3 koron', 'A3', 'A3 sori', 'A#/Bb3', 'B3 koron', 'B3', 'B3 sori / C4 koron',
+        'C4', 'C4 sori', 'C#/Db4', 'D4 koron', 'D4', 'D4 sori', 'D#/Eb4', 'E4 koron', 'E4', 'E4 sori / F4 koron', 'F4', 'F4 sori', 'F#/Gb4', 'G4 koron', 'G4', 'G4 sori', 'G#/Ab4', 'A4 koron', 'A4', 'A4 sori', 'A#/Bb4', 'B4 koron', 'B4', 'B4 sori / C5 koron',
+        'C5', 'C5 sori', 'C#/Db5', 'D5 koron', 'D5', 'D5 sori', 'D#/Eb5', 'E5 koron', 'E5', 'E5 sori / F5 koron', 'F5', 'F5 sori', 'F#/Gb5', 'G5 koron', 'G5', 'G5 sori', 'G#/Ab5', 'A5 koron', 'A5', 'A5 sori', 'A#/Bb5', 'B5 koron', 'B5', 'B5 sori / C6 koron',
+        'C6', 'C6 sori', 'C#/Db6', 'D6 koron', 'D6', 'D6 sori', 'D#/Eb6', 'E6 koron', 'E6', 'E6 sori / F6 koron', 'F6', 'F6 sori', 'F#/Gb6', 'G6 koron', 'G6', 'G6 sori', 'G#/Ab6', 'A6 koron', 'A6', 'A6 sori', 'A#/Bb6', 'B6 koron', 'B6', 'B6 sori / C7 koron',
+        'C7'
+      ];
+      function formatStringTuningLabel(stringNum, noteRaw) {
+        const n = parseInt(noteRaw, 10);
+        const idx = STRING_TUNING_SHOW_SLIDER_INDEX ? ` (${n})` : '';
+        if (n >= 48 && n <= 192) {
+          return `String ${stringNum}: ${STRING_TUNING_NOTE_NAMES[n - 48]}${idx}`;
+        }
+        return `String ${stringNum}: MIDI ${n}${idx}`;
+      }
 
       let string1RadioButtons = document.getElementsByName('string1RadioGroup');
       let string2RadioButtons = document.getElementsByName('string2RadioGroup');
@@ -4826,116 +5001,85 @@
           }
         });
 
-        // Add an event listener to the string1TuningSlider
-        string1TuningSlider.addEventListener('input', async () => {
-          // Get the value of the slider
+        /* String tuning: input fires very often while dragging; debounce BLE writes so firmware can keep up.
+         * change fires on release — flush immediately so min/max always land on the device. */
+        const STRING_TUNING_BLE_DEBOUNCE_MS = 55;
+        const stringTuningBleTimers = [null, null, null, null];
+
+        function sendStringTuningBlePacket(opcode, rawValue) {
+          if (syncingFromFirmware || !connectedDevice) return Promise.resolve();
+          const n = Number(rawValue);
+          if (Number.isNaN(n) || n < 0 || n > 255) return Promise.resolve();
+          const data = new Uint8Array(5);
+          data[0] = 0xbf;
+          data[1] = 0x8c;
+          data[2] = 0xfe;
+          data[3] = opcode;
+          data[4] = n;
+          return connectedDevice.midiCharacteristic.writeValue(data);
+        }
+
+        function flushStringTuningBle(index, opcode, slider) {
+          if (stringTuningBleTimers[index] != null) {
+            clearTimeout(stringTuningBleTimers[index]);
+            stringTuningBleTimers[index] = null;
+          }
+          return sendStringTuningBlePacket(opcode, slider.value).catch((error) => {
+            console.error('Error sending string tuning to device:', error);
+          });
+        }
+
+        function scheduleStringTuningBle(index, opcode, slider) {
+          if (stringTuningBleTimers[index] != null) {
+            clearTimeout(stringTuningBleTimers[index]);
+          }
+          stringTuningBleTimers[index] = setTimeout(() => {
+            stringTuningBleTimers[index] = null;
+            sendStringTuningBlePacket(opcode, slider.value).catch((error) => {
+              console.error('Error sending string tuning to device:', error);
+            });
+          }, STRING_TUNING_BLE_DEBOUNCE_MS);
+        }
+
+        string1TuningSlider.addEventListener('input', () => {
           const value = string1TuningSlider.value;
-          string1TuningLabel.textContent = `Note Number: ${value}`;
-
-          try {
-            // Disconnect from the connected device
-            if (connectedDevice) {
-              if (syncingFromFirmware) return;
-              //make a  MIDI message as a Uint8Array
-              let data = new Uint8Array(5);
-              data[0] = 0xbf; //dummy timestamp 1st byte
-              data[1] = 0x8c; //dummy timestamp 2nd byte
-              data[2] = 0xfe; //custom midi status byte for controling etar through ble
-              data[3] = 0x0f;   //string 1 tuning 
-              data[4] = value; // note number
-
-              await connectedDevice.midiCharacteristic.writeValue(data);
-
-
-            }
-
-          } catch (error) {
-            console.error('Error sending note to the device:', error);
-          }
+          string1TuningLabel.textContent = formatStringTuningLabel(1, value);
+          scheduleStringTuningBle(0, 0x0f, string1TuningSlider);
         });
-        // Add an event listener to the string1TuningSlider
-        string2TuningSlider.addEventListener('input', async () => {
-          // Get the value of the slider
+        string1TuningSlider.addEventListener('change', () => {
+          string1TuningLabel.textContent = formatStringTuningLabel(1, string1TuningSlider.value);
+          flushStringTuningBle(0, 0x0f, string1TuningSlider);
+        });
+
+        string2TuningSlider.addEventListener('input', () => {
           const value = string2TuningSlider.value;
-          string1TuningLabel.textContent = `Note Number: ${value}`;
-
-          try {
-            // Disconnect from the connected device
-            if (connectedDevice) {
-              if (syncingFromFirmware) return;
-              //make a  MIDI message as a Uint8Array
-              let data = new Uint8Array(5);
-              data[0] = 0xbf; //dummy timestamp 1st byte
-              data[1] = 0x8c; //dummy timestamp 2nd byte
-              data[2] = 0xfe; //custom midi status byte for controling etar through ble
-              data[3] = 0x11;   //string 2 tuning 
-              data[4] = value; // note number
-
-              await connectedDevice.midiCharacteristic.writeValue(data);
-
-
-            }
-
-          } catch (error) {
-            console.error('Error sending note to the device:', error);
-          }
+          string2TuningLabel.textContent = formatStringTuningLabel(2, value);
+          scheduleStringTuningBle(1, 0x11, string2TuningSlider);
+        });
+        string2TuningSlider.addEventListener('change', () => {
+          string2TuningLabel.textContent = formatStringTuningLabel(2, string2TuningSlider.value);
+          flushStringTuningBle(1, 0x11, string2TuningSlider);
         });
 
-      // Add an event listener to the string1TuningSlider
-      string3TuningSlider.addEventListener('input', async () => {
-        // Get the value of the slider
-        const value = string3TuningSlider.value;
-        string1TuningLabel.textContent = `Note Number: ${value}`;
+        string3TuningSlider.addEventListener('input', () => {
+          const value = string3TuningSlider.value;
+          string3TuningLabel.textContent = formatStringTuningLabel(3, value);
+          scheduleStringTuningBle(2, 0x12, string3TuningSlider);
+        });
+        string3TuningSlider.addEventListener('change', () => {
+          string3TuningLabel.textContent = formatStringTuningLabel(3, string3TuningSlider.value);
+          flushStringTuningBle(2, 0x12, string3TuningSlider);
+        });
 
-        try {
-          // Disconnect from the connected device
-          if (connectedDevice) {
-            if (syncingFromFirmware) return;
-            //make a  MIDI message as a Uint8Array
-            let data = new Uint8Array(5);
-            data[0] = 0xbf; //dummy timestamp 1st byte
-            data[1] = 0x8c; //dummy timestamp 2nd byte
-            data[2] = 0xfe; //custom midi status byte for controling etar through ble
-            data[3] = 0x12;   //string 3 tuning 
-            data[4] = value; // note number
-
-            await connectedDevice.midiCharacteristic.writeValue(data);
-
-
-          }
-
-        } catch (error) {
-          console.error('Error sending note to the device:', error);
-        }
-      });
-
-      // Add an event listener to the string1TuningSlider
-      string1TuningSlider.addEventListener('input', async () => {
-        // Get the value of the slider
-        const value = string1TuningSlider.value;
-        string1TuningLabel.textContent = `Note Number: ${value}`;
-
-        try {
-          // Disconnect from the connected device
-          if (connectedDevice) {
-            if (syncingFromFirmware) return;
-            //make a  MIDI message as a Uint8Array
-            let data = new Uint8Array(5);
-            data[0] = 0xbf; //dummy timestamp 1st byte
-            data[1] = 0x8c; //dummy timestamp 2nd byte
-            data[2] = 0xfe; //custom midi status byte for controling etar through ble
-            data[3] = 0x13;   //string 4 tuning 
-            data[4] = value; // note number
-
-            await connectedDevice.midiCharacteristic.writeValue(data);
-
-
-          }
-
-        } catch (error) {
-          console.error('Error sending note to the device:', error);
-        }
-      });
+        string4TuningSlider.addEventListener('input', () => {
+          const value = string4TuningSlider.value;
+          string4TuningLabel.textContent = formatStringTuningLabel(4, value);
+          scheduleStringTuningBle(3, 0x13, string4TuningSlider);
+        });
+        string4TuningSlider.addEventListener('change', () => {
+          string4TuningLabel.textContent = formatStringTuningLabel(4, string4TuningSlider.value);
+          flushStringTuningBle(3, 0x13, string4TuningSlider);
+        });
 
 
         // Add an event listener to the metronomeVolSlider
