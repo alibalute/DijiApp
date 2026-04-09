@@ -208,6 +208,16 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     c.evaluateJavascript(source: js);
   }
 
+  /// When BLE drops without the user tapping Disconnect (native link lost).
+  void _notifyBleDisconnectedUi() {
+    final c = _controller;
+    if (c == null || !mounted) return;
+    c.evaluateJavascript(
+      source:
+          "try{if(window.__dijiOnBleDisconnected)window.__dijiOnBleDisconnected();}catch(e){}",
+    );
+  }
+
   /// WebView `<input type="file">` on Android often opens the photo gallery; use Storage Access Framework via file_picker.
   ///
   /// Do not use [FileType.custom] with `sf2` on Android: [MimeTypeMap] has no mapping for that extension, so the
@@ -422,6 +432,7 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   @override
   void initState() {
     super.initState();
+    _bleBridge.onBleDisconnectedByRemote = _notifyBleDisconnectedUi;
     _usbMidiMethod.setMethodCallHandler(_onUsbMidiCallFromPlatform);
     _initLogo();
     unawaited(_startAssetHost());
@@ -488,6 +499,7 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
 
   @override
   void dispose() {
+    _bleBridge.onBleDisconnectedByRemote = null;
     _usbMidiMethod.setMethodCallHandler(null);
     _usbMidiSub?.cancel();
     _usbMidiSub = null;

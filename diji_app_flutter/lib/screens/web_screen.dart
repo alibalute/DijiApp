@@ -144,6 +144,15 @@ class _WebScreenState extends State<WebScreen> {
     c.evaluateJavascript(source: js);
   }
 
+  void _notifyBleDisconnectedUi() {
+    final c = _webViewController;
+    if (c == null || !mounted) return;
+    c.evaluateJavascript(
+      source:
+          "try{if(window.__dijiOnBleDisconnected)window.__dijiOnBleDisconnected();}catch(e){}",
+    );
+  }
+
   void _onIosUsbMidiBytes(dynamic data) {
     final controller = _webViewController;
     if (controller == null) return;
@@ -365,6 +374,7 @@ class _WebScreenState extends State<WebScreen> {
   @override
   void initState() {
     super.initState();
+    _bleBridge.onBleDisconnectedByRemote = _notifyBleDisconnectedUi;
     if (_useIosLocalhostAssets) {
       _iosAssetServer =
           InAppLocalhostServer(port: _iosAssetPort, documentRoot: 'assets');
@@ -379,6 +389,7 @@ class _WebScreenState extends State<WebScreen> {
 
   @override
   void dispose() {
+    _bleBridge.onBleDisconnectedByRemote = null;
     if (_useIosLocalhostAssets) {
       _usbMidiMethod.setMethodCallHandler(null);
       _iosUsbMidiSub?.cancel();

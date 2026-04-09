@@ -21,7 +21,11 @@ class BleBridge {
   BluetoothCharacteristic? _characteristic;
   void Function(String base64)? _onNotification;
   StreamSubscription<List<int>>? _notificationSubscription;
+  StreamSubscription<BluetoothConnectionState>? _connectionStateSubscription;
   final Map<String, BluetoothDevice> _scannedDevices = {};
+
+  /// Called when the link drops (out of range, device off, OS disconnect). Native app clears BLE state first; use this to sync WebView UI.
+  void Function()? onBleDisconnectedByRemote;
 
   /// Request Bluetooth permission. Android 12+ needs BLUETOOTH_SCAN/CONNECT; Android 6–11 needs BLUETOOTH + location.
   Future<void> _requestBluetoothPermission() async {
@@ -235,10 +239,38 @@ class BleBridge {
           break;
         }
       }
-      return _characteristic != null;
+      final ok = _characteristic != null;
+      if (ok) {
+        _listenConnectionState();
+      }
+      return ok;
     } catch (e) {
       rethrow;
     }
+  }
+
+  void _listenConnectionState() {
+    _connectionStateSubscription?.cancel();
+    final d = _device;
+    if (d == null) return;
+    _connectionStateSubscription = d.connectionState.listen((state) {
+      if (state == BluetoothConnectionState.disconnected) {
+        _handleRemoteConnectionLost();
+      }
+    });
+  }
+
+  void _handleRemoteConnectionLost() {
+    if (_device == null) return;
+    debugPrint('BLE: remote connection lost');
+    _connectionStateSubscription?.cancel();
+    _connectionStateSubscription = null;
+    _notificationSubscription?.cancel();
+    _notificationSubscription = null;
+    _device = null;
+    _characteristic = null;
+    _onNotification = null;
+    onBleDisconnectedByRemote?.call();
   }
 
   Future<void> writeValueBase64(String base64) async {
@@ -308,6 +340,8 @@ class BleBridge {
   /// Disconnect from the current device. Use this when the user taps Disconnect
   /// in the WebView; the bridge remains usable for reconnection.
   void disconnect() {
+    _connectionStateSubscription?.cancel();
+    _connectionStateSubscription = null;
     _notificationSubscription?.cancel();
     _notificationSubscription = null;
     _device?.disconnect();

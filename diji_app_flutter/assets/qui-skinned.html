@@ -3705,6 +3705,141 @@
         setTimeout(tryStart, 2500);
       })();
 
+      // Shared by Disconnect, Flutter (iOS/Android), and Chrome Web Bluetooth (gattserverdisconnected).
+      // connectionLost: true = link dropped (device off, range, OS) → grey Connect (must scan again on Chrome).
+      // connectionLost: false = user pressed Disconnect → keep Connect enabled if a device is still selected.
+      async function applyBleDisconnectedUi(connectionLost) {
+        if (connectedDevice && connectedDevice._gattDisconnectHandler && connectedDevice.device) {
+          try {
+            if (typeof connectedDevice.device.removeEventListener === 'function') {
+              connectedDevice.device.removeEventListener(
+                'gattserverdisconnected',
+                connectedDevice._gattDisconnectHandler,
+              );
+            }
+          } catch (e) { /* ignore */ }
+          connectedDevice._gattDisconnectHandler = null;
+        }
+        shutdownBleMidiSynth();
+
+        disconnectButton.disabled = true;
+        if (connectionLost !== false) {
+          connectButton.disabled = true;
+          bleDeviceById.clear();
+          deviceListDropdown.innerHTML = '';
+          device = null;
+        } else {
+          connectButton.disabled = !deviceListDropdown.value;
+        }
+        instrumentsDropdown.disabled = true;
+        transposeSlider.disabled = true;
+        pitchSlider.disabled = true;
+        tempoSlider.disabled = true;
+        metronomeVolSlider.disabled = true;
+        metronomeVolLabel.setAttribute('disabled', 'disabled');
+        metronomeNumBeatsSlider.disabled = true;
+        metronomeNumBeatsLabel.setAttribute('disabled', 'disabled');
+        document.getElementById('batteryReadoutBlock').classList.add('battery-readout--disconnected');
+        midiFileDropdown.disabled = true;
+        const loadMidiBtnDisc = document.getElementById('loadMidiFileButton');
+        if (loadMidiBtnDisc) loadMidiBtnDisc.disabled = true;
+        const uploadMidiBtnDisc = document.getElementById('uploadMidiToDeviceButton');
+        if (uploadMidiBtnDisc) {
+          uploadMidiBtnDisc.disabled = true;
+          uploadMidiBtnDisc.textContent = 'Upload to Dijilele';
+        }
+        for (let mi = 0; mi < midiFilesNames.length; mi++) {
+          const opt = midiFileDropdown.querySelector('option[value="' + (mi + 1) + '"]');
+          if (opt) opt.textContent = midiFilesNames[mi];
+        }
+        for (let s = 1; s <= 4; s++) userMidiBySlot[s] = null;
+        nextMidiUserSlot = 1;
+        pendingMidiSlot = null;
+        playButton.disabled = true;
+        pauseButton.disabled = true;
+        stopButton.disabled = true;
+        recordButton.disabled = true;
+        appMidiRecording = false;
+        recordButton.textContent = 'Record';
+        string1TuningSlider.disabled = true;
+        string2TuningSlider.disabled = true;
+        string3TuningSlider.disabled = true;
+        string4TuningSlider.disabled = true;
+        turnoffButton.disabled = true;
+        saveSettingsButton.disabled = true;
+        resetSettingsButton.disabled = true;
+
+        vibratoSlider.disabled = true;
+        for (let i = 0; i < sustainRadioButtons.length; i++)
+          sustainRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < chordsRadioButtons.length; i++)
+          chordsRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < resonateRadioButtons.length; i++)
+          resonateRadioButtons[i].setAttribute('disabled', 'disabled');
+        sympatheticVolumeSlider.disabled = true;
+        sympatheticVolumeLabel.setAttribute('disabled', 'disabled');
+        for (let i = 0; i < leftHandRadioButtons.length; i++)
+          leftHandRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < quarterTonesRadioButtons.length; i++)
+          quarterTonesRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < dynamicsRadioButtons.length; i++)
+          dynamicsRadioButtons[i].setAttribute('disabled', 'disabled');
+        strumVelOutMinSlider.disabled = true;
+        strumVelOutMinLabel.setAttribute('disabled', 'disabled');
+        strumVelOutMaxSlider.disabled = true;
+        strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
+        for (let i = 0; i < staccatoRadioButtons.length; i++)
+          staccatoRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < tappingRadioButtons.length; i++)
+          tappingRadioButtons[i].setAttribute('disabled', 'disabled');
+        hammerOnVelocitySlider.disabled = true;
+        hammerOnVelocityLabel.setAttribute('disabled', 'disabled');
+        hammerPostStrumGuardSlider.disabled = true;
+        hammerPostStrumGuardLabel.setAttribute('disabled', 'disabled');
+        for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
+          tapWithoutStrumRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < metronomeRadioButtons.length; i++)
+          metronomeRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < strumStepRadioButtons.length; i++)
+          strumStepRadioButtons[i].setAttribute('disabled', 'disabled');
+        if (strumStepRadioButtons.length >= 2) {
+          strumStepRadioButtons[0].checked = false;
+          strumStepRadioButtons[1].checked = true;
+        }
+        for (let i = 0; i < percussionRadioButtons.length; i++)
+          percussionRadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < string1RadioButtons.length; i++)
+          string1RadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < string2RadioButtons.length; i++)
+          string2RadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < string3RadioButtons.length; i++)
+          string3RadioButtons[i].setAttribute('disabled', 'disabled');
+        for (let i = 0; i < string4RadioButtons.length; i++)
+          string4RadioButtons[i].setAttribute('disabled', 'disabled');
+
+        tuningsDropdown.disabled = true;
+        pitchSystemsDropdown.disabled = true;
+        midiChannelsDropdown.disabled = true;
+
+        fwMajor = null;
+        fwMinor = null;
+        fwPatch = null;
+        fwVersionLabel.textContent = 'Firmware: --';
+        bleSettingsRxLen = 0;
+        bleSettingsMidSysex = false;
+        resetBleSettingsDeferred();
+
+        connectedDevice = null;
+        if (typeof syncSynthTabUsbControls === 'function') syncSynthTabUsbControls();
+      }
+      window.__dijiOnBleDisconnected = async function() {
+        try {
+          await applyBleDisconnectedUi(true);
+        } catch (e) {
+          console.error('BLE remote disconnect UI:', e);
+        }
+      };
+
       // Check if the Web Bluetooth API is supported
       if ('bluetooth' in navigator) {
         // Add event listener to the scan button
@@ -3792,8 +3927,9 @@
                 console.warn('BleMidi synth after BLE connect', e);
               });
 
-              // Enable the disconnect button
+              // Enable the disconnect button; keep Connect off while linked
               disconnectButton.disabled = false;
+              connectButton.disabled = true;
               instrumentsDropdown.disabled = false;
               tuningsDropdown.disabled = false;
               pitchSystemsDropdown.disabled = false;
@@ -3866,6 +4002,15 @@
               for (let i = 0; i < string4RadioButtons.length; i++)
               string4RadioButtons[i].removeAttribute('disabled');
 
+              /* Chrome / Flutter web: BLE is only in JS — listen for link loss (no native BleBridge). */
+              if (typeof btDevice.addEventListener === 'function') {
+                connectedDevice._gattDisconnectHandler = function () {
+                  if (connectedDevice && connectedDevice.device === btDevice) {
+                    void applyBleDisconnectedUi(true);
+                  }
+                };
+                btDevice.addEventListener('gattserverdisconnected', connectedDevice._gattDisconnectHandler);
+              }
 
               console.log('Connected to MIDI device:', btDevice.name || deviceId);
 
@@ -3888,116 +4033,19 @@
         // Add event listener to the disconnect button
         disconnectButton.addEventListener('click', async () => {
           try {
-            // Disconnect from the connected device
             if (connectedDevice) {
+              const h = connectedDevice._gattDisconnectHandler;
+              if (h && connectedDevice.device && typeof connectedDevice.device.removeEventListener === 'function') {
+                try {
+                  connectedDevice.device.removeEventListener('gattserverdisconnected', h);
+                } catch (e) { /* ignore */ }
+              }
+              connectedDevice._gattDisconnectHandler = null;
+              const name = connectedDevice.device && connectedDevice.device.name;
               await connectedDevice.server.disconnect();
-              console.log('Disconnected from MIDI device:', connectedDevice.device.name);
+              if (name) console.log('Disconnected from MIDI device:', name);
             }
-
-            shutdownBleMidiSynth();
-
-            // Disable the disconnect button
-            disconnectButton.disabled = true;
-            instrumentsDropdown.disabled = true;
-            transposeSlider.disabled = true;
-            pitchSlider.disabled = true;
-            tempoSlider.disabled = true;
-            metronomeVolSlider.disabled = true;
-            metronomeVolLabel.setAttribute('disabled', 'disabled');
-            metronomeNumBeatsSlider.disabled = true;
-            metronomeNumBeatsLabel.setAttribute('disabled', 'disabled');
-            document.getElementById('batteryReadoutBlock').classList.add('battery-readout--disconnected');
-            midiFileDropdown.disabled = true;
-            const loadMidiBtnDisc = document.getElementById('loadMidiFileButton');
-            if (loadMidiBtnDisc) loadMidiBtnDisc.disabled = true;
-            const uploadMidiBtnDisc = document.getElementById('uploadMidiToDeviceButton');
-            if (uploadMidiBtnDisc) {
-              uploadMidiBtnDisc.disabled = true;
-              uploadMidiBtnDisc.textContent = 'Upload to Dijilele';
-            }
-            for (let mi = 0; mi < midiFilesNames.length; mi++) {
-              const opt = midiFileDropdown.querySelector('option[value="' + (mi + 1) + '"]');
-              if (opt) opt.textContent = midiFilesNames[mi];
-            }
-            for (let s = 1; s <= 4; s++) userMidiBySlot[s] = null;
-            nextMidiUserSlot = 1;
-            pendingMidiSlot = null;
-            playButton.disabled = true;
-            pauseButton.disabled = true;
-            stopButton.disabled = true;
-            recordButton.disabled = true;
-            appMidiRecording = false;
-            recordButton.textContent = 'Record';
-            string1TuningSlider.disabled = true;
-            string2TuningSlider.disabled = true;
-            string3TuningSlider.disabled = true;
-            string4TuningSlider.disabled = true;
-            turnoffButton.disabled = true;
-            saveSettingsButton.disabled = true;
-            resetSettingsButton.disabled = true;
-
-            vibratoSlider.disabled = true;
-            for (let i = 0; i < sustainRadioButtons.length; i++)
-              sustainRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < chordsRadioButtons.length; i++)
-              chordsRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < resonateRadioButtons.length; i++)
-              resonateRadioButtons[i].setAttribute('disabled', 'disabled');
-            sympatheticVolumeSlider.disabled = true;
-            sympatheticVolumeLabel.setAttribute('disabled', 'disabled');
-            for (let i = 0; i < leftHandRadioButtons.length; i++)
-              leftHandRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < quarterTonesRadioButtons.length; i++)
-              quarterTonesRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < dynamicsRadioButtons.length; i++)
-              dynamicsRadioButtons[i].setAttribute('disabled', 'disabled');
-            strumVelOutMinSlider.disabled = true;
-            strumVelOutMinLabel.setAttribute('disabled', 'disabled');
-            strumVelOutMaxSlider.disabled = true;
-            strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
-            for (let i = 0; i < staccatoRadioButtons.length; i++)
-              staccatoRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < tappingRadioButtons.length; i++)
-              tappingRadioButtons[i].setAttribute('disabled', 'disabled');
-            hammerOnVelocitySlider.disabled = true;
-            hammerOnVelocityLabel.setAttribute('disabled', 'disabled');
-            hammerPostStrumGuardSlider.disabled = true;
-            hammerPostStrumGuardLabel.setAttribute('disabled', 'disabled');
-            for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
-              tapWithoutStrumRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < metronomeRadioButtons.length; i++)
-              metronomeRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < strumStepRadioButtons.length; i++)
-              strumStepRadioButtons[i].setAttribute('disabled', 'disabled');
-            if (strumStepRadioButtons.length >= 2) {
-              strumStepRadioButtons[0].checked = false;
-              strumStepRadioButtons[1].checked = true;
-            }
-            for (let i = 0; i < percussionRadioButtons.length; i++)
-              percussionRadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < string1RadioButtons.length; i++)
-            string1RadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < string2RadioButtons.length; i++)
-            string2RadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < string3RadioButtons.length; i++)
-            string3RadioButtons[i].setAttribute('disabled', 'disabled');
-            for (let i = 0; i < string4RadioButtons.length; i++)
-            string4RadioButtons[i].setAttribute('disabled', 'disabled');
-
-              
-            tuningsDropdown.disabled = true;
-            pitchSystemsDropdown.disabled = true;
-            midiChannelsDropdown.disabled = true;
-
-            fwMajor = null;
-            fwMinor = null;
-            fwPatch = null;
-            fwVersionLabel.textContent = 'Firmware: --';
-            bleSettingsRxLen = 0;
-            bleSettingsMidSysex = false;
-            resetBleSettingsDeferred();
-
-            connectedDevice = null; // Reset connected device
+            await applyBleDisconnectedUi(false);
           } catch (error) {
             console.error('Error disconnecting from device:', error);
           }
