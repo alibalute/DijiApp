@@ -21,6 +21,16 @@
       --shadow: 0 10px 40px rgba(31, 41, 51, 0.2);
       --radius: 14px;
       --radius-sm: 10px;
+      /* Sliders: teal-tint track + saturated thumb (enabled); grey only when disabled */
+      --slider-track: linear-gradient(180deg, #d2eaed 0%, #b8d9de 100%);
+      --slider-track-solid: #c5e0e4;
+      --slider-track-disabled: #e4e4e9;
+      --slider-thumb-top: #3aa3a9;
+      --slider-thumb-bottom: #1a5f65;
+      --slider-thumb-disabled: #c5c9d0;
+      --slider-thumb-ring: #fff;
+      --slider-thumb-shadow: 0 2px 10px rgba(32, 118, 122, 0.45), 0 1px 3px rgba(0, 0, 0, 0.12);
+      --slider-focus-ring: rgba(32, 118, 122, 0.45);
     }
     * { box-sizing: border-box; }
     body {
@@ -95,18 +105,166 @@
       cursor: not-allowed;
       box-shadow: none;
     }
+    /* Radio — larger tap target, system-tint style (iOS-ish) */
     input[type="radio"] {
-      margin-right: 6px;
-      margin-bottom: 10px;
-      accent-color: var(--accent);
+      width: 22px;
+      height: 22px;
+      margin: 0;
+      flex-shrink: 0;
+      vertical-align: middle;
+      accent-color: var(--teal);
+      cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.12s ease;
     }
+    input[type="radio"]:hover:not(:disabled) {
+      transform: scale(1.06);
+    }
+    input[type="radio"]:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+    fieldset label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 14px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s ease;
+    }
+    fieldset label:hover:has(input:not(:disabled)) {
+      background: rgba(32, 118, 122, 0.06);
+    }
+    fieldset label:has(input:disabled) {
+      cursor: not-allowed;
+      opacity: 0.72;
+    }
+
+    /* Range — colored track body + teal thumb when enabled */
     input[type="range"] {
-      margin: 0 8px 20px;
+      -webkit-appearance: none;
+      appearance: none;
       width: 80%;
       max-width: 280px;
+      height: 36px;
+      margin: 0 8px 18px;
+      background: transparent;
+      cursor: pointer;
+      accent-color: var(--teal-light);
+    }
+    input[type="range"]:focus {
+      outline: none;
+    }
+    input[type="range"]:focus-visible {
+      outline: 2px solid var(--slider-focus-ring);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+    input[type="range"]:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
       height: 8px;
-      border-radius: 4px;
-      accent-color: var(--accent);
+      border-radius: 999px;
+      background: var(--slider-track);
+      box-shadow: inset 0 1px 2px rgba(32, 118, 122, 0.12);
+    }
+    input[type="range"]:disabled::-webkit-slider-runnable-track {
+      background: var(--slider-track-disabled);
+      box-shadow: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      margin-top: -10px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--slider-thumb-top) 0%, var(--slider-thumb-bottom) 100%);
+      border: 2px solid var(--slider-thumb-ring);
+      box-shadow: var(--slider-thumb-shadow);
+    }
+    input[type="range"]:active:not(:disabled)::-webkit-slider-thumb {
+      background: linear-gradient(180deg, #4cb4bb 0%, #20767a 100%);
+      box-shadow: 0 3px 14px rgba(32, 118, 122, 0.55), 0 1px 3px rgba(0, 0, 0, 0.15);
+      transform: scale(1.05);
+    }
+    input[type="range"]:disabled::-webkit-slider-thumb {
+      background: var(--slider-thumb-disabled);
+      border-color: #e8e8ec;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    input[type="range"]::-moz-range-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--slider-track-solid);
+      border: none;
+      box-shadow: inset 0 1px 2px rgba(32, 118, 122, 0.12);
+    }
+    input[type="range"]:disabled::-moz-range-track {
+      background: var(--slider-track-disabled);
+      box-shadow: none;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--slider-thumb-top) 0%, var(--slider-thumb-bottom) 100%);
+      border: 2px solid var(--slider-thumb-ring);
+      box-shadow: var(--slider-thumb-shadow);
+    }
+    input[type="range"]:disabled::-moz-range-thumb {
+      background: var(--slider-thumb-disabled);
+      border-color: #e8e8ec;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    /* Dual-thumb range (Performance → Dynamic range): max layer shows track, min thumb on top */
+    .dynamic-range-slider {
+      position: relative;
+      width: 80%;
+      max-width: 280px;
+      height: 36px;
+      margin: 0 8px 18px;
+      box-sizing: border-box;
+      align-self: center;
+    }
+    .dynamic-range-slider input[type="range"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 36px;
+      margin: 0;
+      pointer-events: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .dynamic-range-slider input[type="range"]::-webkit-slider-thumb {
+      pointer-events: auto;
+    }
+    .dynamic-range-slider input[type="range"]::-moz-range-thumb {
+      pointer-events: auto;
+    }
+    .dynamic-range-slider input.dynamic-range-slider__min {
+      z-index: 2;
+    }
+    .dynamic-range-slider input.dynamic-range-slider__max {
+      z-index: 1;
+    }
+    .dynamic-range-slider input.dynamic-range-slider__min::-webkit-slider-runnable-track {
+      background: transparent;
+      box-shadow: none;
+    }
+    .dynamic-range-slider input.dynamic-range-slider__min::-moz-range-track {
+      background: transparent;
+      box-shadow: none;
     }
     fieldset {
       border: 1px solid var(--border);
@@ -226,7 +384,29 @@
       padding: 0;
       transition: width 0.3s ease, background-color 0.3s ease;
     }
-    #battery-bar { min-height: 10px; }
+    /* Match input[type="range"] width on Device tab (flex column + align-items:center shrinks unstyled blocks). */
+    .battery-readout {
+      width: 80%;
+      max-width: 280px;
+      margin: 0 8px 18px;
+      box-sizing: border-box;
+    }
+    .battery-bar-track {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: 5px;
+      min-height: 10px;
+      overflow: hidden;
+    }
+    #battery-bar {
+      min-height: 10px;
+      height: 10px;
+      width: 0%;
+      max-width: none;
+      margin: 0;
+      border-radius: 0;
+      display: block;
+    }
     /* Battery readout (label + bar) when BLE disconnected — no device data */
     #batteryReadoutBlock.battery-readout--disconnected {
       opacity: 0.48;
@@ -757,7 +937,9 @@
       <div class="control-with-help-main">
         <div id="batteryReadoutBlock" class="battery-readout battery-readout--disconnected">
           <label id="batteryLabel" disabled>Battery: 0</label>
-          <div class="bar" id="battery-bar">‌</div>
+          <div class="battery-bar-track">
+            <div class="bar" id="battery-bar">‌</div>
+          </div>
         </div>
       </div>
     </div>
@@ -897,19 +1079,16 @@
           <label><input type="radio" name="dynamicsRadioGroup" value="on"  disabled> On</label>
           <label><input type="radio" name="dynamicsRadioGroup" value="off" checked disabled> Off</label>
         </fieldset>
-        <div class="control-with-help" style="margin-top:10px;">
-          <button type="button" class="help-icon" data-help-title="Strum velocity minimum" data-help-body="Softest strum maps to this MIDI velocity (0–127). Raise it so very light strums stay audible; lower it for a wider dynamic range down to silence." aria-label="Help: Strum velocity minimum">?</button>
-          <div class="control-with-help-main">
-            <label id="strumVelOutMinLabel" for="strumVelOutMinSlider" disabled>Strum velocity min (MIDI): 10</label>
-            <input type="range" id="strumVelOutMinSlider" min="0" max="127" value="10" step="1" disabled aria-labelledby="strumVelOutMinLabel">
-          </div>
-        </div>
-        <div class="control-with-help" style="margin-top:10px;">
-          <button type="button" class="help-icon" data-help-title="Strum velocity maximum" data-help-body="Hardest strum maps to this MIDI velocity (0–127). Lower it to cap how loud fortissimo strums can get." aria-label="Help: Strum velocity maximum">?</button>
-          <div class="control-with-help-main">
-            <label id="strumVelOutMaxLabel" for="strumVelOutMaxSlider" disabled>Strum velocity max (MIDI): 127</label>
-            <input type="range" id="strumVelOutMaxSlider" min="0" max="127" value="127" step="1" disabled aria-labelledby="strumVelOutMaxLabel">
-          </div>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Dynamic range" data-help-body="Sets the MIDI velocity range for the softest strums (left thumb) and hardest strums (right thumb), from 0–127. Raise the minimum so light strums stay audible; lower the maximum to cap how loud fortissimo strums can get." aria-label="Help: Dynamic range">?</button>
+      <div class="control-with-help-main">
+        <label id="dynamicRangeLabel" disabled>Dynamic range: 10 – 127</label>
+        <div class="dynamic-range-slider" role="group" aria-labelledby="dynamicRangeLabel">
+          <input type="range" id="strumVelOutMaxSlider" class="dynamic-range-slider__max" min="0" max="127" value="127" step="1" disabled aria-label="Maximum strum velocity (MIDI)">
+          <input type="range" id="strumVelOutMinSlider" class="dynamic-range-slider__min" min="0" max="127" value="10" step="1" disabled aria-label="Minimum strum velocity (MIDI)">
         </div>
       </div>
     </div>
@@ -926,27 +1105,21 @@
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="Tapping (hammering)" data-help-body="Enables hammer-on and tapping gestures on the fingerboard to trigger notes without a new pluck or strum." aria-label="Help: Tapping">?</button>
+      <button type="button" class="help-icon" data-help-title="Hammer-on" data-help-body="Enables hammer-on and tapping gestures on the fingerboard to trigger notes without a new pluck or strum." aria-label="Help: Hammer-on">?</button>
       <div class="control-with-help-main">
         <fieldset>
-          <legend>Tapping (Hammering):</legend>
+          <legend>Hammer-on:</legend>
           <label><input type="radio" name="tappingRadioGroup" value="on" disabled> On</label>
           <label><input type="radio" name="tappingRadioGroup" value="off" checked disabled> Off</label>
         </fieldset>
-        <div class="control-with-help" style="margin-top:10px;">
-          <button type="button" class="help-icon" data-help-title="Hammer-on velocity" data-help-body="MIDI velocity for hammer-on notes, as a percent of the velocity from the last strum on that string. Higher values track the strum more closely; lower values produce softer hammer-ons." aria-label="Help: Hammer-on velocity">?</button>
-          <div class="control-with-help-main">
-            <label id="hammerOnVelocityLabel" for="hammerOnVelocitySlider" disabled>Hammer-on velocity: 50% of last strum</label>
-            <input type="range" id="hammerOnVelocitySlider" min="0" max="100" value="50" step="1" disabled aria-labelledby="hammerOnVelocityLabel">
-          </div>
-        </div>
-        <div class="control-with-help" style="margin-top:10px;">
-          <button type="button" class="help-icon" data-help-title="Post-strum guard" data-help-body="Extra time after a strum (in firmware ticks) before hammer-on notes can register. Increase if fingerboard noise right after a strum triggers unwanted hammer-ons; decrease to allow hammer-ons sooner after the strum." aria-label="Help: Post-strum guard">?</button>
-          <div class="control-with-help-main">
-            <label id="hammerPostStrumGuardLabel" for="hammerPostStrumGuardSlider" disabled>Post-strum guard: 5 ticks</label>
-            <input type="range" id="hammerPostStrumGuardSlider" min="0" max="255" value="5" step="1" disabled aria-labelledby="hammerPostStrumGuardLabel">
-          </div>
-        </div>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Hammer-on volume" data-help-body="MIDI velocity for hammer-on notes, as a percent of the velocity from the last strum on that string. Higher values track the strum more closely; lower values produce softer hammer-ons." aria-label="Help: Hammer-on volume">?</button>
+      <div class="control-with-help-main">
+        <label id="hammerOnVelocityLabel" for="hammerOnVelocitySlider" disabled>Hammer-on volume: 50%</label>
+        <input type="range" id="hammerOnVelocitySlider" min="0" max="100" value="50" step="1" disabled aria-labelledby="hammerOnVelocityLabel">
       </div>
     </div>
 
@@ -962,17 +1135,21 @@
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="Sympathetic resonance" data-help-body="When On, other open strings that match the played pitch (unison or octave) sound quietly on MIDI channel 16. Use the slider to set sympathetic note volume as a percent of the main strum velocity." aria-label="Help: Sympathetic resonance">?</button>
+      <button type="button" class="help-icon" data-help-title="Sympathetic resonance" data-help-body="When On, other open strings that match the played pitch (unison or octave) sound quietly on MIDI channel 16." aria-label="Help: Sympathetic resonance">?</button>
       <div class="control-with-help-main">
         <fieldset>
           <legend>Sympathetic resonance:</legend>
           <label><input type="radio" name="resonateRadioGroup" value="on" disabled> On</label>
           <label><input type="radio" name="resonateRadioGroup" value="off" checked disabled> Off</label>
         </fieldset>
-        <div style="margin-top:10px;">
-          <label id="sympatheticVolumeLabel" for="sympatheticVolumeSlider" disabled>Sympathetic volume: 50%</label>
-          <input type="range" id="sympatheticVolumeSlider" min="0" max="100" value="50" step="1" disabled aria-labelledby="sympatheticVolumeLabel">
-        </div>
+      </div>
+    </div>
+
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Sympathetic volume" data-help-body="Sets sympathetic note volume as a percent of the main strum velocity when sympathetic resonance is on." aria-label="Help: Sympathetic volume">?</button>
+      <div class="control-with-help-main">
+        <label id="sympatheticVolumeLabel" for="sympatheticVolumeSlider" disabled>Sympathetic volume: 50%</label>
+        <input type="range" id="sympatheticVolumeSlider" min="0" max="100" value="50" step="1" disabled aria-labelledby="sympatheticVolumeLabel">
       </div>
     </div>
 
@@ -1366,16 +1543,20 @@
       let leftHandRadioButtons = document.getElementsByName('leftHandRadioGroup');
       let quarterTonesRadioButtons = document.getElementsByName('quarterTonesRadioGroup');
       let dynamicsRadioButtons = document.getElementsByName('dynamicsRadioGroup');
-      let strumVelOutMinLabel = document.getElementById('strumVelOutMinLabel');
+      let dynamicRangeLabel = document.getElementById('dynamicRangeLabel');
       let strumVelOutMinSlider = document.getElementById('strumVelOutMinSlider');
-      let strumVelOutMaxLabel = document.getElementById('strumVelOutMaxLabel');
       let strumVelOutMaxSlider = document.getElementById('strumVelOutMaxSlider');
+      function updateDynamicRangeLabel() {
+        const rawMn = parseInt(strumVelOutMinSlider.value, 10) || 0;
+        const rawMx = parseInt(strumVelOutMaxSlider.value, 10) || 0;
+        const mn = Math.min(rawMn, rawMx);
+        const mx = Math.max(rawMn, rawMx);
+        dynamicRangeLabel.textContent = `Dynamic range: ${mn} – ${mx}`;
+      }
       let staccatoRadioButtons = document.getElementsByName('staccatoRadioGroup');
       let tappingRadioButtons = document.getElementsByName('tappingRadioGroup');
       let hammerOnVelocityLabel = document.getElementById('hammerOnVelocityLabel');
       let hammerOnVelocitySlider = document.getElementById('hammerOnVelocitySlider');
-      let hammerPostStrumGuardLabel = document.getElementById('hammerPostStrumGuardLabel');
-      let hammerPostStrumGuardSlider = document.getElementById('hammerPostStrumGuardSlider');
       let tapWithoutStrumRadioButtons = document.getElementsByName('tapWithoutStrumRadioGroup');
       let metronomeRadioButtons = document.getElementsByName('metronomeRadioGroup');
       let strumStepRadioButtons = document.getElementsByName('strumStepRadioGroup');
@@ -1438,8 +1619,7 @@
         if (!connectedDevice) {
           strumVelOutMinSlider.disabled = true;
           strumVelOutMaxSlider.disabled = true;
-          strumVelOutMinLabel.setAttribute('disabled', 'disabled');
-          strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
+          dynamicRangeLabel.setAttribute('disabled', 'disabled');
           return;
         }
         const sel = document.querySelector('input[name="dynamicsRadioGroup"]:checked');
@@ -1447,13 +1627,45 @@
         if (dynamicsOn) {
           strumVelOutMinSlider.disabled = false;
           strumVelOutMaxSlider.disabled = false;
-          strumVelOutMinLabel.removeAttribute('disabled');
-          strumVelOutMaxLabel.removeAttribute('disabled');
+          dynamicRangeLabel.removeAttribute('disabled');
         } else {
           strumVelOutMinSlider.disabled = true;
           strumVelOutMaxSlider.disabled = true;
-          strumVelOutMinLabel.setAttribute('disabled', 'disabled');
-          strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
+          dynamicRangeLabel.setAttribute('disabled', 'disabled');
+        }
+      }
+      /** Hammer-on volume only when Hammer-on (tapping) is On; grey out when Off or disconnected. */
+      function updateHammerOnVolumeControlsEnabled() {
+        if (!connectedDevice) {
+          hammerOnVelocitySlider.disabled = true;
+          hammerOnVelocityLabel.setAttribute('disabled', 'disabled');
+          return;
+        }
+        const sel = document.querySelector('input[name="tappingRadioGroup"]:checked');
+        const tappingOn = sel && sel.value === 'on';
+        if (tappingOn) {
+          hammerOnVelocitySlider.disabled = false;
+          hammerOnVelocityLabel.removeAttribute('disabled');
+        } else {
+          hammerOnVelocitySlider.disabled = true;
+          hammerOnVelocityLabel.setAttribute('disabled', 'disabled');
+        }
+      }
+      /** Sympathetic volume only when sympathetic resonance is On; grey out when Off or disconnected. */
+      function updateSympatheticVolumeControlsEnabled() {
+        if (!connectedDevice) {
+          sympatheticVolumeSlider.disabled = true;
+          sympatheticVolumeLabel.setAttribute('disabled', 'disabled');
+          return;
+        }
+        const sel = document.querySelector('input[name="resonateRadioGroup"]:checked');
+        const resonateOn = sel && sel.value === 'on';
+        if (resonateOn) {
+          sympatheticVolumeSlider.disabled = false;
+          sympatheticVolumeLabel.removeAttribute('disabled');
+        } else {
+          sympatheticVolumeSlider.disabled = true;
+          sympatheticVolumeLabel.setAttribute('disabled', 'disabled');
         }
       }
       let device = null;
@@ -1773,16 +1985,17 @@
           if (dataArray[i + 2] !== 0) continue;
 
           if (code === 0x56) {
-            var level = value;
-            document.getElementById('battery-bar').style.width = level * 0.8 + '%';
-            if (level > 70 && level <= 100) {
-              document.getElementById('battery-bar').style.backgroundColor = '#33cc33';
-            } else if (level > 50 && level <= 70) {
-              document.getElementById('battery-bar').style.backgroundColor = '#ffff00';
-            } else if (level > 30 && level <= 50) {
-              document.getElementById('battery-bar').style.backgroundColor = '#ff9900';
-            } else if (level > 0 && level <= 30) {
-              document.getElementById('battery-bar').style.backgroundColor = '#ff0000';
+            var level = Math.max(0, Math.min(100, value));
+            const barEl = document.getElementById('battery-bar');
+            barEl.style.width = level + '%';
+            if (level < 20) {
+              barEl.style.backgroundColor = '#ff0000';
+            } else if (level < 40) {
+              barEl.style.backgroundColor = '#ff9900';
+            } else if (level < 60) {
+              barEl.style.backgroundColor = '#ffff00';
+            } else {
+              barEl.style.backgroundColor = '#33cc33';
             }
             batteryLabel.textContent = `Battery: ${level} `;
           } else if (code === 0x57) {
@@ -1846,12 +2059,7 @@
           if (typeof obj.hammerOnVelocity === 'number') {
             const hv = Math.max(0, Math.min(100, obj.hammerOnVelocity | 0));
             hammerOnVelocitySlider.value = String(hv);
-            hammerOnVelocityLabel.textContent = `Hammer-on velocity: ${hv}% of last strum`;
-          }
-          if (typeof obj.hammerPostStrumGuardTicks === 'number') {
-            const gt = Math.max(0, Math.min(255, obj.hammerPostStrumGuardTicks | 0));
-            hammerPostStrumGuardSlider.value = String(gt);
-            hammerPostStrumGuardLabel.textContent = `Post-strum guard: ${gt} ticks`;
+            hammerOnVelocityLabel.textContent = `Hammer-on volume: ${hv}%`;
           }
           if (typeof obj.tuning === 'number') tuningsDropdown.selectedIndex = Math.max(0, Math.min(tuningNames.length - 1, obj.tuning | 0));
           if (typeof obj.pitchSystem === 'number') pitchSystemsDropdown.selectedIndex = Math.max(0, Math.min(pitchSystemsNames.length - 1, obj.pitchSystem | 0));
@@ -1890,12 +2098,13 @@
           if (typeof obj.strumVelOutMin === 'number') {
             const sm = Math.max(0, Math.min(127, obj.strumVelOutMin | 0));
             strumVelOutMinSlider.value = String(sm);
-            strumVelOutMinLabel.textContent = `Strum velocity min (MIDI): ${sm}`;
           }
           if (typeof obj.strumVelOutMax === 'number') {
             const sx = Math.max(0, Math.min(127, obj.strumVelOutMax | 0));
             strumVelOutMaxSlider.value = String(sx);
-            strumVelOutMaxLabel.textContent = `Strum velocity max (MIDI): ${sx}`;
+          }
+          if (typeof obj.strumVelOutMin === 'number' || typeof obj.strumVelOutMax === 'number') {
+            updateDynamicRangeLabel();
           }
           if (typeof obj.tapWithoutStrum === 'number') setRadioCheckedByName(tapWithoutStrumRadioButtons, obj.tapWithoutStrum !== 0);
           if (typeof obj.percussion === 'number') setRadioCheckedByName(percussionRadioButtons, obj.percussion !== 0);
@@ -1906,6 +2115,8 @@
         } finally {
           syncingFromFirmware = false;
           updateStrumVelOutRangeControlsEnabled();
+          updateHammerOnVolumeControlsEnabled();
+          updateSympatheticVolumeControlsEnabled();
         }
       }
 
@@ -3785,17 +3996,14 @@
         for (let i = 0; i < dynamicsRadioButtons.length; i++)
           dynamicsRadioButtons[i].setAttribute('disabled', 'disabled');
         strumVelOutMinSlider.disabled = true;
-        strumVelOutMinLabel.setAttribute('disabled', 'disabled');
         strumVelOutMaxSlider.disabled = true;
-        strumVelOutMaxLabel.setAttribute('disabled', 'disabled');
+        dynamicRangeLabel.setAttribute('disabled', 'disabled');
         for (let i = 0; i < staccatoRadioButtons.length; i++)
           staccatoRadioButtons[i].setAttribute('disabled', 'disabled');
         for (let i = 0; i < tappingRadioButtons.length; i++)
           tappingRadioButtons[i].setAttribute('disabled', 'disabled');
         hammerOnVelocitySlider.disabled = true;
         hammerOnVelocityLabel.setAttribute('disabled', 'disabled');
-        hammerPostStrumGuardSlider.disabled = true;
-        hammerPostStrumGuardLabel.setAttribute('disabled', 'disabled');
         for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
           tapWithoutStrumRadioButtons[i].setAttribute('disabled', 'disabled');
         for (let i = 0; i < metronomeRadioButtons.length; i++)
@@ -3869,7 +4077,11 @@
 
             connectButton.disabled = false;
           } catch (error) {
-            console.error('Error requesting Bluetooth device:', error);
+            const detail =
+              error && typeof error === 'object'
+                ? [error.name, error.message].filter(Boolean).join(': ') || String(error)
+                : String(error);
+            console.error('Error requesting Bluetooth device:', detail || error);
           }
         });
 
@@ -3968,8 +4180,7 @@
                 chordsRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < resonateRadioButtons.length; i++)
                 resonateRadioButtons[i].removeAttribute('disabled');
-              sympatheticVolumeSlider.disabled = false;
-              sympatheticVolumeLabel.removeAttribute('disabled');
+              updateSympatheticVolumeControlsEnabled();
               for (let i = 0; i < leftHandRadioButtons.length; i++)
                 leftHandRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < quarterTonesRadioButtons.length; i++)
@@ -3983,10 +4194,7 @@
                 percussionRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < tappingRadioButtons.length; i++)
                 tappingRadioButtons[i].removeAttribute('disabled');
-              hammerOnVelocitySlider.disabled = false;
-              hammerOnVelocityLabel.removeAttribute('disabled');
-              hammerPostStrumGuardSlider.disabled = false;
-              hammerPostStrumGuardLabel.removeAttribute('disabled');
+              updateHammerOnVolumeControlsEnabled();
               for (let i = 0; i < tapWithoutStrumRadioButtons.length; i++)
                 tapWithoutStrumRadioButtons[i].removeAttribute('disabled');
               for (let i = 0; i < metronomeRadioButtons.length; i++)
@@ -4571,6 +4779,8 @@
               }
             } catch (error) {
               console.error('Error sending resonate to the device:', error);
+            } finally {
+              updateSympatheticVolumeControlsEnabled();
             }
           });
         }
@@ -4735,8 +4945,7 @@
           const mx = Math.max(rawMn, rawMx);
           strumVelOutMinSlider.value = String(mn);
           strumVelOutMaxSlider.value = String(mx);
-          strumVelOutMinLabel.textContent = `Strum velocity min (MIDI): ${mn}`;
-          strumVelOutMaxLabel.textContent = `Strum velocity max (MIDI): ${mx}`;
+          updateDynamicRangeLabel();
           const pkt = (cmd, val) => {
             const d = new Uint8Array(5);
             d[0] = 0xbf;
@@ -4826,6 +5035,8 @@
 
             } catch (error) {
               console.error('Error sending note to the device:', error);
+            } finally {
+              updateHammerOnVolumeControlsEnabled();
             }
 
           });
@@ -4833,7 +5044,7 @@
 
         hammerOnVelocitySlider.addEventListener('input', async () => {
           const hv = Math.max(0, Math.min(100, parseInt(hammerOnVelocitySlider.value, 10) || 0));
-          hammerOnVelocityLabel.textContent = `Hammer-on velocity: ${hv}% of last strum`;
+          hammerOnVelocityLabel.textContent = `Hammer-on volume: ${hv}%`;
           try {
             if (connectedDevice) {
               if (syncingFromFirmware) return;
@@ -4847,25 +5058,6 @@
             }
           } catch (error) {
             console.error('Error sending hammer-on velocity to the device:', error);
-          }
-        });
-
-        hammerPostStrumGuardSlider.addEventListener('input', async () => {
-          const gt = Math.max(0, Math.min(255, parseInt(hammerPostStrumGuardSlider.value, 10) || 0));
-          hammerPostStrumGuardLabel.textContent = `Post-strum guard: ${gt} ticks`;
-          try {
-            if (connectedDevice) {
-              if (syncingFromFirmware) return;
-              let data = new Uint8Array(5);
-              data[0] = 0xbf;
-              data[1] = 0x8c;
-              data[2] = 0xfe;
-              data[3] = 0x0c;
-              data[4] = gt;
-              await connectedDevice.midiCharacteristic.writeValue(data);
-            }
-          } catch (error) {
-            console.error('Error sending hammer post-strum guard to the device:', error);
           }
         });
 
