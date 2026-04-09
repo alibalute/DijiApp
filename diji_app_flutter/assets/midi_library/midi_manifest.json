@@ -1,0 +1,2862 @@
+{
+  "version": 1,
+  "rootLabel": "MIDI Library",
+  "children": [
+    {
+      "type": "dir",
+      "name": "Examples",
+      "label": "Examples",
+      "children": [
+        {
+          "type": "file",
+          "name": "088 S13 Chorus Fill 01.mid",
+          "label": "088 S13 Chorus Fill 01.mid",
+          "asset": "assets/midi_library/Examples/088 S13 Chorus Fill 01.mid"
+        },
+        {
+          "type": "file",
+          "name": "example.mid",
+          "label": "example.mid",
+          "asset": "assets/midi_library/Examples/example.mid"
+        }
+      ]
+    },
+    {
+      "type": "dir",
+      "name": "Standards",
+      "label": "Standards",
+      "children": [
+        {
+          "type": "dir",
+          "name": "Blues Classics",
+          "label": "Blues Classics",
+          "children": [
+            {
+              "type": "dir",
+              "name": "110 Cold Shock",
+              "label": "110 Cold Shock",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "Grooves",
+                  "label": "Grooves",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "Cold Hat.mid",
+                      "label": "Cold Hat.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Grooves/Cold Hat.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Cold Open Hat.mid",
+                      "label": "Cold Open Hat.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Grooves/Cold Open Hat.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Cold Ride.mid",
+                      "label": "Cold Ride.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Grooves/Cold Ride.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Hat Fills",
+                  "label": "Hat Fills",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 01.mid",
+                      "label": "Hat Fill 01.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 01.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 02.mid",
+                      "label": "Hat Fill 02.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 02.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 05.mid",
+                      "label": "Hat Fill 05.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 05.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 06.mid",
+                      "label": "Hat Fill 06.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 06.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 07.mid",
+                      "label": "Hat Fill 07.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 07.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 08.mid",
+                      "label": "Hat Fill 08.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 08.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 09.mid",
+                      "label": "Hat Fill 09.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 09.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 11.mid",
+                      "label": "Hat Fill 11.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 11.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Hat Fill 12.mid",
+                      "label": "Hat Fill 12.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Hat Fills/Hat Fill 12.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Intro Fills",
+                  "label": "Intro Fills",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "Intro Fill 4.mid",
+                      "label": "Intro Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Intro Fills/Intro Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Intro Fill 5 Build.mid",
+                      "label": "Intro Fill 5 Build.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Intro Fills/Intro Fill 5 Build.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Open Hat Fills",
+                  "label": "Open Hat Fills",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 01.mid",
+                      "label": "Open Hat Fill 01.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 01.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 02.mid",
+                      "label": "Open Hat Fill 02.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 02.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 05.mid",
+                      "label": "Open Hat Fill 05.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 05.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 06.mid",
+                      "label": "Open Hat Fill 06.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 06.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 07.mid",
+                      "label": "Open Hat Fill 07.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 07.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 08.mid",
+                      "label": "Open Hat Fill 08.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 08.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 09.mid",
+                      "label": "Open Hat Fill 09.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 09.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 11.mid",
+                      "label": "Open Hat Fill 11.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 11.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Open Hat Fill 12.mid",
+                      "label": "Open Hat Fill 12.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Open Hat Fills/Open Hat Fill 12.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Outro Fills",
+                  "label": "Outro Fills",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "Outro Fill 3.mid",
+                      "label": "Outro Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Outro Fills/Outro Fill 3.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Ride Fills",
+                  "label": "Ride Fills",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 01.mid",
+                      "label": "Ride Fill 01.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 01.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 02.mid",
+                      "label": "Ride Fill 02.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 02.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 03.mid",
+                      "label": "Ride Fill 03.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 03.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 04.mid",
+                      "label": "Ride Fill 04.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 04.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 05.mid",
+                      "label": "Ride Fill 05.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 05.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 07.mid",
+                      "label": "Ride Fill 07.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 07.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 08.mid",
+                      "label": "Ride Fill 08.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 08.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 10.mid",
+                      "label": "Ride Fill 10.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 10.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "Ride Fill 11.mid",
+                      "label": "Ride Fill 11.mid",
+                      "asset": "assets/midi_library/Standards/Blues Classics/110 Cold Shock/Ride Fills/Ride Fill 11.mid"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "dir",
+          "name": "Groove Monkee Free MIDI PD",
+          "label": "Groove Monkee Free MIDI PD",
+          "children": [
+            {
+              "type": "dir",
+              "name": "Ballads",
+              "label": "Ballads",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "Song 13 088 BPM",
+                  "label": "Song 13 088 BPM",
+                  "children": [
+                    {
+                      "type": "dir",
+                      "name": "Chorus Fills",
+                      "label": "Chorus Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "088 S13 Chorus Fill 01.mid",
+                          "label": "088 S13 Chorus Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Chorus Fills/088 S13 Chorus Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Chorus Fill 02.mid",
+                          "label": "088 S13 Chorus Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Chorus Fills/088 S13 Chorus Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Chorus Fill 12.mid",
+                          "label": "088 S13 Chorus Fill 12.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Chorus Fills/088 S13 Chorus Fill 12.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Grooves",
+                      "label": "Grooves",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "088 S13 Chorus Hat.mid",
+                          "label": "088 S13 Chorus Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Chorus Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Chorus Ride.mid",
+                          "label": "088 S13 Chorus Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Chorus Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Groove ALT 1 Hat.mid",
+                          "label": "088 S13 Groove ALT 1 Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Groove ALT 1 Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Groove ALT 2 Hat.mid",
+                          "label": "088 S13 Groove ALT 2 Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Groove ALT 2 Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Groove ALT 3 Hat.mid",
+                          "label": "088 S13 Groove ALT 3 Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Groove ALT 3 Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Groove ALT 4 Hat.mid",
+                          "label": "088 S13 Groove ALT 4 Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Groove ALT 4 Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Groove ALT 5 Hat.mid",
+                          "label": "088 S13 Groove ALT 5 Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Groove ALT 5 Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Intro.mid",
+                          "label": "088 S13 Intro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Intro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Outro.mid",
+                          "label": "088 S13 Outro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Outro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Verse Hat.mid",
+                          "label": "088 S13 Verse Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Verse Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Verse Ride.mid",
+                          "label": "088 S13 Verse Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Verse Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Verse Stick.mid",
+                          "label": "088 S13 Verse Stick.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Grooves/088 S13 Verse Stick.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Intro Fills",
+                      "label": "Intro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "088 S13 Intro Fill 1.mid",
+                          "label": "088 S13 Intro Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Intro Fills/088 S13 Intro Fill 1.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Outro Fills",
+                      "label": "Outro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "088 S13 Outro Fill 1.mid",
+                          "label": "088 S13 Outro Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Outro Fills/088 S13 Outro Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Outro Fill 3.mid",
+                          "label": "088 S13 Outro Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Outro Fills/088 S13 Outro Fill 3.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Verse Fills",
+                      "label": "Verse Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "088 S13 Verse Fill 01.mid",
+                          "label": "088 S13 Verse Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Verse Fills/088 S13 Verse Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Verse Fill 02.mid",
+                          "label": "088 S13 Verse Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Verse Fills/088 S13 Verse Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Verse Fill 04.mid",
+                          "label": "088 S13 Verse Fill 04.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Verse Fills/088 S13 Verse Fill 04.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "088 S13 Verse Fill 05.mid",
+                          "label": "088 S13 Verse Fill 05.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Ballads/Song 13 088 BPM/Verse Fills/088 S13 Verse Fill 05.mid"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Classic Rock",
+              "label": "Classic Rock",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "Song 03 146 Jail Breakin",
+                  "label": "Song 03 146 Jail Breakin",
+                  "children": [
+                    {
+                      "type": "dir",
+                      "name": "1-Bar Fills",
+                      "label": "1-Bar Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "146 S03 1-Bar Fill 2.mid",
+                          "label": "146 S03 1-Bar Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/1-Bar Fills/146 S03 1-Bar Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Chorus Fills",
+                      "label": "Chorus Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Fill 01.mid",
+                          "label": "146 S03 Chorus Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Chorus Fills/146 S03 Chorus Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Fill 02.mid",
+                          "label": "146 S03 Chorus Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Chorus Fills/146 S03 Chorus Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Fill 05.mid",
+                          "label": "146 S03 Chorus Fill 05.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Chorus Fills/146 S03 Chorus Fill 05.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Fill 10.mid",
+                          "label": "146 S03 Chorus Fill 10.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Chorus Fills/146 S03 Chorus Fill 10.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Transition Fill 1.mid",
+                          "label": "146 S03 Chorus Transition Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Chorus Fills/146 S03 Chorus Transition Fill 1.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Grooves",
+                      "label": "Grooves",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "146 S03 Bridge.mid",
+                          "label": "146 S03 Bridge.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Bridge.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Hat.mid",
+                          "label": "146 S03 Chorus Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Chorus Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Live 1.mid",
+                          "label": "146 S03 Chorus Live 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Chorus Live 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Live 2.mid",
+                          "label": "146 S03 Chorus Live 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Chorus Live 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Chorus Live Ride.mid",
+                          "label": "146 S03 Chorus Live Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Chorus Live Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Intro.mid",
+                          "label": "146 S03 Intro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Intro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Outro.mid",
+                          "label": "146 S03 Outro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Outro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse ALT.mid",
+                          "label": "146 S03 Verse ALT.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Verse ALT.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Live.mid",
+                          "label": "146 S03 Verse Live.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Verse Live.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse OH.mid",
+                          "label": "146 S03 Verse OH.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Verse OH.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Ride.mid",
+                          "label": "146 S03 Verse Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Verse Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse.mid",
+                          "label": "146 S03 Verse.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Grooves/146 S03 Verse.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Intro Fills",
+                      "label": "Intro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "146 S03 Intro Fill 3.mid",
+                          "label": "146 S03 Intro Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Intro Fills/146 S03 Intro Fill 3.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Outro Fills",
+                      "label": "Outro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "146 S03 Outro Fill 2.mid",
+                          "label": "146 S03 Outro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Outro Fills/146 S03 Outro Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Verse Fills",
+                      "label": "Verse Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Fill 01.mid",
+                          "label": "146 S03 Verse Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Verse Fills/146 S03 Verse Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Fill 02.mid",
+                          "label": "146 S03 Verse Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Verse Fills/146 S03 Verse Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Fill 03.mid",
+                          "label": "146 S03 Verse Fill 03.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Verse Fills/146 S03 Verse Fill 03.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Fill 06.mid",
+                          "label": "146 S03 Verse Fill 06.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Verse Fills/146 S03 Verse Fill 06.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Fill 07.mid",
+                          "label": "146 S03 Verse Fill 07.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Verse Fills/146 S03 Verse Fill 07.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Fill 08.mid",
+                          "label": "146 S03 Verse Fill 08.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Verse Fills/146 S03 Verse Fill 08.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "146 S03 Verse Transition Fill 3.mid",
+                          "label": "146 S03 Verse Transition Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Classic Rock/Song 03 146 Jail Breakin/Verse Fills/146 S03 Verse Transition Fill 3.mid"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Contemporary Rock",
+              "label": "Contemporary Rock",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "Song 06 120",
+                  "label": "Song 06 120",
+                  "children": [
+                    {
+                      "type": "dir",
+                      "name": "Bridge Fills",
+                      "label": "Bridge Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride Fill 1.mid",
+                          "label": "S06 Bridge HT Ride Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Bridge Fills/S06 Bridge HT Ride Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride Fill 2.mid",
+                          "label": "S06 Bridge HT Ride Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Bridge Fills/S06 Bridge HT Ride Fill 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride Fill 3.mid",
+                          "label": "S06 Bridge HT Ride Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Bridge Fills/S06 Bridge HT Ride Fill 3.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride Fill 4.mid",
+                          "label": "S06 Bridge HT Ride Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Bridge Fills/S06 Bridge HT Ride Fill 4.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride Fill 5.mid",
+                          "label": "S06 Bridge HT Ride Fill 5.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Bridge Fills/S06 Bridge HT Ride Fill 5.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride Fill 6.mid",
+                          "label": "S06 Bridge HT Ride Fill 6.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Bridge Fills/S06 Bridge HT Ride Fill 6.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Chorus Fills",
+                      "label": "Chorus Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus BB Fill 1.mid",
+                          "label": "S06 Chorus BB Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Chorus Fills/S06 Chorus BB Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus BB Fill 2.mid",
+                          "label": "S06 Chorus BB Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Chorus Fills/S06 Chorus BB Fill 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus BB Fill 3.mid",
+                          "label": "S06 Chorus BB Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Chorus Fills/S06 Chorus BB Fill 3.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus BB Fill 4.mid",
+                          "label": "S06 Chorus BB Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Chorus Fills/S06 Chorus BB Fill 4.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus BB Fill 5.mid",
+                          "label": "S06 Chorus BB Fill 5.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Chorus Fills/S06 Chorus BB Fill 5.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus BB Fill 6.mid",
+                          "label": "S06 Chorus BB Fill 6.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Chorus Fills/S06 Chorus BB Fill 6.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Grooves",
+                      "label": "Grooves",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride Crash.mid",
+                          "label": "S06 Bridge HT Ride Crash.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Bridge HT Ride Crash.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Bridge HT Ride.mid",
+                          "label": "S06 Bridge HT Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Bridge HT Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus OH 8th Crash.mid",
+                          "label": "S06 Chorus OH 8th Crash.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Chorus OH 8th Crash.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Chorus OH 8th.mid",
+                          "label": "S06 Chorus OH 8th.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Chorus OH 8th.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick on 2 Crash.mid",
+                          "label": "S06 Intro Stick on 2 Crash.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Intro Stick on 2 Crash.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick on 2.mid",
+                          "label": "S06 Intro Stick on 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Intro Stick on 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse 8ths Crash.mid",
+                          "label": "S06 Verse 8ths Crash.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Verse 8ths Crash.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse 8ths Ghosts.mid",
+                          "label": "S06 Verse 8ths Ghosts.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Verse 8ths Ghosts.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse 8ths.mid",
+                          "label": "S06 Verse 8ths.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Grooves/S06 Verse 8ths.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Intro Fills",
+                      "label": "Intro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick On 2 Fill 1.mid",
+                          "label": "S06 Intro Stick On 2 Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Intro Fills/S06 Intro Stick On 2 Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick On 2 Fill 2.mid",
+                          "label": "S06 Intro Stick On 2 Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Intro Fills/S06 Intro Stick On 2 Fill 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick On 2 Fill 3.mid",
+                          "label": "S06 Intro Stick On 2 Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Intro Fills/S06 Intro Stick On 2 Fill 3.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick On 2 Fill 4.mid",
+                          "label": "S06 Intro Stick On 2 Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Intro Fills/S06 Intro Stick On 2 Fill 4.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick On 2 Fill 5.mid",
+                          "label": "S06 Intro Stick On 2 Fill 5.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Intro Fills/S06 Intro Stick On 2 Fill 5.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Intro Stick On 2 Fill 6.mid",
+                          "label": "S06 Intro Stick On 2 Fill 6.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Intro Fills/S06 Intro Stick On 2 Fill 6.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Outro Fills",
+                      "label": "Outro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "S06 Outro Crashes Fill 1.mid",
+                          "label": "S06 Outro Crashes Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Outro Fills/S06 Outro Crashes Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Outro Crashes Fill 2.mid",
+                          "label": "S06 Outro Crashes Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Outro Fills/S06 Outro Crashes Fill 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Outro Crashes Fill 3.mid",
+                          "label": "S06 Outro Crashes Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Outro Fills/S06 Outro Crashes Fill 3.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Outro Crashes Ritard Fill 5.mid",
+                          "label": "S06 Outro Crashes Ritard Fill 5.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Outro Fills/S06 Outro Crashes Ritard Fill 5.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Outro Crashes Ritard Fill 6.mid",
+                          "label": "S06 Outro Crashes Ritard Fill 6.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Outro Fills/S06 Outro Crashes Ritard Fill 6.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Outro Crashes Stops Fill 4.mid",
+                          "label": "S06 Outro Crashes Stops Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Outro Fills/S06 Outro Crashes Stops Fill 4.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Outros",
+                      "label": "Outros",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "S06 Outro Ride 8ths.mid",
+                          "label": "S06 Outro Ride 8ths.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Outros/S06 Outro Ride 8ths.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Verse Fills",
+                      "label": "Verse Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "S06 Verse BB Fill 1.mid",
+                          "label": "S06 Verse BB Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Verse Fills/S06 Verse BB Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse BB Fill 2.mid",
+                          "label": "S06 Verse BB Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Verse Fills/S06 Verse BB Fill 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse BB Fill 3.mid",
+                          "label": "S06 Verse BB Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Verse Fills/S06 Verse BB Fill 3.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse BB Fill 4.mid",
+                          "label": "S06 Verse BB Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Verse Fills/S06 Verse BB Fill 4.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse BB Fill 5.mid",
+                          "label": "S06 Verse BB Fill 5.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Verse Fills/S06 Verse BB Fill 5.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "S06 Verse BB Fill 6.mid",
+                          "label": "S06 Verse BB Fill 6.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Contemporary Rock/Song 06 120/Verse Fills/S06 Verse BB Fill 6.mid"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Country Outlaws",
+              "label": "Country Outlaws",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "107 Onry And Mean",
+                  "label": "107 Onry And Mean",
+                  "children": [
+                    {
+                      "type": "dir",
+                      "name": "Chorus Fills",
+                      "label": "Chorus Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "Chorus Fill 3.mid",
+                          "label": "Chorus Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Chorus Fills/Chorus Fill 3.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Chorus Fill 4.mid",
+                          "label": "Chorus Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Chorus Fills/Chorus Fill 4.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Chorus Fill 6.mid",
+                          "label": "Chorus Fill 6.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Chorus Fills/Chorus Fill 6.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Chorus Fill 7.mid",
+                          "label": "Chorus Fill 7.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Chorus Fills/Chorus Fill 7.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Chorus Fill 9.mid",
+                          "label": "Chorus Fill 9.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Chorus Fills/Chorus Fill 9.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Chorus Transition Fill 3.mid",
+                          "label": "Chorus Transition Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Chorus Fills/Chorus Transition Fill 3.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Full Song",
+                      "label": "Full Song",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "Onery and Mean.mid",
+                          "label": "Onery and Mean.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Full Song/Onery and Mean.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Grooves",
+                      "label": "Grooves",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "Chorus Ride.mid",
+                          "label": "Chorus Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Grooves/Chorus Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Chorus.mid",
+                          "label": "Chorus.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Grooves/Chorus.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Verse ALT Stick.mid",
+                          "label": "Verse ALT Stick.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Grooves/Verse ALT Stick.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Verse ALT.mid",
+                          "label": "Verse ALT.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Grooves/Verse ALT.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Verse.mid",
+                          "label": "Verse.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Grooves/Verse.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Intro Fills",
+                      "label": "Intro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "Intro Fill 2.mid",
+                          "label": "Intro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Intro Fills/Intro Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Outro Fills",
+                      "label": "Outro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "Outro Fill 2.mid",
+                          "label": "Outro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Outro Fills/Outro Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Verse Fills",
+                      "label": "Verse Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "Verse Fill 1.mid",
+                          "label": "Verse Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Verse Fills/Verse Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Verse Fill 3.mid",
+                          "label": "Verse Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Verse Fills/Verse Fill 3.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Verse Fill 4.mid",
+                          "label": "Verse Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Verse Fills/Verse Fill 4.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Verse Fill 8.mid",
+                          "label": "Verse Fill 8.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Verse Fills/Verse Fill 8.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "Verse Transition Fill 1.mid",
+                          "label": "Verse Transition Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Country Outlaws/107 Onry And Mean/Verse Fills/Verse Transition Fill 1.mid"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Doom",
+              "label": "Doom",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "Song 01 105 BPM",
+                  "label": "Song 01 105 BPM",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "105 2-Bar Fill 2.mid",
+                      "label": "105 2-Bar Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 2-Bar Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus 1.mid",
+                      "label": "105 Chorus 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Fill 2.mid",
+                      "label": "105 Chorus Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Fill 3.mid",
+                      "label": "105 Chorus Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Fill 4.mid",
+                      "label": "105 Chorus Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Ghost.mid",
+                      "label": "105 Chorus Ghost.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Ghost.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Hat.mid",
+                      "label": "105 Chorus Hat.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Hat.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Live A.mid",
+                      "label": "105 Chorus Live A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Live A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Ride.mid",
+                      "label": "105 Chorus Ride.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Ride.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Transition Fill 2.mid",
+                      "label": "105 Chorus Transition Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Transition Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Chorus Variation 1.mid",
+                      "label": "105 Chorus Variation 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Chorus Variation 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Intro Fill 2.mid",
+                      "label": "105 Intro Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Intro Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Intro.mid",
+                      "label": "105 Intro.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Intro.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Outro 2.mid",
+                      "label": "105 Outro 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Outro 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Outro Fill 3.mid",
+                      "label": "105 Outro Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Outro Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Trash Can Ending.mid",
+                      "label": "105 Trash Can Ending.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Trash Can Ending.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse 1.mid",
+                      "label": "105 Verse 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Fill 1.mid",
+                      "label": "105 Verse Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Fill 3.mid",
+                      "label": "105 Verse Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Fill 6.mid",
+                      "label": "105 Verse Fill 6.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Fill 6.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Ghost.mid",
+                      "label": "105 Verse Ghost.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Ghost.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Live B.mid",
+                      "label": "105 Verse Live B.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Live B.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Ride.mid",
+                      "label": "105 Verse Ride.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Ride.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Transition Fill 3.mid",
+                      "label": "105 Verse Transition Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Transition Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "105 Verse Variation 2.mid",
+                      "label": "105 Verse Variation 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Doom/Song 01 105 BPM/105 Verse Variation 2.mid"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Garage Rock",
+              "label": "Garage Rock",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "S11 139 Get Free",
+                  "label": "S11 139 Get Free",
+                  "children": [
+                    {
+                      "type": "dir",
+                      "name": "2-Bar Fills",
+                      "label": "2-Bar Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "139 S11 2-Bar Fill 1.mid",
+                          "label": "139 S11 2-Bar Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/2-Bar Fills/139 S11 2-Bar Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 2-Bar Fill 2.mid",
+                          "label": "139 S11 2-Bar Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/2-Bar Fills/139 S11 2-Bar Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Chorus Fills",
+                      "label": "Chorus Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 01.mid",
+                          "label": "139 S11 Chorus Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 02.mid",
+                          "label": "139 S11 Chorus Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 03.mid",
+                          "label": "139 S11 Chorus Fill 03.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 03.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 04.mid",
+                          "label": "139 S11 Chorus Fill 04.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 04.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 05.mid",
+                          "label": "139 S11 Chorus Fill 05.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 05.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 06.mid",
+                          "label": "139 S11 Chorus Fill 06.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 06.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 07.mid",
+                          "label": "139 S11 Chorus Fill 07.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 07.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 08.mid",
+                          "label": "139 S11 Chorus Fill 08.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 08.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 09.mid",
+                          "label": "139 S11 Chorus Fill 09.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 09.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 10.mid",
+                          "label": "139 S11 Chorus Fill 10.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 10.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 11.mid",
+                          "label": "139 S11 Chorus Fill 11.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 11.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Fill 12.mid",
+                          "label": "139 S11 Chorus Fill 12.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Chorus Fills/139 S11 Chorus Fill 12.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Grooves",
+                      "label": "Grooves",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "139 S11 Active Groove.mid",
+                          "label": "139 S11 Active Groove.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Active Groove.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Bridge.mid",
+                          "label": "139 S11 Bridge.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Bridge.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Live.mid",
+                          "label": "139 S11 Chorus Live.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Chorus Live.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus Ride.mid",
+                          "label": "139 S11 Chorus Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Chorus Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Chorus.mid",
+                          "label": "139 S11 Chorus.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Chorus.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Crash Groove.mid",
+                          "label": "139 S11 Crash Groove.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Crash Groove.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Intro CH.mid",
+                          "label": "139 S11 Intro CH.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Intro CH.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Intro OH.mid",
+                          "label": "139 S11 Intro OH.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Intro OH.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Outro Ride.mid",
+                          "label": "139 S11 Outro Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Outro Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Outro.mid",
+                          "label": "139 S11 Outro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Outro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Prechorus.mid",
+                          "label": "139 S11 Prechorus.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Prechorus.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse ALT.mid",
+                          "label": "139 S11 Verse ALT.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Verse ALT.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Live.mid",
+                          "label": "139 S11 Verse Live.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Verse Live.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse OH.mid",
+                          "label": "139 S11 Verse OH.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Verse OH.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Ride.mid",
+                          "label": "139 S11 Verse Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Verse Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse.mid",
+                          "label": "139 S11 Verse.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Grooves/139 S11 Verse.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Intro fills",
+                      "label": "Intro fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "139 S11 Intro Fill 1.mid",
+                          "label": "139 S11 Intro Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Intro fills/139 S11 Intro Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Intro Fill 2.mid",
+                          "label": "139 S11 Intro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Intro fills/139 S11 Intro Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Outro Fills",
+                      "label": "Outro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "139 S11 Outro Fill 1.mid",
+                          "label": "139 S11 Outro Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Outro Fills/139 S11 Outro Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Outro Fill 2.mid",
+                          "label": "139 S11 Outro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Outro Fills/139 S11 Outro Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Verse Fills",
+                      "label": "Verse Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 01.mid",
+                          "label": "139 S11 Verse Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 02.mid",
+                          "label": "139 S11 Verse Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 03.mid",
+                          "label": "139 S11 Verse Fill 03.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 03.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 04.mid",
+                          "label": "139 S11 Verse Fill 04.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 04.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 05.mid",
+                          "label": "139 S11 Verse Fill 05.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 05.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 06.mid",
+                          "label": "139 S11 Verse Fill 06.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 06.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 07.mid",
+                          "label": "139 S11 Verse Fill 07.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 07.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 08.mid",
+                          "label": "139 S11 Verse Fill 08.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 08.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 09.mid",
+                          "label": "139 S11 Verse Fill 09.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 09.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 10.mid",
+                          "label": "139 S11 Verse Fill 10.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 10.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 11.mid",
+                          "label": "139 S11 Verse Fill 11.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 11.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "139 S11 Verse Fill 12.mid",
+                          "label": "139 S11 Verse Fill 12.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Garage Rock/S11 139 Get Free/Verse Fills/139 S11 Verse Fill 12.mid"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Hi-Octane",
+              "label": "Hi-Octane",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "Song 15 130 BPM",
+                  "label": "Song 15 130 BPM",
+                  "children": [
+                    {
+                      "type": "dir",
+                      "name": "130 S15 Chorus Fills",
+                      "label": "130 S15 Chorus Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus Fill 01.mid",
+                          "label": "130 S15 Chorus Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Chorus Fills/130 S15 Chorus Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus Fill 07.mid",
+                          "label": "130 S15 Chorus Fill 07.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Chorus Fills/130 S15 Chorus Fill 07.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus Fill 12.mid",
+                          "label": "130 S15 Chorus Fill 12.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Chorus Fills/130 S15 Chorus Fill 12.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus Transition Fill 4.mid",
+                          "label": "130 S15 Chorus Transition Fill 4.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Chorus Fills/130 S15 Chorus Transition Fill 4.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "130 S15 Grooves",
+                      "label": "130 S15 Grooves",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "130 S15 Bridge.mid",
+                          "label": "130 S15 Bridge.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Bridge.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus Hat.mid",
+                          "label": "130 S15 Chorus Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Chorus Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus Live 1.mid",
+                          "label": "130 S15 Chorus Live 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Chorus Live 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus Live 2.mid",
+                          "label": "130 S15 Chorus Live 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Chorus Live 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus OH.mid",
+                          "label": "130 S15 Chorus OH.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Chorus OH.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Chorus.mid",
+                          "label": "130 S15 Chorus.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Chorus.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Intro.mid",
+                          "label": "130 S15 Intro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Intro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Outro Displaced.mid",
+                          "label": "130 S15 Outro Displaced.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Outro Displaced.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Prechorus ALT 1.mid",
+                          "label": "130 S15 Prechorus ALT 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Prechorus ALT 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Prechorus.mid",
+                          "label": "130 S15 Prechorus.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Prechorus.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Hat.mid",
+                          "label": "130 S15 Verse Hat.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Verse Hat.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Ride.mid",
+                          "label": "130 S15 Verse Ride.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Verse Ride.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Space 1.mid",
+                          "label": "130 S15 Verse Space 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Verse Space 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Space 2.mid",
+                          "label": "130 S15 Verse Space 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Verse Space 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse.mid",
+                          "label": "130 S15 Verse.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Grooves/130 S15 Verse.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "130 S15 Intro Fills",
+                      "label": "130 S15 Intro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "130 S15 Intro Fill 1.mid",
+                          "label": "130 S15 Intro Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Intro Fills/130 S15 Intro Fill 1.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "130 S15 Outro Fills",
+                      "label": "130 S15 Outro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "130 S15 Outro Fill 2.mid",
+                          "label": "130 S15 Outro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Outro Fills/130 S15 Outro Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "130 S15 Verse Fills",
+                      "label": "130 S15 Verse Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Fill 03.mid",
+                          "label": "130 S15 Verse Fill 03.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Verse Fills/130 S15 Verse Fill 03.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Fill 05.mid",
+                          "label": "130 S15 Verse Fill 05.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Verse Fills/130 S15 Verse Fill 05.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Fill 12.mid",
+                          "label": "130 S15 Verse Fill 12.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Verse Fills/130 S15 Verse Fill 12.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "130 S15 Verse Transition Fill 1.mid",
+                          "label": "130 S15 Verse Transition Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Hi-Octane/Song 15 130 BPM/130 S15 Verse Fills/130 S15 Verse Transition Fill 1.mid"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Rock Essentials 1",
+              "label": "Rock Essentials 1",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "8th Rock",
+                  "label": "8th Rock",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic A.mid",
+                      "label": "130 Rock C1508 8ths Basic A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic B.mid",
+                      "label": "130 Rock C1508 8ths Basic B.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic B.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic Crash.mid",
+                      "label": "130 Rock C1508 8ths Basic Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic Fill 1.mid",
+                      "label": "130 Rock C1508 8ths Basic Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic Fill 2.mid",
+                      "label": "130 Rock C1508 8ths Basic Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic Fill 3.mid",
+                      "label": "130 Rock C1508 8ths Basic Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic Fill 4.mid",
+                      "label": "130 Rock C1508 8ths Basic Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "130 Rock C1508 8ths Basic.mid",
+                      "label": "130 Rock C1508 8ths Basic.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/8th Rock/130 Rock C1508 8ths Basic.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Driving Rock",
+                  "label": "Driving Rock",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving A.mid",
+                      "label": "140 Rock 11 QTR Driving A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving Bell.mid",
+                      "label": "140 Rock 11 QTR Driving Bell.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving Bell.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving Crash.mid",
+                      "label": "140 Rock 11 QTR Driving Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving Fill 1.mid",
+                      "label": "140 Rock 11 QTR Driving Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving Fill 2.mid",
+                      "label": "140 Rock 11 QTR Driving Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving Fill 3.mid",
+                      "label": "140 Rock 11 QTR Driving Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving Fill 4.mid",
+                      "label": "140 Rock 11 QTR Driving Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Rock 11 QTR Driving.mid",
+                      "label": "140 Rock 11 QTR Driving.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Driving Rock/140 Rock 11 QTR Driving.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Fills",
+                  "label": "Fills",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "100 Tom Fills 10.mid",
+                      "label": "100 Tom Fills 10.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Fills/100 Tom Fills 10.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "120 Build Fill 03.mid",
+                      "label": "120 Build Fill 03.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Fills/120 Build Fill 03.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "120 Tom Fills 13.mid",
+                      "label": "120 Tom Fills 13.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Fills/120 Tom Fills 13.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 Flam Fill 03.mid",
+                      "label": "140 Flam Fill 03.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Fills/140 Flam Fill 03.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Floor Tom Rock",
+                  "label": "Floor Tom Rock",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "120 Rock 02 FT Crash.mid",
+                      "label": "120 Rock 02 FT Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Floor Tom Rock/120 Rock 02 FT Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "120 Rock 02 FT Fill 1.mid",
+                      "label": "120 Rock 02 FT Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Floor Tom Rock/120 Rock 02 FT Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "120 Rock 02 FT Fill 2.mid",
+                      "label": "120 Rock 02 FT Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Floor Tom Rock/120 Rock 02 FT Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "120 Rock 02 FT Fill 3.mid",
+                      "label": "120 Rock 02 FT Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Floor Tom Rock/120 Rock 02 FT Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "120 Rock 02 FT Fill 4.mid",
+                      "label": "120 Rock 02 FT Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Floor Tom Rock/120 Rock 02 FT Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "120 Rock 02 FT.mid",
+                      "label": "120 Rock 02 FT.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Floor Tom Rock/120 Rock 02 FT.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Half-Time Rock",
+                  "label": "Half-Time Rock",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 8ths Crash.mid",
+                      "label": "140 HT 11 8ths Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 8ths Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 8ths Fill 1.mid",
+                      "label": "140 HT 11 8ths Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 8ths Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 8ths Fill 2.mid",
+                      "label": "140 HT 11 8ths Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 8ths Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 8ths Fill 3.mid",
+                      "label": "140 HT 11 8ths Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 8ths Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 8ths Fill 4.mid",
+                      "label": "140 HT 11 8ths Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 8ths Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 8ths.mid",
+                      "label": "140 HT 11 8ths.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 8ths.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 QTR OH Crash.mid",
+                      "label": "140 HT 11 QTR OH Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 QTR OH Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 QTR OH Fill 1.mid",
+                      "label": "140 HT 11 QTR OH Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 QTR OH Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 QTR OH.mid",
+                      "label": "140 HT 11 QTR OH.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 QTR OH.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 QTR Ride Crash.mid",
+                      "label": "140 HT 11 QTR Ride Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 QTR Ride Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 QTR Ride Fill 1.mid",
+                      "label": "140 HT 11 QTR Ride Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 QTR Ride Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "140 HT 11 QTR Ride.mid",
+                      "label": "140 HT 11 QTR Ride.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Half-Time Rock/140 HT 11 QTR Ride.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "Rock Ballad",
+                  "label": "Rock Ballad",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick A.mid",
+                      "label": "100 Rock 04 8ths Stick A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick B.mid",
+                      "label": "100 Rock 04 8ths Stick B.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick B.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick Crash.mid",
+                      "label": "100 Rock 04 8ths Stick Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick Fill 1.mid",
+                      "label": "100 Rock 04 8ths Stick Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick Fill 2.mid",
+                      "label": "100 Rock 04 8ths Stick Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick Fill 3.mid",
+                      "label": "100 Rock 04 8ths Stick Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick Fill 4.mid",
+                      "label": "100 Rock 04 8ths Stick Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "100 Rock 04 8ths Stick.mid",
+                      "label": "100 Rock 04 8ths Stick.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 1/Rock Ballad/100 Rock 04 8ths Stick.mid"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Rock Essentials 2",
+              "label": "Rock Essentials 2",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "060 12-8 02",
+                  "label": "060 12-8 02",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR A.mid",
+                      "label": "060 12-8 02 Ride STR A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR Crash.mid",
+                      "label": "060 12-8 02 Ride STR Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR Fill 1.mid",
+                      "label": "060 12-8 02 Ride STR Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR Fill 2.mid",
+                      "label": "060 12-8 02 Ride STR Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR Fill 3.mid",
+                      "label": "060 12-8 02 Ride STR Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR Fill 4.mid",
+                      "label": "060 12-8 02 Ride STR Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR Fill 5.mid",
+                      "label": "060 12-8 02 Ride STR Fill 5.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR Fill 5.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR Fill 6.mid",
+                      "label": "060 12-8 02 Ride STR Fill 6.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR Fill 6.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Ride STR.mid",
+                      "label": "060 12-8 02 Ride STR.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Ride STR.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR A.mid",
+                      "label": "060 12-8 02 STR A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR Crash.mid",
+                      "label": "060 12-8 02 STR Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR Fill 1.mid",
+                      "label": "060 12-8 02 STR Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR Fill 2.mid",
+                      "label": "060 12-8 02 STR Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR Fill 3.mid",
+                      "label": "060 12-8 02 STR Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR Fill 4.mid",
+                      "label": "060 12-8 02 STR Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR Fill 5.mid",
+                      "label": "060 12-8 02 STR Fill 5.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR Fill 5.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR Fill 6.mid",
+                      "label": "060 12-8 02 STR Fill 6.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR Fill 6.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 STR.mid",
+                      "label": "060 12-8 02 STR.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 STR.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Stick STR Crash.mid",
+                      "label": "060 12-8 02 Stick STR Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Stick STR Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Stick STR Fill 1.mid",
+                      "label": "060 12-8 02 Stick STR Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Stick STR Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "060 12-8 02 Stick STR.mid",
+                      "label": "060 12-8 02 Stick STR.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/060 12-8 02/060 12-8 02 Stick STR.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "075 6-8 02 Stick",
+                  "label": "075 6-8 02 Stick",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick A.mid",
+                      "label": "075 6-8 02 Stick A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick B.mid",
+                      "label": "075 6-8 02 Stick B.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick B.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Crash.mid",
+                      "label": "075 6-8 02 Stick Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Fill 1.mid",
+                      "label": "075 6-8 02 Stick Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Fill 2.mid",
+                      "label": "075 6-8 02 Stick Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Fill 3.mid",
+                      "label": "075 6-8 02 Stick Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Fill 4.mid",
+                      "label": "075 6-8 02 Stick Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Fill 5.mid",
+                      "label": "075 6-8 02 Stick Fill 5.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Fill 5.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Fill 6.mid",
+                      "label": "075 6-8 02 Stick Fill 6.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Fill 6.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride A.mid",
+                      "label": "075 6-8 02 Stick Ride A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride Crash.mid",
+                      "label": "075 6-8 02 Stick Ride Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride Fill 1.mid",
+                      "label": "075 6-8 02 Stick Ride Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride Fill 2.mid",
+                      "label": "075 6-8 02 Stick Ride Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride Fill 3.mid",
+                      "label": "075 6-8 02 Stick Ride Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride Fill 4.mid",
+                      "label": "075 6-8 02 Stick Ride Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride Fill 5.mid",
+                      "label": "075 6-8 02 Stick Ride Fill 5.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride Fill 5.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride Fill 6.mid",
+                      "label": "075 6-8 02 Stick Ride Fill 6.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride Fill 6.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick Ride.mid",
+                      "label": "075 6-8 02 Stick Ride.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick Ride.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "075 6-8 02 Stick.mid",
+                      "label": "075 6-8 02 Stick.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/075 6-8 02 Stick/075 6-8 02 Stick.mid"
+                    }
+                  ]
+                },
+                {
+                  "type": "dir",
+                  "name": "HT Shuffle 1",
+                  "label": "HT Shuffle 1",
+                  "children": [
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 A.mid",
+                      "label": "135 HT Shuffle 1 A.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 A.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 B.mid",
+                      "label": "135 HT Shuffle 1 B.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 B.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Crash.mid",
+                      "label": "135 HT Shuffle 1 Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Fill 1.mid",
+                      "label": "135 HT Shuffle 1 Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Fill 2.mid",
+                      "label": "135 HT Shuffle 1 Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Fill 3.mid",
+                      "label": "135 HT Shuffle 1 Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Fill 4.mid",
+                      "label": "135 HT Shuffle 1 Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Fill 5.mid",
+                      "label": "135 HT Shuffle 1 Fill 5.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Fill 5.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Fill 6.mid",
+                      "label": "135 HT Shuffle 1 Fill 6.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Fill 6.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride Crash.mid",
+                      "label": "135 HT Shuffle 1 Ride Crash.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride Crash.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride Fill 1.mid",
+                      "label": "135 HT Shuffle 1 Ride Fill 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride Fill 1.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride Fill 2.mid",
+                      "label": "135 HT Shuffle 1 Ride Fill 2.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride Fill 2.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride Fill 3.mid",
+                      "label": "135 HT Shuffle 1 Ride Fill 3.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride Fill 3.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride Fill 4.mid",
+                      "label": "135 HT Shuffle 1 Ride Fill 4.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride Fill 4.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride Fill 5.mid",
+                      "label": "135 HT Shuffle 1 Ride Fill 5.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride Fill 5.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride Fill 6.mid",
+                      "label": "135 HT Shuffle 1 Ride Fill 6.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride Fill 6.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1 Ride.mid",
+                      "label": "135 HT Shuffle 1 Ride.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1 Ride.mid"
+                    },
+                    {
+                      "type": "file",
+                      "name": "135 HT Shuffle 1.mid",
+                      "label": "135 HT Shuffle 1.mid",
+                      "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Rock Essentials 2/HT Shuffle 1/135 HT Shuffle 1.mid"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "Southern Rock",
+              "label": "Southern Rock",
+              "children": [
+                {
+                  "type": "dir",
+                  "name": "S12 100 Road Fever",
+                  "label": "S12 100 Road Fever",
+                  "children": [
+                    {
+                      "type": "dir",
+                      "name": "Chorus Fills",
+                      "label": "Chorus Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 01.mid",
+                          "label": "100 S12 Chorus Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 02.mid",
+                          "label": "100 S12 Chorus Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 03.mid",
+                          "label": "100 S12 Chorus Fill 03.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 03.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 04.mid",
+                          "label": "100 S12 Chorus Fill 04.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 04.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 05.mid",
+                          "label": "100 S12 Chorus Fill 05.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 05.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 06.mid",
+                          "label": "100 S12 Chorus Fill 06.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 06.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 07.mid",
+                          "label": "100 S12 Chorus Fill 07.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 07.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 08.mid",
+                          "label": "100 S12 Chorus Fill 08.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 08.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 09.mid",
+                          "label": "100 S12 Chorus Fill 09.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 09.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 10.mid",
+                          "label": "100 S12 Chorus Fill 10.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 10.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 11.mid",
+                          "label": "100 S12 Chorus Fill 11.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 11.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Fill 12.mid",
+                          "label": "100 S12 Chorus Fill 12.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Chorus Fills/100 S12 Chorus Fill 12.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Grooves",
+                      "label": "Grooves",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "100 S12 Bridge.mid",
+                          "label": "100 S12 Bridge.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Bridge.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus ALT.mid",
+                          "label": "100 S12 Chorus ALT.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Chorus ALT.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus Live.mid",
+                          "label": "100 S12 Chorus Live.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Chorus Live.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Chorus.mid",
+                          "label": "100 S12 Chorus.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Chorus.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Groove ALT 1.mid",
+                          "label": "100 S12 Groove ALT 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Groove ALT 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Groove ALT 2.mid",
+                          "label": "100 S12 Groove ALT 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Groove ALT 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Intro.mid",
+                          "label": "100 S12 Intro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Intro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Outro.mid",
+                          "label": "100 S12 Outro.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Outro.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Prechorus.mid",
+                          "label": "100 S12 Prechorus.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Prechorus.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse ALT.mid",
+                          "label": "100 S12 Verse ALT.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Verse ALT.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Live.mid",
+                          "label": "100 S12 Verse Live.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Verse Live.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse.mid",
+                          "label": "100 S12 Verse.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Grooves/100 S12 Verse.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Intro fills",
+                      "label": "Intro fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "100 S12 Intro Fill 1.mid",
+                          "label": "100 S12 Intro Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Intro fills/100 S12 Intro Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Intro Fill 2.mid",
+                          "label": "100 S12 Intro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Intro fills/100 S12 Intro Fill 2.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Outro Fills",
+                      "label": "Outro Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "100 S12 Outro Fill 1.mid",
+                          "label": "100 S12 Outro Fill 1.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Outro Fills/100 S12 Outro Fill 1.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Outro Fill 2.mid",
+                          "label": "100 S12 Outro Fill 2.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Outro Fills/100 S12 Outro Fill 2.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Swell Outro Fill 3.mid",
+                          "label": "100 S12 Swell Outro Fill 3.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Outro Fills/100 S12 Swell Outro Fill 3.mid"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "dir",
+                      "name": "Verse Fills",
+                      "label": "Verse Fills",
+                      "children": [
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 01.mid",
+                          "label": "100 S12 Verse Fill 01.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 01.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 02.mid",
+                          "label": "100 S12 Verse Fill 02.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 02.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 03.mid",
+                          "label": "100 S12 Verse Fill 03.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 03.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 04.mid",
+                          "label": "100 S12 Verse Fill 04.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 04.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 05.mid",
+                          "label": "100 S12 Verse Fill 05.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 05.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 06.mid",
+                          "label": "100 S12 Verse Fill 06.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 06.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 07.mid",
+                          "label": "100 S12 Verse Fill 07.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 07.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 08.mid",
+                          "label": "100 S12 Verse Fill 08.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 08.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 09.mid",
+                          "label": "100 S12 Verse Fill 09.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 09.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 10.mid",
+                          "label": "100 S12 Verse Fill 10.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 10.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 11.mid",
+                          "label": "100 S12 Verse Fill 11.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 11.mid"
+                        },
+                        {
+                          "type": "file",
+                          "name": "100 S12 Verse Fill 12.mid",
+                          "label": "100 S12 Verse Fill 12.mid",
+                          "asset": "assets/midi_library/Standards/Groove Monkee Free MIDI PD/Southern Rock/S12 100 Road Fever/Verse Fills/100 S12 Verse Fill 12.mid"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "file",
+          "name": "demo.mid",
+          "label": "demo.mid",
+          "asset": "assets/midi_library/Standards/demo.mid"
+        }
+      ]
+    }
+  ]
+}

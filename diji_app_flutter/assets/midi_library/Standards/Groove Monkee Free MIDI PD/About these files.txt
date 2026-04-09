@@ -1,0 +1,47 @@
+Thank you for your interest in Groove Monkee MIDI drum loops.
+
+These MIDI files are standard MIDI files (SMF), type 1 and mapped for Perfect Drum's default kit.
+
+Note: you cannot install MIDI files into Perfect Drums. You play them using your music software by routing the output of a MIDI track to Perfect Drums.
+
+If you're interested in hearing the files in another format such as Steven Slate 5, please contact sales@groovemonkee.com with your request.
+
+If you do make a purchase, the following mappings and formats are included (except for our Afro-Cuban Percussion pack):
+
+Abbey Road	
+Ableton Live	
+Addictive Drums 1 & 2	
+Battery 3 & 4	
+BeatBuddy (see note below)
+BFD (all)	
+DFH 1 & 2	
+Eco	
+EZdrummer (all)	
+FL Studio FPC	
+GetGood Drums
+GM (General MIDI)
+Groove Agent 4 & 5
+IMAP	
+Lyra (Auria)	
+Ministry of Rock 2	
+MODO Drum
+MT Power Drums
+Ocean Way (IMAP)
+Perfect Drums
+Reason	
+Cakewalk Session Drummer	
+Steven Slate (v3.5 and up)	
+Studio Drummer	
+Superior Drummer (all)
+
+To check the available mappings and formats for all our products, please see: http://bonzo.groovemonkee.com/resources/docs/groove_monkee_mappings.pdf
+
+Questions? please contact sales@groovemonkee.com.
+
+Keep groovin!
+
+Groove Monkee
+
+
+
+

@@ -35,6 +35,8 @@ flutter:
     # Any .sf2 you put here is bundled (e.g. eTar2024.sf2). Do not list a path in pubspec
     # unless the file exists — Flutter fails the build if an asset entry is missing.
     - assets/synth/instruments/
+    # Bundled MIDI library (see assets/midi_library/midi_manifest.json)
+    - assets/midi_library/
 
 
 # App icon: put your master art at assets/app_icon.png (1024×1024 PNG).

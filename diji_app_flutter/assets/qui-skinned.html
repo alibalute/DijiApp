@@ -622,6 +622,7 @@
       margin: 0 auto 10px;
     }
     .playback-midi-load-row #loadMidiFileButton,
+    .playback-midi-load-row #midiLibraryButton,
     .playback-midi-load-row #uploadMidiToDeviceButton {
       width: auto;
       max-width: none;
@@ -629,6 +630,99 @@
       margin-left: auto;
       margin-right: auto;
       display: block;
+    }
+    /* Play + Loop share one row: 70% / 30% */
+    .playback-loop-play-row {
+      display: flex;
+      flex-direction: row;
+      width: 80%;
+      max-width: 320px;
+      margin: 0 auto 10px;
+      gap: 8px;
+      box-sizing: border-box;
+      align-items: stretch;
+    }
+    .playback-loop-play-row .midi-loop-btn {
+      flex: 3 1 0;
+      min-width: 0;
+      width: auto;
+      max-width: none;
+      margin: 0;
+    }
+    .playback-loop-play-row #playButton {
+      flex: 7 1 0;
+      min-width: 0;
+      width: auto;
+      max-width: none;
+      margin: 0;
+    }
+    .midi-loop-btn {
+      min-width: 0;
+      padding: 0.35rem 0.55rem;
+      font-size: 0.82rem;
+    }
+    .midi-loop-btn--on {
+      background: linear-gradient(180deg, #20767a 0%, #1a5c5f 100%);
+      color: #fff;
+      border-color: #1a5c5f;
+    }
+    .midi-lib-dialog-wide {
+      max-width: min(520px, 96vw) !important;
+    }
+    .midi-lib-breadcrumb {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      padding: 0 16px 10px;
+      word-break: break-all;
+    }
+    .midi-lib-list {
+      padding: 0 8px 12px;
+      max-height: min(50vh, 380px);
+      overflow-y: auto;
+    }
+    .midi-lib-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      margin: 4px 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.72);
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .midi-lib-row:hover:not(:disabled) {
+      background: rgba(32, 118, 122, 0.09);
+    }
+    .midi-lib-row--folder::before {
+      content: '📁';
+      flex-shrink: 0;
+    }
+    .midi-lib-row--file::before {
+      content: '🎵';
+      flex-shrink: 0;
+    }
+    .midi-lib-empty {
+      margin: 12px 16px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+    .midi-lib-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .midi-lib-footer button {
+      min-width: 0;
     }
     button.help-icon:hover:not(:disabled) {
       transform: translateY(-1px);
@@ -1194,10 +1288,11 @@
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="Open MIDI file opens the same kind of file chooser as Load soundfont on the Synthesizer tab. Pick a Standard MIDI File (.mid). Each load is assigned to the next device slot (1–4) in rotation; the list label updates. Upload to Dijilele (when connected) copies that slot’s file over Bluetooth into the instrument flash as /spiffs/1.mid … /spiffs/4.mid (max 256 KB). Then choose the slot and use Play." aria-label="Help: MIDI file">?</button>
+      <button type="button" class="help-icon" data-help-title="MIDI file" data-help-body="MIDI library opens bundled Standard MIDI files in a simple folder view (edit assets/midi_library/midi_manifest.json to add paths). Open MIDI file uses the system file picker (same pattern as Load soundfont on the Synthesizer tab). Each load is assigned to the next device slot (1–4) in rotation. Upload to Dijilele (when connected) copies that slot’s file over Bluetooth into the instrument flash as /spiffs/1.mid … /spiffs/4.mid (max 256 KB)." aria-label="Help: MIDI file">?</button>
       <div class="control-with-help-main">
         <input type="file" id="midiFilePickerInput" accept=".mid,.midi,audio/midi,audio/x-midi" style="display:none" />
         <div class="playback-midi-load-row align-center">
+          <button type="button" id="midiLibraryButton" disabled>MIDI library</button>
           <button type="button" id="loadMidiFileButton" disabled>Open MIDI file</button>
           <button type="button" id="uploadMidiToDeviceButton" disabled>Upload to Dijilele</button>
         </div>
@@ -1210,7 +1305,10 @@
       <button type="button" class="help-icon" data-help-title="Playback controls" data-help-body="Record tells the instrument to capture your playing into a temporary MIDI file until you press Stop. Stop saves that recording on the device and stops playback. Play plays the selected MIDI file (after recording, Play uses the captured take until you change files on the device). Pause holds playback. Connect first." aria-label="Help: Playback">?</button>
       <div class="control-with-help-main">
         <button type="button" id="recordButton" disabled>Record</button>
-        <button type="button" id="playButton" disabled>Play</button>
+        <div class="playback-loop-play-row">
+          <button type="button" id="playButton" disabled>Play</button>
+          <button type="button" id="midiLoopButton" class="midi-loop-btn" disabled aria-pressed="false" title="Loop: repeat the selected MIDI file until Stop">Loop</button>
+        </div>
         <button id="pauseButton" onclick="pause()" disabled>Pause</button>
         <button id="stopButton" onclick="stop()" disabled>Stop</button>
       </div>
@@ -1434,6 +1532,11 @@
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        var mlv = document.getElementById('midiLibraryOverlay');
+        if (mlv && mlv.classList.contains('help-overlay--open') && typeof window.closeMidiLibraryBrowser === 'function') {
+          window.closeMidiLibraryBrowser();
+          return;
+        }
         var ov = document.getElementById('helpOverlay');
         if (ov && ov.classList.contains('help-overlay--open')) closeHelp();
       }
@@ -1567,6 +1670,8 @@
       let metronomeNumBeatsLabel = document.getElementById('metronomeNumBeatsLabel');
       let metronomeNumBeatsSlider = document.getElementById('metronomeNumBeatsSlider');
       let playButton = document.getElementById('playButton');
+      let midiLoopButton = document.getElementById('midiLoopButton');
+      let midiLoopEnabled = false;
       let stopButton = document.getElementById('stopButton');
       let pauseButton = document.getElementById('pauseButton');
       let recordButton = document.getElementById('recordButton');
@@ -3033,7 +3138,8 @@
                   s.midiSFontSelect(ch, bleMidiLoadedSfontId);
                 }
                 if (typeof s.midiBankSelect === 'function') {
-                  s.midiBankSelect(ch, bleMidiUiInstrumentBank);
+                  /* GM: channel 10 (index 9) = percussion; SF2 bank 128, not the melodic UI bank. */
+                  s.midiBankSelect(ch, ch === 9 ? 128 : bleMidiUiInstrumentBank);
                 }
                 s.midiProgramChange(ch, prog);
               }
@@ -3101,7 +3207,7 @@
                 s.midiSFontSelect(ch, bleMidiLoadedSfontId);
               }
               if (typeof s.midiBankSelect === 'function') {
-                s.midiBankSelect(ch, bleMidiUiInstrumentBank);
+                s.midiBankSelect(ch, ch === 9 ? 128 : bleMidiUiInstrumentBank);
               }
               s.midiProgramChange(ch, prog);
             }
@@ -3883,6 +3989,212 @@
         if (ddMidiRefresh) ddMidiRefresh.addEventListener('change', refreshUploadMidiButton);
       })();
 
+      (function setupMidiLibraryBrowser() {
+        var midiLibState = { manifest: null, path: [], rootLabel: 'MIDI Library' };
+        var ov = document.getElementById('midiLibraryOverlay');
+        var listEl = document.getElementById('midiLibList');
+        var crumbEl = document.getElementById('midiLibBreadcrumb');
+        var titleEl = document.getElementById('midiLibTitle');
+        var backBtn = document.getElementById('midiLibBackBtn');
+        var openBtn = document.getElementById('midiLibraryButton');
+        var devBtn = document.getElementById('midiLibDeviceBtn');
+        if (!ov || !listEl || !openBtn) return;
+
+        function closeMidiLibraryBrowser() {
+          if (ov) ov.classList.remove('help-overlay--open');
+        }
+        window.closeMidiLibraryBrowser = closeMidiLibraryBrowser;
+
+        function midiLibGetNode() {
+          var m = midiLibState.manifest;
+          if (!m || !m.children) return null;
+          var node = { children: m.children, label: m.rootLabel || 'MIDI Library' };
+          for (var i = 0; i < midiLibState.path.length; i++) {
+            var seg = midiLibState.path[i];
+            var ch = node.children;
+            if (!ch) return null;
+            var found = null;
+            for (var j = 0; j < ch.length; j++) {
+              if (ch[j].type === 'dir' && ch[j].name === seg) {
+                found = ch[j];
+                break;
+              }
+            }
+            if (!found) return null;
+            node = found;
+          }
+          return node;
+        }
+
+        function renderMidiLibraryView() {
+          var node = midiLibGetNode();
+          if (!node || !listEl) return;
+          if (titleEl) titleEl.textContent = node.label || midiLibState.rootLabel || 'MIDI Library';
+          var trail = '/' + (midiLibState.rootLabel || 'MIDI Library');
+          for (var p = 0; p < midiLibState.path.length; p++) {
+            trail += '/' + midiLibState.path[p];
+          }
+          if (crumbEl) crumbEl.textContent = trail;
+          if (backBtn) backBtn.disabled = midiLibState.path.length === 0;
+
+          listEl.innerHTML = '';
+          var kids = node.children || [];
+          var dirs = kids.filter(function (x) { return x.type === 'dir'; });
+          var files = kids.filter(function (x) { return x.type === 'file'; });
+          dirs.sort(function (a, b) { return (a.label || a.name).localeCompare(b.label || b.name); });
+          files.sort(function (a, b) { return (a.label || a.name).localeCompare(b.label || b.name); });
+          function addRow(item, isDir) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'midi-lib-row ' + (isDir ? 'midi-lib-row--folder' : 'midi-lib-row--file');
+            b.textContent = item.label || item.name;
+            b.onclick = function () {
+              if (isDir) {
+                midiLibState.path.push(item.name);
+                renderMidiLibraryView();
+              } else {
+                void loadMidiLibraryAsset(item.asset);
+              }
+            };
+            listEl.appendChild(b);
+          }
+          dirs.forEach(function (d) { addRow(d, true); });
+          files.forEach(function (f) { addRow(f, false); });
+          if (kids.length === 0) {
+            var empty = document.createElement('p');
+            empty.className = 'midi-lib-empty';
+            empty.textContent = 'This folder is empty.';
+            listEl.appendChild(empty);
+          }
+        }
+
+        /** Resolve a Flutter asset key to a URL for fetch() from this HTML document.
+         *  - Flutter web / blob / about: page is under /assets/…; bundled files are at assets/assets/… relative to that folder.
+         *  - file: (Android WebView flutter_assets): files live at assets/<rest> next to this HTML — use one assets segment. */
+        function dijiBundledAssetFetchPath(assetKey) {
+          var k = (assetKey || '').trim();
+          if (!k) return '';
+          if (k.indexOf('assets/') !== 0) k = 'assets/' + k;
+          var proto = (window.location && window.location.protocol) || '';
+          if (proto === 'file:') return k.replace(/^assets\//, '');
+          return 'assets/' + k;
+        }
+        function dijiEncodePathForFetch(path) {
+          return path.split('/').map(function (seg) { return encodeURIComponent(seg); }).join('/');
+        }
+        function dijiParseManifestBridgeResult(res) {
+          var s = typeof res === 'string' ? res : JSON.stringify(res);
+          var obj = JSON.parse(s);
+          if (typeof obj === 'string') {
+            try { obj = JSON.parse(obj); } catch (_) {}
+          }
+          return obj;
+        }
+
+        async function loadMidiLibraryManifest() {
+          // Large manifests (~100KB+) often fail or truncate through the WebView JS bridge; fetch avoids that limit.
+          try {
+            var mp = dijiEncodePathForFetch(dijiBundledAssetFetchPath('assets/midi_library/midi_manifest.json'));
+            var r = await fetch(mp);
+            if (r.ok) return await r.json();
+          } catch (e) {
+            console.warn('midiLibraryManifest fetch', e);
+          }
+          try {
+            var mp2 = dijiEncodePathForFetch('midi_library/midi_manifest.json');
+            var r2 = await fetch(mp2);
+            if (r2.ok) return await r2.json();
+          } catch (e2) {}
+          var bridge = window.flutter_inappwebview;
+          if (bridge && typeof bridge.callHandler === 'function') {
+            try {
+              var res = await bridge.callHandler('midiLibraryManifest');
+              return dijiParseManifestBridgeResult(res);
+            } catch (e) {
+              console.warn('midiLibraryManifest bridge', e);
+            }
+          }
+          return { version: 1, rootLabel: 'MIDI Library', children: [] };
+        }
+
+        async function loadMidiLibraryAsset(assetKey) {
+          var name = (assetKey || '').split('/').pop() || 'file.mid';
+          // Same-origin fetch as the manifest — works inside the WebView iframe. Blob URLs created in the
+          // Flutter host (dart:html) are not valid in the iframe, so do not rely on bridge+blob for web.
+          try {
+            var u = dijiEncodePathForFetch(dijiBundledAssetFetchPath(assetKey));
+            var r = await fetch(u);
+            if (r.ok) {
+              applyUserMidiFromArrayBuffer(await r.arrayBuffer(), name);
+              closeMidiLibraryBrowser();
+              return;
+            }
+          } catch (e) {
+            console.warn('midiLibrary fetch primary', e);
+          }
+          try {
+            var rel = (assetKey || '').replace(/^assets\/midi_library\//, '');
+            var u2 = dijiEncodePathForFetch('midi_library/' + rel);
+            var r2 = await fetch(u2);
+            if (r2.ok) {
+              applyUserMidiFromArrayBuffer(await r2.arrayBuffer(), name);
+              closeMidiLibraryBrowser();
+              return;
+            }
+          } catch (e2) {
+            console.warn('midiLibrary fetch alt', e2);
+          }
+          var bridge = window.flutter_inappwebview;
+          if (bridge && typeof bridge.callHandler === 'function') {
+            try {
+              var res = await bridge.callHandler('midiLibraryLoad', assetKey);
+              var obj = null;
+              if (res != null && res !== '') {
+                obj = typeof res === 'string' ? JSON.parse(res) : res;
+              }
+              if (obj && obj.error) {
+                alert('Could not load: ' + obj.error);
+                return;
+              }
+              if (obj && window.__dijiOnNativeMidiFile) window.__dijiOnNativeMidiFile(obj);
+              closeMidiLibraryBrowser();
+              return;
+            } catch (e) {
+              console.warn('midiLibraryLoad bridge', e);
+            }
+          }
+          alert('Could not load MIDI (bundle fetch and native bridge both failed).');
+        }
+
+        async function openMidiLibraryBrowser() {
+          midiLibState.manifest = await loadMidiLibraryManifest();
+          midiLibState.rootLabel = (midiLibState.manifest && midiLibState.manifest.rootLabel) || 'MIDI Library';
+          midiLibState.path = [];
+          if (ov) ov.classList.add('help-overlay--open');
+          renderMidiLibraryView();
+        }
+        window.openMidiLibraryBrowser = openMidiLibraryBrowser;
+
+        if (backBtn) {
+          backBtn.addEventListener('click', function () {
+            if (midiLibState.path.length > 0) {
+              midiLibState.path.pop();
+              renderMidiLibraryView();
+            }
+          });
+        }
+        if (devBtn) {
+          devBtn.addEventListener('click', function () {
+            closeMidiLibraryBrowser();
+            var loadBtn = document.getElementById('loadMidiFileButton');
+            if (loadBtn) loadBtn.click();
+          });
+        }
+        openBtn.addEventListener('click', function () {
+          void openMidiLibraryBrowser();
+        });
+      })();
+
       /** Android: USB MIDI is independent of BLE — start listening as soon as the WebView bridge exists. */
       (function autoStartNativeUsbMidi() {
         function tryStart() {
@@ -3954,6 +4266,8 @@
         midiFileDropdown.disabled = true;
         const loadMidiBtnDisc = document.getElementById('loadMidiFileButton');
         if (loadMidiBtnDisc) loadMidiBtnDisc.disabled = true;
+        const midiLibBtnDisc = document.getElementById('midiLibraryButton');
+        if (midiLibBtnDisc) midiLibBtnDisc.disabled = true;
         const uploadMidiBtnDisc = document.getElementById('uploadMidiToDeviceButton');
         if (uploadMidiBtnDisc) {
           uploadMidiBtnDisc.disabled = true;
@@ -3967,6 +4281,12 @@
         nextMidiUserSlot = 1;
         pendingMidiSlot = null;
         playButton.disabled = true;
+        if (midiLoopButton) {
+          midiLoopButton.disabled = true;
+          midiLoopEnabled = false;
+          midiLoopButton.classList.remove('midi-loop-btn--on');
+          midiLoopButton.setAttribute('aria-pressed', 'false');
+        }
         pauseButton.disabled = true;
         stopButton.disabled = true;
         recordButton.disabled = true;
@@ -4149,6 +4469,8 @@
               midiFileDropdown.disabled = false;
               const loadMidiBtn = document.getElementById('loadMidiFileButton');
               if (loadMidiBtn) loadMidiBtn.disabled = false;
+              const midiLibBtn = document.getElementById('midiLibraryButton');
+              if (midiLibBtn) midiLibBtn.disabled = false;
               refreshUploadMidiButton();
 
 
@@ -4168,6 +4490,7 @@
               document.getElementById('batteryReadoutBlock').classList.remove('battery-readout--disconnected');
 
               playButton.disabled = false;
+              if (midiLoopButton) midiLoopButton.disabled = false;
               recordButton.disabled = false;
               turnoffButton.disabled = false;
               saveSettingsButton.disabled = false;
@@ -4314,6 +4637,7 @@
         midiFileDropdown.addEventListener('change', async () => {
 
           playButton.disabled = !connectedDevice;
+          if (midiLoopButton) midiLoopButton.disabled = !connectedDevice;
 
           // Get the selected index
           const index = midiFileDropdown.selectedIndex;
@@ -5260,7 +5584,8 @@
           });
         }
 
-        /** @returns {Promise<boolean>} true if the write was sent */
+        /** @returns {Promise<boolean>} true if the write was sent
+         *  subcmd: 0=record, 1=stop, 2=play, 3=pause, 4=loop on, 5=loop off (firmware midi_play_loop) */
         async function sendMidiTransportCommand(subcmd) {
           if (!connectedDevice || syncingFromFirmware) return false;
           const data = new Uint8Array(5);
@@ -5273,6 +5598,22 @@
           return true;
         }
 
+        if (midiLoopButton) {
+          midiLoopButton.addEventListener('click', async () => {
+            if (!connectedDevice || syncingFromFirmware) return;
+            const next = !midiLoopEnabled;
+            try {
+              const sent = await sendMidiTransportCommand(next ? 4 : 5);
+              if (!sent) return;
+              midiLoopEnabled = next;
+              midiLoopButton.setAttribute('aria-pressed', midiLoopEnabled ? 'true' : 'false');
+              midiLoopButton.classList.toggle('midi-loop-btn--on', midiLoopEnabled);
+            } catch (e) {
+              console.error('MIDI loop toggle', e);
+            }
+          });
+        }
+
         recordButton.addEventListener('click', async () => {
           try {
             const sent = await sendMidiTransportCommand(0);
@@ -5281,6 +5622,7 @@
             recordButton.disabled = true;
             recordButton.textContent = 'Recording…';
             playButton.disabled = true;
+            if (midiLoopButton) midiLoopButton.disabled = true;
             pauseButton.disabled = true;
             stopButton.disabled = false;
           } catch (error) {
@@ -5288,6 +5630,7 @@
             appMidiRecording = false;
             recordButton.disabled = false;
             recordButton.textContent = 'Record';
+            if (midiLoopButton) midiLoopButton.disabled = !connectedDevice;
           }
         });
 
@@ -5316,6 +5659,7 @@
 
           // Enable/disable buttons based on the context
           playButton.disabled = !connectedDevice;
+          if (midiLoopButton) midiLoopButton.disabled = !connectedDevice;
           pauseButton.disabled = true;
           stopButton.disabled = true;
           if (appMidiRecording) {
@@ -5342,6 +5686,7 @@
 
           // Enable/disable buttons based on the context
           playButton.disabled = !connectedDevice;
+          if (midiLoopButton) midiLoopButton.disabled = !connectedDevice;
           pauseButton.disabled = true;
           stopButton.disabled = true;
 
@@ -5423,6 +5768,21 @@
 
 
   </script>
+
+  <div id="midiLibraryOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="midiLibTitle" onclick="if(event.target===this && typeof window.closeMidiLibraryBrowser==='function')window.closeMidiLibraryBrowser()">
+    <div class="help-dialog midi-lib-dialog-wide" onclick="event.stopPropagation()">
+      <div class="help-dialog-header">
+        <h2 id="midiLibTitle" class="help-dialog-title">MIDI Library</h2>
+        <button type="button" class="help-close" onclick="if(typeof window.closeMidiLibraryBrowser==='function')window.closeMidiLibraryBrowser()" aria-label="Close">&times;</button>
+      </div>
+      <div id="midiLibBreadcrumb" class="midi-lib-breadcrumb"></div>
+      <div id="midiLibList" class="midi-lib-list"></div>
+      <div class="midi-lib-footer">
+        <button type="button" id="midiLibBackBtn" disabled>Back</button>
+        <button type="button" id="midiLibDeviceBtn">Open from device…</button>
+      </div>
+    </div>
+  </div>
 
   <div id="helpOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="helpDialogTitle" onclick="if(event.target===this) closeHelp()">
     <div class="help-dialog" onclick="event.stopPropagation()">

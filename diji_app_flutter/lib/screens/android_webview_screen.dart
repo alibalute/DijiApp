@@ -9,6 +9,7 @@ import 'package:flutter/services.dart'
     show EventChannel, MethodCall, MethodChannel, PlatformException, rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:diji_app_flutter/ble/ble_bridge.dart';
+import 'package:diji_app_flutter/midi_library_assets.dart';
 import 'package:diji_app_flutter/webview_external_navigation.dart';
 import 'package:diji_app_flutter/widgets/top_links_strip.dart';
 
@@ -25,12 +26,15 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
       MethodChannel('com.example.diji_app_flutter/native_usb_synth');
 
   final BleBridge _bleBridge = BleBridge();
+
   /// Serves Flutter assets over http://127.0.0.1 so AudioWorklet / WASM work (they fail on file:// WebView).
-  final InAppLocalhostServer _assetServer = InAppLocalhostServer(port: 8787, documentRoot: 'assets');
+  final InAppLocalhostServer _assetServer =
+      InAppLocalhostServer(port: 8787, documentRoot: 'assets');
   InAppWebViewController? _controller;
   bool _loading = true;
   String? _error;
   String? _logoDataUri;
+
   /// Set after [_assetServer] starts; WebView loads [qui-skinned.html] from this origin.
   String? _webEntryUrl;
 
@@ -40,8 +44,10 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   /// Same workaround as [WebScreen]: on Android, [onLoadStop] can be late; never block UI forever.
   static const Duration _maxSpinnerDuration = Duration(milliseconds: 2500);
 
-  static const MethodChannel _usbMidiMethod = MethodChannel('com.example.diji_app_flutter/usb_midi');
-  static const EventChannel _usbMidiEvents = EventChannel('com.example.diji_app_flutter/usb_midi_stream');
+  static const MethodChannel _usbMidiMethod =
+      MethodChannel('com.example.diji_app_flutter/usb_midi');
+  static const EventChannel _usbMidiEvents =
+      EventChannel('com.example.diji_app_flutter/usb_midi_stream');
 
   StreamSubscription<dynamic>? _usbMidiSub;
 
@@ -89,32 +95,40 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
       switch (method) {
         case 'requestDevice':
           final rawId = map['callbackId'];
-          final callbackId = rawId is int ? rawId : (rawId is num ? rawId.toInt() : null);
+          final callbackId =
+              rawId is int ? rawId : (rawId is num ? rawId.toInt() : null);
           if (callbackId != null) {
             final result = await _bleBridge.requestDevice();
             if (result != null) {
-              final deviceJson = jsonEncode({'id': result.id, 'name': result.name});
-              final escaped = deviceJson.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
-              _runJs(controller, "window._bleResolve($callbackId, '$escaped');");
+              final deviceJson =
+                  jsonEncode({'id': result.id, 'name': result.name});
+              final escaped =
+                  deviceJson.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
+              _runJs(
+                  controller, "window._bleResolve($callbackId, '$escaped');");
             } else {
-              _runJs(controller, "window._bleReject($callbackId, 'No device selected');");
+              _runJs(controller,
+                  "window._bleReject($callbackId, 'No device selected');");
             }
           }
           break;
         case 'connect':
           final deviceId = map['deviceId'] as String?;
           final rawCid = map['callbackId'];
-          final callbackId = rawCid is int ? rawCid : (rawCid is num ? rawCid.toInt() : null);
+          final callbackId =
+              rawCid is int ? rawCid : (rawCid is num ? rawCid.toInt() : null);
           if (deviceId != null && callbackId != null) {
             try {
               final ok = await _bleBridge.connect(deviceId);
               if (ok) {
                 _runJs(controller, "window._bleOnConnect($callbackId);");
               } else {
-                _runJs(controller, "window._bleReject($callbackId, 'Service or characteristic not found');");
+                _runJs(controller,
+                    "window._bleReject($callbackId, 'Service or characteristic not found');");
               }
             } catch (e) {
-              final msg = e.toString().replaceAll(r'\', r'\\').replaceAll("'", r"\'");
+              final msg =
+                  e.toString().replaceAll(r'\', r'\\').replaceAll("'", r"\'");
               _runJs(controller, "window._bleReject($callbackId, '$msg');");
             }
           }
@@ -145,7 +159,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   void _onUsbMidiBytes(dynamic data) {
     final controller = _controller;
     if (controller == null) {
-      debugPrint('USB MIDI: dropped packet (WebView controller null), type=${data.runtimeType}');
+      debugPrint(
+          'USB MIDI: dropped packet (WebView controller null), type=${data.runtimeType}');
       return;
     }
     final Uint8List bytes;
@@ -160,7 +175,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         }).toList(),
       );
     } else {
-      debugPrint('USB MIDI: unexpected EventChannel payload type=${data.runtimeType} value=$data');
+      debugPrint(
+          'USB MIDI: unexpected EventChannel payload type=${data.runtimeType} value=$data');
       return;
     }
     if (bytes.isEmpty) return;
@@ -187,17 +203,21 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
           _runJs(controller, 'window._usbMidiNativeStarted(true, $count);');
           _scheduleUsbMidiPortPoll(controller);
         } on PlatformException catch (e) {
-          final msg = (e.message ?? e.code).replaceAll(r'\', r'\\').replaceAll("'", r"\'");
+          final msg = (e.message ?? e.code)
+              .replaceAll(r'\', r'\\')
+              .replaceAll("'", r"\'");
           _runJs(controller, "window._usbMidiNativeStarted(false, '$msg');");
         } catch (e) {
-          final msg = e.toString().replaceAll(r'\', r'\\').replaceAll("'", r"\'");
+          final msg =
+              e.toString().replaceAll(r'\', r'\\').replaceAll("'", r"\'");
           _runJs(controller, "window._usbMidiNativeStarted(false, '$msg');");
         }
       } else if (action == 'stop') {
         try {
           await _usbMidiMethod.invokeMethod<void>('stop');
         } catch (_) {}
-        _runJs(controller, 'try{if(window._usbMidiNativeStopped)window._usbMidiNativeStopped();}catch(e){}');
+        _runJs(controller,
+            'try{if(window._usbMidiNativeStopped)window._usbMidiNativeStopped();}catch(e){}');
       }
     } catch (e) {
       debugPrint('USB MIDI handler: $e');
@@ -222,7 +242,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   ///
   /// Do not use [FileType.custom] with `sf2` on Android: [MimeTypeMap] has no mapping for that extension, so the
   /// plugin gets zero MIME types and returns an error without opening any UI.
-  Future<void> _pickSoundfontForWebView(InAppWebViewController controller) async {
+  Future<void> _pickSoundfontForWebView(
+      InAppWebViewController controller) async {
     debugPrint('pickSoundfont: opening native file picker');
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -236,7 +257,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
       final lower = file.name.toLowerCase();
       if (!lower.endsWith('.sf2')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please choose a SoundFont file (.sf2).')),
+          const SnackBar(
+              content: Text('Please choose a SoundFont file (.sf2).')),
         );
         return;
       }
@@ -245,20 +267,25 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         debugPrint('pickSoundfont: empty file bytes');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not read that file. Try a smaller .sf2 or copy it to local storage.')),
+            const SnackBar(
+                content: Text(
+                    'Could not read that file. Try a smaller .sf2 or copy it to local storage.')),
           );
         }
         return;
       }
       try {
-        final ok = await _nativeUsbSynth.invokeMethod<bool>('loadSoundfont', bytes);
+        final ok =
+            await _nativeUsbSynth.invokeMethod<bool>('loadSoundfont', bytes);
         if (ok != true) {
-          debugPrint('pickSoundfont: native USB synth did not accept soundfont');
+          debugPrint(
+              'pickSoundfont: native USB synth did not accept soundfont');
         }
       } catch (e, st) {
         debugPrint('pickSoundfont: native loadSoundfont failed: $e\n$st');
       }
-      final payload = jsonEncode({'name': file.name, 'b64': base64Encode(bytes)});
+      final payload =
+          jsonEncode({'name': file.name, 'b64': base64Encode(bytes)});
       _runJs(controller, 'window.__dijiOnNativeSoundfont($payload);');
     } catch (e) {
       debugPrint('pickSoundfont error: $e');
@@ -271,7 +298,37 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   }
 
   /// Playback tab: load .mid into WebView list (same Storage Access Framework path as [pickSoundfont]).
-  Future<void> _pickMidiFileForWebView(InAppWebViewController controller) async {
+  Future<String> _midiLibraryManifestForWebView(
+      InAppWebViewController controller) async {
+    try {
+      return await MidiLibraryAssets.readManifestJson();
+    } catch (e, st) {
+      debugPrint('midiLibraryManifest: $e\n$st');
+      return '{"version":1,"rootLabel":"MIDI Library","children":[]}';
+    }
+  }
+
+  Future<String> _midiLibraryLoadForWebView(
+    InAppWebViewController controller,
+    List<dynamic> args,
+  ) async {
+    final key = args.isNotEmpty ? args.first?.toString() : null;
+    if (key == null || !MidiLibraryAssets.isAllowedAssetKey(key)) {
+      return jsonEncode({'error': 'invalid asset path'});
+    }
+    try {
+      final b64 = await MidiLibraryAssets.loadAssetAsBase64(key);
+      return jsonEncode({
+        'name': MidiLibraryAssets.basename(key),
+        'b64': b64,
+      });
+    } catch (e) {
+      return jsonEncode({'error': e.toString()});
+    }
+  }
+
+  Future<void> _pickMidiFileForWebView(
+      InAppWebViewController controller) async {
     debugPrint('pickMidiFile: opening native file picker');
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -285,7 +342,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
       final lower = file.name.toLowerCase();
       if (!lower.endsWith('.mid') && !lower.endsWith('.midi')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please choose a MIDI file (.mid or .midi).')),
+          const SnackBar(
+              content: Text('Please choose a MIDI file (.mid or .midi).')),
         );
         return;
       }
@@ -294,12 +352,15 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         debugPrint('pickMidiFile: empty file bytes');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not read that file. Try a smaller file or copy it to local storage.')),
+            const SnackBar(
+                content: Text(
+                    'Could not read that file. Try a smaller file or copy it to local storage.')),
           );
         }
         return;
       }
-      final payload = jsonEncode({'name': file.name, 'b64': base64Encode(bytes)});
+      final payload =
+          jsonEncode({'name': file.name, 'b64': base64Encode(bytes)});
       _runJs(controller, 'window.__dijiOnNativeMidiFile($payload);');
     } catch (e) {
       debugPrint('pickMidiFile error: $e');
@@ -350,7 +411,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     final c = _controller;
     if (uri == null || c == null) return;
     final escaped = uri.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
-    _runJs(c,
+    _runJs(
+      c,
       "var e=document.getElementById('hero-logo');var s=document.getElementById('hero-logo-svg');"
       "if(e){e.src='$escaped';e.style.display='';e.onerror=null;}if(s)s.style.display='none';",
     );
@@ -358,10 +420,12 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
 
   /// Re-apply after each load: UserScript early-return can skip flags if AndroidBLE already existed from a prior context.
   void _injectNativeBridgeFlags(InAppWebViewController c) {
-    _runJs(c, 'window.__dijiNativeUsbMidi=true;window.__dijiNativeSoundfontPicker=true;');
+    _runJs(c,
+        'window.__dijiNativeUsbMidi=true;window.__dijiNativeSoundfontPicker=true;');
   }
 
-  void _notifyNativeUsbSynthInstrument(int bank, int preset, {int? sustainPedal}) {
+  void _notifyNativeUsbSynthInstrument(int bank, int preset,
+      {int? sustainPedal}) {
     final args = <String, dynamic>{
       'bank': bank,
       'preset': preset,
@@ -395,7 +459,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   }
 
   /// USB MIDI audio goes through native TinySoundFont, not Web FluidSynth — keep it in sync when the page loads a bundled .sf2 (quick instruments).
-  Future<void> _loadBundledSoundfontIntoNativeUsbSynthFromWeb(String jsonStr) async {
+  Future<void> _loadBundledSoundfontIntoNativeUsbSynthFromWeb(
+      String jsonStr) async {
     try {
       final decoded = jsonDecode(jsonStr);
       if (decoded is! Map) return;
@@ -405,9 +470,11 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
       final path = rel.startsWith('assets/') ? rel : 'assets/${rel.trim()}';
       final bd = await rootBundle.load(path);
       final bytes = bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes);
-      final ok = await _nativeUsbSynth.invokeMethod<bool>('loadSoundfont', bytes);
+      final ok =
+          await _nativeUsbSynth.invokeMethod<bool>('loadSoundfont', bytes);
       if (ok != true) {
-        debugPrint('nativeUsbSynthLoadBundledSf2: native engine did not accept $path');
+        debugPrint(
+            'nativeUsbSynthLoadBundledSf2: native engine did not accept $path');
       }
     } catch (e, st) {
       debugPrint('nativeUsbSynthLoadBundledSf2: $e\n$st');
@@ -424,7 +491,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     } catch (e, st) {
       debugPrint('Android asset localhost server failed: $e\n$st');
       if (mounted) {
-        setState(() => _error = 'Could not start local server for WebView assets (port ${_assetServer.port} in use?): $e');
+        setState(() => _error =
+            'Could not start local server for WebView assets (port ${_assetServer.port} in use?): $e');
       }
     }
   }
@@ -453,7 +521,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     return (0, '');
   }
 
-  void _notifyWebUsbMidiPorts(InAppWebViewController c, int count, String deviceNames) {
+  void _notifyWebUsbMidiPorts(
+      InAppWebViewController c, int count, String deviceNames) {
     final namesJson = jsonEncode(deviceNames);
     _runJs(
       c,
@@ -488,9 +557,12 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   Future<void> _initLogo() async {
     try {
       final logoData = await rootBundle.load('assets/logo.png');
-      final bytes = logoData.buffer.asUint8List(logoData.offsetInBytes, logoData.lengthInBytes);
+      final bytes = logoData.buffer
+          .asUint8List(logoData.offsetInBytes, logoData.lengthInBytes);
       final b64 = base64Encode(bytes);
-      final mime = (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8) ? 'image/jpeg' : 'image/png';
+      final mime = (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8)
+          ? 'image/jpeg'
+          : 'image/png';
       if (mounted) setState(() => _logoDataUri = 'data:$mime;base64,$b64');
     } catch (e) {
       debugPrint('Android WebView logo load: $e');
@@ -503,7 +575,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     _usbMidiMethod.setMethodCallHandler(null);
     _usbMidiSub?.cancel();
     _usbMidiSub = null;
-    unawaited(_usbMidiMethod.invokeMethod<void>('stop').catchError((Object _) {}));
+    unawaited(
+        _usbMidiMethod.invokeMethod<void>('stop').catchError((Object _) {}));
     unawaited(_assetServer.close().catchError((Object _) {}));
     _bleBridge.dispose();
     super.dispose();
@@ -576,7 +649,8 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                       initialUserScripts: UnmodifiableListView<UserScript>([
                         UserScript(
                           source: _bridgeScript,
-                          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                          injectionTime:
+                              UserScriptInjectionTime.AT_DOCUMENT_START,
                         ),
                       ]),
                       initialSettings: InAppWebViewSettings(
@@ -593,10 +667,12 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                       onWebViewCreated: (controller) {
                         _controller = controller;
                         _usbMidiSub?.cancel();
-                        _usbMidiSub = _usbMidiEvents.receiveBroadcastStream().listen(
-                          _onUsbMidiBytes,
-                          onError: (Object e) => debugPrint('USB MIDI stream: $e'),
-                        );
+                        _usbMidiSub =
+                            _usbMidiEvents.receiveBroadcastStream().listen(
+                                  _onUsbMidiBytes,
+                                  onError: (Object e) =>
+                                      debugPrint('USB MIDI stream: $e'),
+                                );
                         controller.addJavaScriptHandler(
                           handlerName: 'ble',
                           callback: (args) async {
@@ -630,10 +706,28 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                           },
                         );
                         controller.addJavaScriptHandler(
+                          handlerName: 'midiLibraryManifest',
+                          callback: (_) {
+                            final c = _controller;
+                            if (c == null) return '';
+                            return _midiLibraryManifestForWebView(c);
+                          },
+                        );
+                        controller.addJavaScriptHandler(
+                          handlerName: 'midiLibraryLoad',
+                          callback: (args) {
+                            final c = _controller;
+                            if (c == null)
+                              return jsonEncode({'error': 'no controller'});
+                            return _midiLibraryLoadForWebView(c, args);
+                          },
+                        );
+                        controller.addJavaScriptHandler(
                           handlerName: 'nativeUsbSynthInstrument',
                           callback: (args) {
                             if (args.isEmpty || args.first == null) return;
-                            _onNativeUsbSynthInstrumentFromWeb(args.first.toString());
+                            _onNativeUsbSynthInstrumentFromWeb(
+                                args.first.toString());
                           },
                         );
                         controller.addJavaScriptHandler(
