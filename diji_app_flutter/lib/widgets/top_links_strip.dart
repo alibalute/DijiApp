@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,7 +10,10 @@ import 'package:url_launcher/url_launcher.dart';
 ///
 /// Instagram uses a bundled SVG (not an icon font) so Android/iOS render the same glyph.
 class TopLinksStrip extends StatelessWidget {
-  const TopLinksStrip({super.key});
+  const TopLinksStrip({super.key, this.onFirmwareUpdate});
+
+  /// Shown on web + iOS/Android native when [onFirmwareUpdate] is set (web has no BLE).
+  final VoidCallback? onFirmwareUpdate;
 
   static final Uri _website = Uri.parse('https://www.dijilele.com/');
   static final Uri _instagram = Uri.parse('https://www.instagram.com/dijilele/');
@@ -21,11 +26,28 @@ class TopLinksStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showOta = onFirmwareUpdate != null &&
+        (kIsWeb ||
+            defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.android);
+
     return Material(
       type: MaterialType.transparency,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (showOta) ...[
+            _LinkCircle(
+              tooltip: 'Firmware update (WiFi)',
+              onTap: onFirmwareUpdate!,
+              child: const Icon(
+                Icons.system_update_alt,
+                size: 22,
+                color: _LinkCircle.accent,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           _LinkCircle(
             tooltip: 'dijilele.com',
             onTap: () => _open(_website),

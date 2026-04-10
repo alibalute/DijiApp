@@ -20,6 +20,15 @@ Future<NavigationActionPolicy?> openExternalHttpInSystemBrowser(
       host.endsWith('.localhost')) {
     return NavigationActionPolicy.ALLOW;
   }
+  /* ESP32 instrument Wi‑Fi AP OTA UI — must load inside the WebView (in-app iframe). */
+  if (host == '192.168.4.1') {
+    return NavigationActionPolicy.ALLOW;
+  }
+  /* Iframe/subframe navigations must not be cancelled or we open Safari for the child URL
+     (e.g. OTA page) and the iframe stays blank — especially on iOS WKWebView. */
+  if (!navigationAction.isForMainFrame) {
+    return NavigationActionPolicy.ALLOW;
+  }
   if (await canLaunchUrl(uri)) {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }

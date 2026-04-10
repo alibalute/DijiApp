@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import 'package:diji_app_flutter/models/firmware_version.dart';
 
 class DeviceResult {
   final String id;
@@ -10,9 +13,20 @@ class DeviceResult {
   DeviceResult({required this.id, required this.name});
 }
 
+/// Single instance so the WebView and native screens (e.g. WiFi OTA) share one BLE connection.
 class BleBridge {
+  BleBridge._internal();
+  static final BleBridge _instance = BleBridge._internal();
+  factory BleBridge() => _instance;
+
   static const String serviceUuid = '03b80e5a-ede8-4b33-a751-6ce34ec4c700';
   static const String charUuid = '7772e5db-3868-4112-a1a9-f2669d106bf3';
+
+  /// eTar control via [handleMidiMessage]: status 0xFE, then code + data (see util.c).
+  static const int etarControlStatus = 0xfe;
+
+  /// Start/stop WiFi AP + HTTP OTA server (firmware main.c wifiTask).
+  static const int messageWifiOtaServer = 0x5c;
 
   static bool get _isIOS =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
@@ -26,6 +40,29 @@ class BleBridge {
 
   /// Called when the link drops (out of range, device off, OS disconnect). Native app clears BLE state first; use this to sync WebView UI.
   void Function()? onBleDisconnectedByRemote;
+
+  /// Parsed from BLE telemetry (same 0x57/0x58/0x59 sliding scan as `qui-skinned.html`). Cleared on disconnect.
+  final ValueNotifier<FirmwareVersion?> firmwareVersion =
+      ValueNotifier<FirmwareVersion?>(null);
+
+  int? _fwMajorT;
+  int? _fwMinorT;
+  int? _fwPatchT;
+
+  bool get isConnected => _characteristic != null;
+
+  /// Same 5-byte BLE-MIDI control frame as `assets/qui-skinned.html`:
+  /// `buildBleMidiFeControlPacket` / `sendBleMidiControlMessage` (0xBF 0x8C 0xFE + code + data).
+  Future<void> sendEtarControlMessage(int code, int data) async {
+    final bytes = <int>[
+      0xbf,
+      0x8c,
+      etarControlStatus,
+      code & 0xff,
+      data & 0xff,
+    ];
+    await writeValueBase64(base64Encode(bytes));
+  }
 
   /// Request Bluetooth permission. Android 12+ needs BLUETOOTH_SCAN/CONNECT; Android 6–11 needs BLUETOOTH + location.
   Future<void> _requestBluetoothPermission() async {
@@ -270,7 +307,37 @@ class BleBridge {
     _device = null;
     _characteristic = null;
     _onNotification = null;
+    _clearFirmwareVersionTelemetry();
     onBleDisconnectedByRemote?.call();
+  }
+
+  /// Same pattern as [applyBleTelemetryFromRawPacket] in `qui-skinned.html`.
+  void _ingestFirmwareTelemetry(List<int> bytes) {
+    for (var i = 0; i + 2 < bytes.length; i++) {
+      if (bytes[i + 2] != 0) continue;
+      final code = bytes[i];
+      final value = bytes[i + 1];
+      if (code == 0x57) {
+        _fwMajorT = value;
+      } else if (code == 0x58) {
+        _fwMinorT = value;
+      } else if (code == 0x59) {
+        _fwPatchT = value;
+      }
+    }
+    if (_fwMajorT != null && _fwMinorT != null && _fwPatchT != null) {
+      final next = FirmwareVersion(_fwMajorT!, _fwMinorT!, _fwPatchT!);
+      if (firmwareVersion.value != next) {
+        firmwareVersion.value = next;
+      }
+    }
+  }
+
+  void _clearFirmwareVersionTelemetry() {
+    _fwMajorT = null;
+    _fwMinorT = null;
+    _fwPatchT = null;
+    firmwareVersion.value = null;
   }
 
   Future<void> writeValueBase64(String base64) async {
@@ -325,9 +392,12 @@ class BleBridge {
     _notificationSubscription = null;
     _onNotification = onData;
     _notificationSubscription = c.onValueReceived.listen((value) {
-      if (value.isNotEmpty && _onNotification != null) {
-        final b64 = base64Encode(value);
-        _onNotification!(b64);
+      if (value.isNotEmpty) {
+        _ingestFirmwareTelemetry(value);
+        if (_onNotification != null) {
+          final b64 = base64Encode(value);
+          _onNotification!(b64);
+        }
       }
     });
     try {
@@ -348,6 +418,7 @@ class BleBridge {
     _device = null;
     _characteristic = null;
     _onNotification = null;
+    _clearFirmwareVersionTelemetry();
   }
 
   void dispose() {

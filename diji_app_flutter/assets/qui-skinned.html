@@ -1124,6 +1124,10 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10c0-1.1.9-2 2-2h2v10H6c-1.1 0-2-.9-2-2v-6z"/><path d="M10 8h2v10h-2V8z"/><path d="M14 12h2v6h-2v-6z"/><path d="M18 6h2c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2h-2V6z"/></svg>
           Synthesizer
         </li>
+        <li id="tab6" class="tab" role="tab" onclick="openTab(5)">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Update
+        </li>
       </ul>
     </div>
 
@@ -1251,11 +1255,12 @@
     </div>
 
     <div class="control-with-help">
-      <button type="button" class="help-icon" data-help-title="Firmware version" data-help-body="Shows the firmware version running on the connected instrument. Update firmware using your usual Dijilele update process if a newer build is available." aria-label="Help: Firmware">?</button>
+      <button type="button" class="help-icon" data-help-title="Firmware version" data-help-body="Shows the firmware version running on the connected instrument. For Wi‑Fi OTA, use the Update tab: download the .bin, start the instrument HTTP server, then open the instrument page in the browser." aria-label="Help: Firmware">?</button>
       <div class="control-with-help-main">
-        <div style="margin-top:10px; opacity:0.9;">
+        <div style="margin-top:10px; opacity:0.9; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
           <label id="fwVersionLabel">Firmware: --</label>
         </div>
+        <div id="fwUpdateHint" style="display:none; margin-top:10px; font-size:0.92rem; line-height:1.4; max-width:520px;"></div>
       </div>
     </div>
 
@@ -1642,6 +1647,47 @@
 
   </div>
 
+  <div id="tab-content6" class="tab-content">
+    <div class="control-with-help">
+      <button type="button" class="help-icon" data-help-title="Firmware update" data-help-body="Android / iPad / iPhone: use Open full-screen firmware update (same as the top bar). Chrome (web): download the .bin, connect on the Device tab, start Wi‑Fi on the instrument, then Open instrument page (http://192.168.4.1) to upload. Join Wi‑Fi “Dijilele” (password dijilele123) before uploading." aria-label="Help: Update">?</button>
+      <div class="control-with-help-main" style="display:flex; flex-direction:column; gap:22px;">
+        <div id="otaSectionDeviceApp" class="ota-update-section" style="display:none; padding:14px 16px; border-radius:10px; border:1px solid rgba(238,168,3,0.35); background:rgba(42,52,64,0.55);">
+          <h2 style="margin:0 0 10px 0; font-size:1.15rem; color:#eea803; font-weight:700; letter-spacing:0.02em;">Android / iPad / iPhone</h2>
+          <p style="margin:0 0 16px 0; padding:0; opacity:0.92; line-height:1.55; font-size:0.95rem; max-width:520px;">
+            Full-screen firmware update—the same flow as <strong>Firmware update</strong> in the top bar (USB or Wi‑Fi OTA, pick a <code>.bin</code>, flash).
+          </p>
+          <div style="display:flex; flex-direction:column; gap:12px; align-items:flex-start; max-width:520px;">
+            <button type="button" id="otaFirmwareUpdateEmbeddedBtn" style="padding:10px 18px; border-radius:8px; border:1px solid rgba(238,168,3,0.85); background:#2a3440; color:#eea803; font:inherit; font-weight:600; cursor:pointer;">Open full-screen firmware update</button>
+          </div>
+        </div>
+        <div id="otaSectionBrowser" class="ota-update-section" style="display:none; padding:14px 16px; border-radius:10px; border:1px solid rgba(32,118,122,0.45); background:rgba(42,52,64,0.35);">
+          <h2 style="margin:0 0 10px 0; font-size:1.15rem; color:#20767a; font-weight:700; letter-spacing:0.02em;">Chrome (web)</h2>
+          <ol style="margin:0 0 16px 0; padding-left:1.25em; opacity:0.9; line-height:1.5;">
+            <li>Download the .bin while you have internet.</li>
+            <li>Connect the instrument on the Device tab, then start Wi‑Fi on the device.</li>
+            <li>Join the instrument Wi‑Fi network, then tap <strong>Open instrument page</strong> to go to <code>http://192.168.4.1</code> and upload your <code>.bin</code>.</li>
+          </ol>
+          <div style="display:flex; flex-direction:column; gap:12px; align-items:flex-start; max-width:520px;">
+            <button type="button" id="otaDownloadLatestBtn">Download new firmware (.bin)</button>
+            <div id="otaDownloadedName" style="font-weight:600; min-height:1.2em;"></div>
+            <div id="otaDownloadStatus" style="font-size:0.9rem; opacity:0.88; white-space:pre-wrap;"></div>
+            <button type="button" id="wifiOtaHttpStartButton" disabled>Start Wi‑Fi on device</button>
+            <button type="button" id="otaOpenInstrumentPageBtn" style="padding:10px 18px; border-radius:8px; border:1px solid rgba(32,118,122,0.75); background:#243038; color:#7ecbcd; font:inherit; font-weight:600; cursor:pointer;">Open instrument page</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen iframe: same origin as this page so IndexedDB firmware can be postMessage’d into http://192.168.4.1 (external browser has no opener/parent link). -->
+  <div id="dijiOtaInstrumentOverlay" style="display:none; position:fixed; inset:0; z-index:100050; flex-direction:column; background:#0f1419; box-sizing:border-box; overflow:hidden; -webkit-overflow-scrolling:touch;">
+    <div style="flex-shrink:0; position:relative; z-index:3; padding:10px 14px; display:flex; align-items:center; gap:12px; background:#1a2332; color:#e8eaed; font-size:15px; border-bottom:1px solid rgba(255,255,255,0.08); touch-action:manipulation;">
+      <button type="button" id="dijiOtaInstrumentOverlayClose" style="padding:8px 14px; cursor:pointer; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:#2a3440; color:#fff; font:inherit; touch-action:manipulation; -webkit-tap-highlight-color:transparent; position:relative; z-index:4;">← Back to app</button>
+      <span style="opacity:0.9;">Instrument update (http://192.168.4.1)</span>
+    </div>
+    <iframe id="dijiOtaInstrumentIframe" title="Instrument OTA" style="flex:1 1 auto; width:100%; min-height:0; border:0; background:#fff; position:relative; z-index:1;"></iframe>
+  </div>
+
 
   <script>
 
@@ -1663,8 +1709,12 @@
 
       //var activeContent = document.getElementById(tabId);
       tabContents[index].classList.add('active');
-
-
+      try {
+        if (index === 5) {
+          if (window.syncOtaUpdateTabUi) window.syncOtaUpdateTabUi();
+          if (typeof otaSyncUpdateTabSections === 'function') otaSyncUpdateTabSections();
+        }
+      } catch (e) {}
 
     }
 
@@ -1911,6 +1961,11 @@
       let disconnectButton = document.getElementById('disconnectButton');
       let saveSettingsButton = document.getElementById('saveSettingsButton');
       let resetSettingsButton = document.getElementById('resetSettingsButton');
+      /** Flutter web / embedded WebViews may attach controls after DOMContentLoaded; resolve id lazily. */
+      function setWifiOtaHttpButtonDisabled(disabled) {
+        const el = document.getElementById('wifiOtaHttpStartButton');
+        if (el) el.disabled = disabled;
+      }
       let connectedDevice = null;
       /** Strum vel min/max only apply when Dynamics is On (variable velocity); grey out when Off or disconnected. */
       function updateStrumVelOutRangeControlsEnabled() {
@@ -2258,6 +2313,589 @@
         });
       }
 
+      const DIJI_FW_LATEST_JSON_URL = 'https://dijilele.com/dijilele-firmware-latest.json';
+      const DIJI_FW_VERSION_TXT_URL = 'https://dijilele.com/dijilele-firmware-version.txt';
+
+      function compareSemverTriple(a, b) {
+        if (a[0] !== b[0]) return a[0] < b[0] ? -1 : 1;
+        if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1;
+        if (a[2] !== b[2]) return a[2] < b[2] ? -1 : 1;
+        return 0;
+      }
+
+      async function fetchLatestFirmwareVersionOnline() {
+        try {
+          const r = await fetch(DIJI_FW_LATEST_JSON_URL, { cache: 'no-store' });
+          if (r.ok) {
+            const j = await r.json();
+            if (j && typeof j.major === 'number' && typeof j.minor === 'number' && typeof j.patch === 'number') {
+              return [j.major, j.minor, j.patch];
+            }
+            if (j && typeof j.version === 'string') {
+              const m = /^(\d+)\.(\d+)\.(\d+)\s*$/.exec(j.version.trim());
+              if (m) return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+            }
+            if (j && Array.isArray(j.version) && j.version.length >= 3) {
+              return [j.version[0] | 0, j.version[1] | 0, j.version[2] | 0];
+            }
+          }
+        } catch (e) { /* fall through */ }
+        try {
+          const r = await fetch(DIJI_FW_VERSION_TXT_URL, { cache: 'no-store' });
+          if (r.ok) {
+            const t = (await r.text()).trim();
+            const m = /^(\d+)\.(\d+)\.(\d+)\s*$/.exec(t);
+            if (m) return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+          }
+        } catch (e2) { /* null */ }
+        return null;
+      }
+
+      const DIJI_OTA_HTTP_ORIGIN = 'http://192.168.4.1';
+      const DIJI_OTA_IDB = { name: 'diji_ota', store: 'kv', version: 1, key: 'pending_firmware' };
+      let otaFirmwareReady = false;
+      let otaInstrumentReachable = false;
+      let otaProbeTimer = null;
+
+      function otaIdbOpen() {
+        return new Promise(function (resolve, reject) {
+          var req = indexedDB.open(DIJI_OTA_IDB.name, DIJI_OTA_IDB.version);
+          req.onerror = function () {
+            reject(req.error);
+          };
+          req.onupgradeneeded = function () {
+            var db = req.result;
+            if (!db.objectStoreNames.contains(DIJI_OTA_IDB.store)) {
+              db.createObjectStore(DIJI_OTA_IDB.store);
+            }
+          };
+          req.onsuccess = function () {
+            resolve(req.result);
+          };
+        });
+      }
+
+      async function otaIdbPut(name, bytes) {
+        var db = await otaIdbOpen();
+        return new Promise(function (resolve, reject) {
+          var tx = db.transaction(DIJI_OTA_IDB.store, 'readwrite');
+          tx.objectStore(DIJI_OTA_IDB.store).put({ name: name, bytes: bytes }, DIJI_OTA_IDB.key);
+          tx.oncomplete = function () {
+            db.close();
+            resolve();
+          };
+          tx.onerror = function () {
+            reject(tx.error);
+          };
+        });
+      }
+
+      async function otaIdbGet() {
+        var db = await otaIdbOpen();
+        return new Promise(function (resolve, reject) {
+          var tx = db.transaction(DIJI_OTA_IDB.store, 'readonly');
+          var r = tx.objectStore(DIJI_OTA_IDB.store).get(DIJI_OTA_IDB.key);
+          r.onsuccess = function () {
+            db.close();
+            resolve(r.result || null);
+          };
+          r.onerror = function () {
+            reject(r.error);
+          };
+        });
+      }
+
+      function syncOtaUpdateTabUi() {
+        var wifiBtn = document.getElementById('wifiOtaHttpStartButton');
+        var canWifi = !!(connectedDevice && connectedDevice.midiCharacteristic && otaFirmwareReady);
+        if (wifiBtn) wifiBtn.disabled = !canWifi;
+      }
+      window.syncOtaUpdateTabUi = syncOtaUpdateTabUi;
+
+      function startOtaReachabilityProbe() {
+        otaInstrumentReachable = false;
+        if (typeof syncOtaUpdateTabUi === 'function') syncOtaUpdateTabUi();
+        if (otaProbeTimer) clearInterval(otaProbeTimer);
+        function otaProbeTick() {
+          if (!otaFirmwareReady) return;
+          function markReachable() {
+            if (!otaInstrumentReachable) {
+              otaInstrumentReachable = true;
+              syncOtaUpdateTabUi();
+            }
+          }
+          /* Always try fetch: works in Chrome / Flutter web; cheap when it fails in embedded WebViews. */
+          fetch(DIJI_OTA_HTTP_ORIGIN + '/api/debug', { method: 'GET', mode: 'cors', cache: 'no-store' })
+            .then(function (r) {
+              if (r.ok) markReachable();
+            })
+            .catch(function () {});
+          /* In parallel: native Dart HTTP when embedded in the app (Android/iOS WebView). Do not return early
+             after this — Flutter web may expose callHandler but probe returns false on web, which previously
+             skipped fetch and broke Chrome. */
+          if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+            window.flutter_inappwebview
+              .callHandler('probeOtaInstrument')
+              .then(function (ok) {
+                if (ok) markReachable();
+              })
+              .catch(function () {});
+          }
+        }
+        otaProbeTick();
+        otaProbeTimer = setInterval(otaProbeTick, 2000);
+      }
+
+      function otaGetPendingFirmwareRecordPromise() {
+        if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+          return window.flutter_inappwebview
+            .callHandler('otaGetPendingFirmware')
+            .then(function (res) {
+              if (res && res.b64 && res.name) {
+                try {
+                  var bin = atob(res.b64);
+                  var len = bin.length;
+                  var bytes = new Uint8Array(len);
+                  for (var i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+                  return { name: res.name, bytes: bytes };
+                } catch (e) {
+                  console.error('OTA native decode', e);
+                }
+              }
+              return otaIdbGet();
+            })
+            .catch(function () {
+              return otaIdbGet();
+            });
+        }
+        return otaIdbGet();
+      }
+
+      function otaUint8ToBase64(u8) {
+        if (!u8 || !u8.length) return '';
+        var CHUNK = 0x8000;
+        var s = '';
+        for (var i = 0; i < u8.length; i += CHUNK) {
+          s += String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK));
+        }
+        return btoa(s);
+      }
+
+      function otaSyncUpdateTabSections() {
+        var dev = document.getElementById('otaSectionDeviceApp');
+        var br = document.getElementById('otaSectionBrowser');
+        var embedded = !!(
+          window.flutter_inappwebview &&
+          typeof window.flutter_inappwebview.callHandler === 'function' &&
+          !window.__dijiFlutterWeb
+        );
+        if (dev) dev.style.display = embedded ? 'block' : 'none';
+        if (br) br.style.display = embedded ? 'none' : 'block';
+      }
+
+      async function otaOpenFirmwareUpdateFullScreen(withFirmwarePayload) {
+        // Flutter web (Chrome): no native full-screen route — open the instrument OTA UI in the browser.
+        if (window.__dijiFlutterWeb) {
+          try {
+            var w = window.open('http://192.168.4.1/', '_blank', 'noopener,noreferrer');
+            if (!w) window.location.href = 'http://192.168.4.1/';
+          } catch (e) {
+            window.location.href = 'http://192.168.4.1/';
+          }
+          return;
+        }
+        if (!window.flutter_inappwebview || typeof window.flutter_inappwebview.callHandler !== 'function') {
+          alert('Use the Firmware update icon in the top bar, or run the app on Android / iPhone.');
+          return;
+        }
+        if (withFirmwarePayload) {
+          try {
+            var rec = await otaGetPendingFirmwareRecordPromise();
+            if (!rec || !rec.bytes || !rec.bytes.length) {
+              await window.flutter_inappwebview.callHandler('openFirmwareUpdateScreen');
+              return;
+            }
+            var fname = rec.name || 'firmware.bin';
+            var b64 = otaUint8ToBase64(rec.bytes);
+            await window.flutter_inappwebview.callHandler(
+              'openFirmwareUpdateScreenWithFirmware',
+              fname,
+              b64,
+            );
+          } catch (e) {
+            console.error('otaOpenFirmwareUpdateFullScreen', e);
+            await window.flutter_inappwebview.callHandler('openFirmwareUpdateScreen');
+          }
+          return;
+        }
+        await window.flutter_inappwebview.callHandler('openFirmwareUpdateScreen');
+      }
+
+      async function otaDownloadLatestBin() {
+        var nameEl = document.getElementById('otaDownloadedName');
+        var st = document.getElementById('otaDownloadStatus');
+        if (st) st.textContent = 'Checking dijilele.com…';
+        try {
+          var latest = await fetchLatestFirmwareVersionOnline();
+          if (!latest) {
+            if (st) st.textContent = '';
+            alert(
+              'Could not read latest version. Host dijilele-firmware-latest.json or dijilele-firmware-version.txt on dijilele.com.',
+            );
+            return;
+          }
+          var fname = 'dijilele-' + latest[0] + '-' + latest[1] + '-' + latest[2] + '.bin';
+          var url = 'https://dijilele.com/' + fname;
+          if (st) st.textContent = 'Downloading ' + fname + '…';
+          if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+            try {
+              var nat = await window.flutter_inappwebview.callHandler('nativeDownloadOtaFirmware', url, fname);
+              if (nat && nat.ok) {
+                otaFirmwareReady = true;
+                if (nameEl) nameEl.textContent = fname;
+                if (st) {
+                  st.textContent =
+                    'Saved ' + (nat.size != null ? nat.size : '') + ' bytes in app storage for the instrument page.';
+                }
+                syncOtaUpdateTabUi();
+                startOtaReachabilityProbe();
+                return;
+              }
+            } catch (e) {
+              console.warn('native OTA download failed, using browser', e);
+            }
+          }
+          var r = await fetch(url, { cache: 'no-store' });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          var ab = await r.arrayBuffer();
+          var u8 = new Uint8Array(ab);
+          await otaIdbPut(fname, u8);
+          otaFirmwareReady = true;
+          if (nameEl) nameEl.textContent = fname;
+          if (st) st.textContent = 'Saved ' + u8.length + ' bytes in this browser for the instrument page.';
+          syncOtaUpdateTabUi();
+          startOtaReachabilityProbe();
+        } catch (e) {
+          console.error('OTA download', e);
+          if (st) st.textContent = '';
+          alert('Download failed: ' + (e && e.message ? e.message : String(e)));
+        }
+      }
+
+      function otaPostMessageToInstrument(win, msg, transferList) {
+        try {
+          if (transferList && transferList.length) {
+            win.postMessage(msg, DIJI_OTA_HTTP_ORIGIN, transferList);
+          } else {
+            win.postMessage(msg, DIJI_OTA_HTTP_ORIGIN);
+          }
+        } catch (e) {
+          try {
+            if (transferList && transferList.length) {
+              win.postMessage(msg, '*', transferList);
+            } else {
+              win.postMessage(msg, '*');
+            }
+          } catch (e2) {
+            throw e2;
+          }
+        }
+      }
+
+      function otaPostFirmwareToWindow(targetWin, rec) {
+        if (!targetWin) return;
+        if (!rec || !rec.bytes) {
+          try {
+            otaPostMessageToInstrument(targetWin, { type: 'DIJI_FIRMWARE_NONE' }, null);
+          } catch (e) {}
+          return;
+        }
+        var u8 = rec.bytes;
+        if (u8 instanceof ArrayBuffer) {
+          u8 = new Uint8Array(u8);
+        } else if (!(u8 instanceof Uint8Array)) {
+          if (u8 && u8.buffer && typeof u8.byteOffset === 'number') {
+            u8 = new Uint8Array(u8.buffer, u8.byteOffset, u8.byteLength);
+          } else {
+            try {
+              otaPostMessageToInstrument(targetWin, { type: 'DIJI_FIRMWARE_NONE' }, null);
+            } catch (e) {}
+            return;
+          }
+        }
+        var buf = u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
+        var name = rec.name || 'firmware.bin';
+        try {
+          otaPostMessageToInstrument(targetWin, { type: 'DIJI_FIRMWARE', name: name, buffer: buf }, [buf]);
+        } catch (e) {
+          try {
+            var buf2 = u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
+            otaPostMessageToInstrument(targetWin, { type: 'DIJI_FIRMWARE', name: name, buffer: buf2 }, null);
+          } catch (e2) {
+            console.error('OTA postMessage to instrument', e, e2);
+          }
+        }
+      }
+
+      /* WKWebView often leaves cross-origin iframes blank until a repaint (tap/scroll). */
+      function otaWkRedrawInstrumentOverlay() {
+        var overlay = document.getElementById('dijiOtaInstrumentOverlay');
+        var iframe = document.getElementById('dijiOtaInstrumentIframe');
+        if (!overlay || overlay.style.display !== 'flex') return;
+        try {
+          overlay.style.transform = 'translateZ(0)';
+          overlay.style.webkitTransform = 'translateZ(0)';
+          if (iframe) {
+            iframe.style.transform = 'translateZ(0)';
+            iframe.style.webkitTransform = 'translateZ(0)';
+            void iframe.offsetHeight;
+          }
+          void overlay.offsetHeight;
+          window.dispatchEvent(new Event('resize'));
+        } catch (e) {}
+        try {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              try {
+                window.scrollTo(0, 0);
+              } catch (e2) {}
+            });
+          });
+        } catch (e3) {}
+      }
+
+      function otaPushPendingFirmwareToInstrumentIframe() {
+        var iframe = document.getElementById('dijiOtaInstrumentIframe');
+        if (!iframe || !iframe.contentWindow) return;
+        otaGetPendingFirmwareRecordPromise()
+          .then(function (rec) {
+            otaPostFirmwareToWindow(iframe.contentWindow, rec);
+          })
+          .catch(function (e) {
+            console.error('OTA pending firmware', e);
+          });
+      }
+
+      function otaShowInstrumentOverlay() {
+        var overlay = document.getElementById('dijiOtaInstrumentOverlay');
+        var iframe = document.getElementById('dijiOtaInstrumentIframe');
+        if (!overlay || !iframe) return false;
+        overlay.style.display = 'flex';
+        function schedulePushes() {
+          otaWkRedrawInstrumentOverlay();
+          otaPushPendingFirmwareToInstrumentIframe();
+          setTimeout(otaPushPendingFirmwareToInstrumentIframe, 120);
+          setTimeout(otaPushPendingFirmwareToInstrumentIframe, 450);
+          setTimeout(otaPushPendingFirmwareToInstrumentIframe, 1500);
+          setTimeout(otaPushPendingFirmwareToInstrumentIframe, 3500);
+          setTimeout(otaPushPendingFirmwareToInstrumentIframe, 6000);
+        }
+        iframe.addEventListener(
+          'load',
+          function () {
+            otaWkRedrawInstrumentOverlay();
+            schedulePushes();
+            setTimeout(otaWkRedrawInstrumentOverlay, 50);
+            setTimeout(otaWkRedrawInstrumentOverlay, 200);
+          },
+          { once: true },
+        );
+        iframe.src = DIJI_OTA_HTTP_ORIGIN + '/';
+        /* iOS WKWebView: child→parent postMessage is unreliable; parent must push via contentWindow after load. */
+        setTimeout(schedulePushes, 40);
+        return true;
+      }
+
+      function otaHideInstrumentOverlay() {
+        var overlay = document.getElementById('dijiOtaInstrumentOverlay');
+        var iframe = document.getElementById('dijiOtaInstrumentIframe');
+        if (iframe) {
+          try {
+            iframe.src = 'about:blank';
+          } catch (e) {}
+        }
+        if (overlay) overlay.style.display = 'none';
+      }
+
+      function otaOpenInstrumentPage() {
+        /* HTTPS (e.g. Flutter web in production): an http://192.168.4.1 iframe is mixed content — blocked.
+           Open the instrument UI in a new tab instead; user uploads the .bin there. */
+        if (
+          window.__dijiFlutterWeb ||
+          (typeof window.location !== 'undefined' && window.location.protocol === 'https:')
+        ) {
+          try {
+            var w = window.open(DIJI_OTA_HTTP_ORIGIN + '/', '_blank', 'noopener,noreferrer');
+            if (!w) window.location.href = DIJI_OTA_HTTP_ORIGIN + '/';
+          } catch (e) {
+            window.location.href = DIJI_OTA_HTTP_ORIGIN + '/';
+          }
+          return;
+        }
+        /* In-app iframe: same tab as IndexedDB so postMessage can deliver the .bin (native WebView / http localhost). */
+        if (otaShowInstrumentOverlay()) return;
+        var url = DIJI_OTA_HTTP_ORIGIN + '/';
+        var a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'opener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      function otaResolveFirmwareMessageTarget(ev) {
+        var src = ev.source;
+        if (src) return src;
+        /* iOS WKWebView: cross-origin child→parent postMessage often has event.source === null (site isolation). */
+        var o = String(ev.origin || '').replace(/\/$/, '');
+        var dev = String(DIJI_OTA_HTTP_ORIGIN).replace(/\/$/, '');
+        if (o === dev || o.indexOf(dev + ':') === 0) {
+          var iframe = document.getElementById('dijiOtaInstrumentIframe');
+          if (iframe && iframe.contentWindow) return iframe.contentWindow;
+        }
+        /* iOS: origin may be empty; if the OTA overlay is open, use the only instrument iframe. */
+        var overlay = document.getElementById('dijiOtaInstrumentOverlay');
+        if (overlay && overlay.style.display === 'flex') {
+          var iframe2 = document.getElementById('dijiOtaInstrumentIframe');
+          if (iframe2 && iframe2.contentWindow) return iframe2.contentWindow;
+        }
+        return null;
+      }
+
+      window.addEventListener('message', function (ev) {
+        var d = ev.data;
+        if (!d || d.type !== 'DIJI_REQUEST_PENDING_FIRMWARE') return;
+        var src = otaResolveFirmwareMessageTarget(ev);
+        if (!src) return;
+        otaGetPendingFirmwareRecordPromise()
+          .then(function (rec) {
+            otaPostFirmwareToWindow(src, rec);
+          })
+          .catch(function (e) {
+            console.error('OTA pending firmware', e);
+          });
+      });
+
+      async function otaRestorePendingFromNative() {
+        if (!window.flutter_inappwebview || typeof window.flutter_inappwebview.callHandler !== 'function') return;
+        try {
+          var m = await window.flutter_inappwebview.callHandler('otaPendingFirmwareMeta');
+          if (m && m.has && m.size > 0) {
+            otaFirmwareReady = true;
+            var ne = document.getElementById('otaDownloadedName');
+            var st = document.getElementById('otaDownloadStatus');
+            if (ne) ne.textContent = m.name || 'firmware.bin';
+            if (st) st.textContent = 'Found ' + m.size + ' bytes in app storage.';
+            syncOtaUpdateTabUi();
+            startOtaReachabilityProbe();
+          }
+        } catch (e) {
+          console.warn('OTA native restore', e);
+        }
+      }
+
+      async function otaRestorePendingFromIdb() {
+        try {
+          if (otaFirmwareReady) return;
+          var rec = await otaIdbGet();
+          if (!rec || !rec.bytes || !rec.bytes.length) return;
+          otaFirmwareReady = true;
+          var ne = document.getElementById('otaDownloadedName');
+          var st = document.getElementById('otaDownloadStatus');
+          if (ne) ne.textContent = rec.name || 'firmware.bin';
+          if (st) st.textContent = 'Found ' + rec.bytes.length + ' bytes saved in this browser.';
+          syncOtaUpdateTabUi();
+          startOtaReachabilityProbe();
+        } catch (e) {
+          console.warn('OTA restore', e);
+        }
+      }
+
+      async function otaRestorePendingFirmwareUi() {
+        await otaRestorePendingFromNative();
+        await otaRestorePendingFromIdb();
+      }
+
+      otaRestorePendingFirmwareUi();
+
+      let fwOnlineCheckDoneKey = '';
+      let fwOnlineCheckInFlight = false;
+
+      async function maybeCheckFirmwareUpdateOnline() {
+        if (fwMajor === null || fwMinor === null || fwPatch === null) return;
+        const key = fwMajor + '.' + fwMinor + '.' + fwPatch;
+        if (key === fwOnlineCheckDoneKey || fwOnlineCheckInFlight) return;
+        fwOnlineCheckInFlight = true;
+        const hint = document.getElementById('fwUpdateHint');
+        if (!hint) {
+          fwOnlineCheckInFlight = false;
+          return;
+        }
+        hint.style.display = 'block';
+        hint.style.color = 'rgba(0,0,0,0.55)';
+        hint.textContent = 'Checking dijilele.com for newer firmware…';
+        try {
+          const latest = await fetchLatestFirmwareVersionOnline();
+          const dev = [fwMajor, fwMinor, fwPatch];
+          if (!latest) {
+            hint.textContent =
+              'Could not read latest version from dijilele.com (offline or missing dijilele-firmware-latest.json / dijilele-firmware-version.txt).';
+            return;
+          }
+          if (compareSemverTriple(dev, latest) >= 0) {
+            hint.style.display = 'none';
+            hint.textContent = '';
+            return;
+          }
+          hint.style.color = '#b45309';
+          hint.textContent =
+            'Update available: published firmware is ' +
+            latest[0] +
+            '.' +
+            latest[1] +
+            '.' +
+            latest[2] +
+            ' (this instrument: ' +
+            dev[0] +
+            '.' +
+            dev[1] +
+            '.' +
+            dev[2] +
+            '). Download https://dijilele.com/dijilele-' +
+            latest[0] +
+            '-' +
+            latest[1] +
+            '-' +
+            latest[2] +
+            '.bin while online, then use WiFi OTA.';
+          if (!window.__dijiFwUpdateAlertShown) {
+            window.__dijiFwUpdateAlertShown = true;
+            alert(
+              'A newer firmware is available (' +
+                latest[0] +
+                '.' +
+                latest[1] +
+                '.' +
+                latest[2] +
+                '). Your device is ' +
+                dev[0] +
+                '.' +
+                dev[1] +
+                '.' +
+                dev[2] +
+                '.',
+            );
+          }
+        } catch (e) {
+          hint.textContent =
+            'Could not check for updates: ' + (e && e.message ? e.message : String(e));
+        } finally {
+          fwOnlineCheckInFlight = false;
+          fwOnlineCheckDoneKey = key;
+        }
+      }
+
       function applyBleTelemetryFromRawPacket(dataArray) {
         for (let i = 0; i + 2 < dataArray.length; i++) {
           const code = dataArray[i];
@@ -2289,6 +2927,7 @@
 
         if (fwMajor !== null && fwMinor !== null && fwPatch !== null) {
           fwVersionLabel.textContent = `Firmware: ${fwMajor}.${fwMinor}.${fwPatch}`;
+          void maybeCheckFirmwareUpdateOnline();
         }
       }
 
@@ -3996,22 +4635,98 @@
         a[3 + payloadAfterF0.length] = 0xf7;
         return a;
       }
+      /**
+       * BLE-MIDI control frame: status 0xFE + (code, data) → firmware handleMessage (util.c).
+       * Same 5-byte layout as Flutter BleBridge.sendEtarControlMessage / native app.
+       */
+      const DIJI_BLE_MSG_WIFI_OTA_SERVER = 0x5c;
+
+      function buildBleMidiFeControlPacket(code, dataByte) {
+        const a = new Uint8Array(5);
+        a[0] = 0xbf;
+        a[1] = 0x8c;
+        a[2] = 0xfe;
+        a[3] = code & 0xff;
+        a[4] = dataByte & 0xff;
+        return a;
+      }
+
+      async function sendBleMidiControlMessage(code, dataByte) {
+        if (!connectedDevice || !connectedDevice.midiCharacteristic) return;
+        if (syncingFromFirmware) return;
+        try {
+          const data = buildBleMidiFeControlPacket(code, dataByte);
+          await connectedDevice.midiCharacteristic.writeValue(data);
+        } catch (e) {
+          console.error('BLE MIDI control', code, dataByte, e);
+        }
+      }
+
       async function sendBleMidiFileSlotSelect(slot) {
         if (!connectedDevice || !connectedDevice.midiCharacteristic) return;
         if (syncingFromFirmware) return;
         if (!Number.isFinite(slot) || slot < 1 || slot > DIJI_MIDI_SPIFFS_SLOTS) return;
-        try {
-          const data = new Uint8Array(5);
-          data[0] = 0xbf;
-          data[1] = 0x8c;
-          data[2] = 0xfe;
-          data[3] = 0x53;
-          data[4] = slot;
-          await connectedDevice.midiCharacteristic.writeValue(data);
-        } catch (e) {
-          console.error('MIDI file slot select', e);
-        }
+        await sendBleMidiControlMessage(0x53, slot);
       }
+
+      /** WiFi AP + HTTP OTA (handleMessage 0x5C); data 1=on, 0=off. */
+      async function sendBleMidiWifiOtaServer(on) {
+        await sendBleMidiControlMessage(DIJI_BLE_MSG_WIFI_OTA_SERVER, on ? 1 : 0);
+      }
+
+      document.body.addEventListener('click', async (ev) => {
+        const btn = ev.target && ev.target.closest && ev.target.closest('#wifiOtaHttpStartButton');
+        if (!btn) return;
+        if (!connectedDevice || !connectedDevice.midiCharacteristic) return;
+        try {
+          await sendBleMidiWifiOtaServer(true);
+          alert(
+            'WiFi HTTP server is starting. Join Wi‑Fi “Dijilele” (password: dijilele123), then open http://192.168.4.1 to upload firmware.',
+          );
+          if (typeof startOtaReachabilityProbe === 'function') startOtaReachabilityProbe();
+        } catch (e) {
+          console.error('WiFi OTA BLE', e);
+          alert('Could not send command: ' + (e && e.message ? e.message : String(e)));
+        }
+      });
+
+      (function setupOtaTabButtons() {
+        var d = document.getElementById('otaDownloadLatestBtn');
+        var c = document.getElementById('dijiOtaInstrumentOverlayClose');
+        var emb = document.getElementById('otaFirmwareUpdateEmbeddedBtn');
+        var openInst = document.getElementById('otaOpenInstrumentPageBtn');
+        if (d) d.addEventListener('click', function () { void otaDownloadLatestBin(); });
+        if (c) c.addEventListener('click', function () { otaHideInstrumentOverlay(); });
+        if (emb) {
+          emb.addEventListener('click', function () {
+            void otaOpenFirmwareUpdateFullScreen(false);
+          });
+        }
+        if (openInst) {
+          openInst.addEventListener('click', function () {
+            otaOpenInstrumentPage();
+          });
+        }
+        otaSyncUpdateTabSections();
+      })();
+
+      (function setupOtaInstrumentOverlayIosTap() {
+        var ov = document.getElementById('dijiOtaInstrumentOverlay');
+        if (!ov) return;
+        var last = 0;
+        function onInteraction() {
+          if (ov.style.display !== 'flex') return;
+          var now = Date.now();
+          if (now - last < 350) return;
+          last = now;
+          if (typeof otaWkRedrawInstrumentOverlay === 'function') otaWkRedrawInstrumentOverlay();
+          if (typeof otaPushPendingFirmwareToInstrumentIframe === 'function') {
+            otaPushPendingFirmwareToInstrumentIframe();
+          }
+        }
+        ov.addEventListener('touchend', onInteraction, { passive: true });
+        ov.addEventListener('click', onInteraction);
+      })();
 
       function setMidiLibraryUploadStatus(text) {
         const el = document.getElementById('midiLibraryUploadStatus');
@@ -4472,6 +5187,7 @@
         turnoffButton.disabled = true;
         saveSettingsButton.disabled = true;
         resetSettingsButton.disabled = true;
+        setWifiOtaHttpButtonDisabled(true);
 
         vibratoSlider.disabled = true;
         for (let i = 0; i < sustainRadioButtons.length; i++)
@@ -4526,6 +5242,13 @@
         fwMinor = null;
         fwPatch = null;
         fwVersionLabel.textContent = 'Firmware: --';
+        fwOnlineCheckDoneKey = '';
+        window.__dijiFwUpdateAlertShown = false;
+        const fwHint = document.getElementById('fwUpdateHint');
+        if (fwHint) {
+          fwHint.style.display = 'none';
+          fwHint.textContent = '';
+        }
         bleSettingsRxLen = 0;
         bleSettingsMidSysex = false;
         resetBleSettingsDeferred();
@@ -4533,6 +5256,7 @@
         connectedDevice = null;
         setMidiLibraryUploadStatus('');
         if (typeof syncSynthTabUsbControls === 'function') syncSynthTabUsbControls();
+        if (window.syncOtaUpdateTabUi) window.syncOtaUpdateTabUi();
       }
       window.__dijiOnBleDisconnected = async function() {
         try {
@@ -4664,6 +5388,10 @@
               turnoffButton.disabled = false;
               saveSettingsButton.disabled = false;
               resetSettingsButton.disabled = false;
+              setWifiOtaHttpButtonDisabled(false);
+              requestAnimationFrame(() => setWifiOtaHttpButtonDisabled(false));
+              setTimeout(() => setWifiOtaHttpButtonDisabled(false), 50);
+              if (window.syncOtaUpdateTabUi) window.syncOtaUpdateTabUi();
 
               vibratoSlider.disabled = false;
               for (let i = 0; i < sustainRadioButtons.length; i++)
@@ -4753,17 +5481,7 @@
 
         async function sendBleSettingsSubcommand(subcmd) {
           if (syncingFromFirmware || !connectedDevice) return;
-          try {
-            const data = new Uint8Array(5);
-            data[0] = 0xbf;
-            data[1] = 0x8c;
-            data[2] = 0xfe;
-            data[3] = 0x54;
-            data[4] = subcmd;
-            await connectedDevice.midiCharacteristic.writeValue(data);
-          } catch (error) {
-            console.error('Settings BLE command:', error);
-          }
+          await sendBleMidiControlMessage(0x54, subcmd);
         }
 
         saveSettingsButton.addEventListener('click', async () => {

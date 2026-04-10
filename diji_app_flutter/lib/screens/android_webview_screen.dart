@@ -8,8 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show EventChannel, MethodCall, MethodChannel, PlatformException, rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:diji_app_flutter/ble/ble_bridge.dart';
 import 'package:diji_app_flutter/midi_library_assets.dart';
+import 'package:diji_app_flutter/screens/firmware_update_screen.dart';
+import 'package:diji_app_flutter/services/wifi_firmware_ota.dart';
+import 'package:diji_app_flutter/webview_ota_handlers.dart';
 import 'package:diji_app_flutter/webview_external_navigation.dart';
 import 'package:diji_app_flutter/widgets/top_links_strip.dart';
 
@@ -605,7 +609,15 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                 padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: TopLinksStrip(),
+                  child: TopLinksStrip(
+                    onFirmwareUpdate: () {
+                      Navigator.of(context, rootNavigator: true).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const FirmwareUpdateScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
               const Expanded(
@@ -635,7 +647,15 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
               padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
               child: Align(
                 alignment: Alignment.centerRight,
-                child: TopLinksStrip(),
+                child: TopLinksStrip(
+                  onFirmwareUpdate: () {
+                    Navigator.of(context, rootNavigator: true).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const FirmwareUpdateScreen(),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
             Expanded(
@@ -703,6 +723,91 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                             final c = _controller;
                             if (c == null) return;
                             unawaited(_pickMidiFileForWebView(c));
+                          },
+                        );
+                        controller.addJavaScriptHandler(
+                          handlerName: 'probeOtaInstrument',
+                          callback: (_) async {
+                            try {
+                              return await WifiFirmwareOta.probeDevice(
+                                WifiFirmwareOta.normalizeDeviceBase(''),
+                              );
+                            } catch (e) {
+                              debugPrint('probeOtaInstrument: $e');
+                              return false;
+                            }
+                          },
+                        );
+                        registerOtaFirmwareJavaScriptHandlers(controller);
+                        try {
+                          controller.addJavaScriptHandler(
+                            handlerName: 'openFirmwareUpdateScreen',
+                            callback: (_) async {
+                              if (!mounted) return;
+                              await Navigator.of(context, rootNavigator: true).push<void>(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const FirmwareUpdateScreen(),
+                                ),
+                              );
+                            },
+                          );
+                        } catch (_) {}
+                        try {
+                          controller.addJavaScriptHandler(
+                            handlerName: 'openFirmwareUpdateScreenWithFirmware',
+                            callback: (args) async {
+                              if (!mounted) return;
+                              final name = args.isNotEmpty
+                                  ? (args[0]?.toString() ?? 'firmware.bin')
+                                  : 'firmware.bin';
+                              if (args.length < 2 || args[1] == null) {
+                                await Navigator.of(context, rootNavigator: true).push<void>(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const FirmwareUpdateScreen(),
+                                  ),
+                                );
+                                return;
+                              }
+                              try {
+                                final bytes = Uint8List.fromList(
+                                  base64Decode(args[1].toString()),
+                                );
+                                if (!mounted) return;
+                                await Navigator.of(context, rootNavigator: true).push<void>(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => FirmwareUpdateScreen(
+                                      initialFirmwareBytes: bytes,
+                                      initialFirmwareName: name,
+                                    ),
+                                  ),
+                                );
+                              } catch (e) {
+                                debugPrint(
+                                    'openFirmwareUpdateScreenWithFirmware: $e');
+                                if (!mounted) return;
+                                await Navigator.of(context, rootNavigator: true).push<void>(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const FirmwareUpdateScreen(),
+                                  ),
+                                );
+                              }
+                            },
+                          );
+                        } catch (_) {}
+                        controller.addJavaScriptHandler(
+                          handlerName: 'openExternalUrl',
+                          callback: (args) async {
+                            if (args.isEmpty || args.first == null) return;
+                            final uri = Uri.tryParse(args.first.toString());
+                            if (uri == null) return;
+                            try {
+                              await launchUrl(
+                                uri,
+                                mode: LaunchMode.externalApplication,
+                              );
+                            } catch (e) {
+                              debugPrint('openExternalUrl: $e');
+                            }
                           },
                         );
                         controller.addJavaScriptHandler(
