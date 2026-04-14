@@ -31,8 +31,9 @@
 
   <title>diji_app_flutter</title>
   <link rel="manifest" href="manifest.json">
-  <!-- Required for InAppWebView on web -->
-  <script type="application/javascript" src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js" defer></script>
+  <!-- InAppWebView on web: load from web/ root so deploys that omit assets/packages/... still work. -->
+  <!-- When upgrading flutter_inappwebview, refresh web/inappwebview_web_support.js from the package. -->
+  <script type="application/javascript" src="inappwebview_web_support.js" defer></script>
 </head>
 <body>
   <!--
