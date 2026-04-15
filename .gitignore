@@ -34,9 +34,19 @@ Thumbs.db
 
 # IDE
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
+
+# Flutter / Android local machine outputs (never commit)
+**/android/**/local.properties
+**/android/**/.gradle/
+
+# Accidental duplicate Flutter iOS exports (spaces in filenames)
+diji_app_flutter/ios/Flutter/Generated *.xcconfig
+diji_app_flutter/ios/Flutter/flutter_export_environment *.sh
+diji_app_flutter/.flutter-plugins-dependencies *
 
 # Codemagic / CI
 .codemagic/
