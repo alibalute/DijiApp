@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
-    show EventChannel, MethodCall, MethodChannel, PlatformException;
+    show EventChannel, MethodCall, MethodChannel, PlatformException, rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -309,6 +309,32 @@ class _WebScreenState extends State<WebScreen> {
     }
   }
 
+  Future<Map<String, dynamic>> _loadBundledSf2BytesForWebView(
+    List<dynamic> args,
+  ) async {
+    final rel = args.isNotEmpty ? args.first?.toString() : null;
+    if (rel == null || rel.trim().isEmpty) {
+      return {'error': 'missing asset path'};
+    }
+    final normalized = rel.trim().replaceAll(r'\', '/');
+    final key = normalized.startsWith('assets/')
+        ? normalized
+        : 'assets/$normalized';
+    try {
+      final bd = await rootBundle.load(key);
+      final bytes = bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes);
+      return {
+        'path': normalized,
+        'name': normalized.split('/').isNotEmpty
+            ? normalized.split('/').last
+            : 'soundfont.sf2',
+        'b64': base64Encode(bytes),
+      };
+    } catch (e) {
+      return {'error': e.toString()};
+    }
+  }
+
   /// Play tab: load .mid into WebView list (same [FilePicker] path as soundfont on iOS/desktop embedder).
   Future<String> _midiLibraryManifestForWebView(
       InAppWebViewController controller) async {
@@ -559,7 +585,8 @@ class _WebScreenState extends State<WebScreen> {
                           ? URLRequest(
                               url: WebUri(
                                 Uri.base
-                                    .resolve('assets/qui-skinned.html')
+                                    // Flutter web serves bundled assets under /assets/assets/<file>.
+                                    .resolve('assets/assets/qui-skinned.html')
                                     .toString(),
                               ),
                             )
@@ -598,6 +625,12 @@ class _WebScreenState extends State<WebScreen> {
                             handlerName: 'pickSoundfont',
                             callback: (_) =>
                                 _pickSoundfontForWebView(controller),
+                          );
+                        } catch (_) {}
+                        try {
+                          controller.addJavaScriptHandler(
+                            handlerName: 'loadBundledSf2Bytes',
+                            callback: _loadBundledSf2BytesForWebView,
                           );
                         } catch (_) {}
                         try {

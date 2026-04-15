@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redirecting…</title>
+  <script>
+    (function () {
+      var target = 'assets/qui-skinned.html';
+      var suffix = (window.location.search || '') + (window.location.hash || '');
+      window.location.replace(target + suffix);
+    })();
+  </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=assets/qui-skinned.html">
+  </noscript>
+</head>
+<body>
+  Redirecting…
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting…</title>
+  <!-- Bundled asset lives at assets/assets/qui-skinned.html (Flutter web layout). -->
+  <meta http-equiv="refresh" content="0;url=assets/qui-skinned.html">
+  <script>
+    (function () {
+      var u = new URL('assets/qui-skinned.html', window.location.href).href;
+      window.location.replace(u);
+    })();
+  </script>
+</head>
+<body>
+  <p>Open the <a href="../">DijiApp</a> instead, or continue to the <a href="assets/qui-skinned.html">bundled UI file</a>.</p>
+</body>
+</html>

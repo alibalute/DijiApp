@@ -53,6 +53,11 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
+  web:
+    generate: true
+    image_path: assets/app_icon.png
+    background_color: "#FFFFFF"
+    theme_color: "#0175C2"
   image_path: assets/app_icon.png
   remove_alpha_ios: true
   # Adaptive icons (API 26+): required pair; inset is % padding on foreground (default 16).

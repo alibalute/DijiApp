@@ -298,6 +298,32 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     }
   }
 
+  Future<Map<String, dynamic>> _loadBundledSf2BytesForWebView(
+    List<dynamic> args,
+  ) async {
+    final rel = args.isNotEmpty ? args.first?.toString() : null;
+    if (rel == null || rel.trim().isEmpty) {
+      return {'error': 'missing asset path'};
+    }
+    final normalized = rel.trim().replaceAll(r'\', '/');
+    final key = normalized.startsWith('assets/')
+        ? normalized
+        : 'assets/$normalized';
+    try {
+      final bd = await rootBundle.load(key);
+      final bytes = bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes);
+      return {
+        'path': normalized,
+        'name': normalized.split('/').isNotEmpty
+            ? normalized.split('/').last
+            : 'soundfont.sf2',
+        'b64': base64Encode(bytes),
+      };
+    } catch (e) {
+      return {'error': e.toString()};
+    }
+  }
+
   /// Play tab: load .mid into WebView list (same Storage Access Framework path as [pickSoundfont]).
   Future<String> _midiLibraryManifestForWebView(
       InAppWebViewController controller) async {
@@ -679,6 +705,10 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                             if (c == null) return;
                             unawaited(_pickSoundfontForWebView(c));
                           },
+                        );
+                        controller.addJavaScriptHandler(
+                          handlerName: 'loadBundledSf2Bytes',
+                          callback: _loadBundledSf2BytesForWebView,
                         );
                         controller.addJavaScriptHandler(
                           handlerName: 'pickMidiFile',

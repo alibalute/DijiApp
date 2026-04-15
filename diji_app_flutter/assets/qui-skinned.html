@@ -3138,10 +3138,38 @@
         return new URL(rel, document.baseURI).href;
       }
 
+      async function fetchBundledSf2ViaBridge(rel) {
+        var bridge = window.flutter_inappwebview;
+        if (!bridge || typeof bridge.callHandler !== 'function') return null;
+        try {
+          var ret = bridge.callHandler('loadBundledSf2Bytes', String(rel || ''));
+          if (ret != null && typeof ret.then === 'function') {
+            ret = await ret;
+          }
+          if (!ret || !ret.b64) return null;
+          const binary = atob(String(ret.b64));
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          const pathUsed = ret.path ? String(ret.path) : String(rel || '');
+          return { buf: bytes.buffer, pathUsed: pathUsed };
+        } catch (e) {
+          console.warn('loadBundledSf2Bytes bridge', e);
+          return null;
+        }
+      }
+
       async function fetchBundledBleMidiFontBuffer() {
-        const res = await fetch(assetUrl(BLE_MIDI_DEFAULT_SF2));
-        if (!res.ok) throw new Error('SoundFont HTTP ' + res.status);
-        return res.arrayBuffer();
+        try {
+          const res = await fetch(assetUrl(BLE_MIDI_DEFAULT_SF2));
+          if (res.ok) return res.arrayBuffer();
+          const bridged = await fetchBundledSf2ViaBridge(BLE_MIDI_DEFAULT_SF2);
+          if (bridged && bridged.buf) return bridged.buf;
+          throw new Error('SoundFont HTTP ' + res.status);
+        } catch (e) {
+          const bridged = await fetchBundledSf2ViaBridge(BLE_MIDI_DEFAULT_SF2);
+          if (bridged && bridged.buf) return bridged.buf;
+          throw e;
+        }
       }
 
       async function getBleMidiFontBuffer() {
@@ -3623,8 +3651,12 @@
               return { buf: buf, pathUsed: p };
             }
             lastErr = new Error('HTTP ' + res.status + ' for ' + p);
+            const bridged = await fetchBundledSf2ViaBridge(p);
+            if (bridged && bridged.buf) return bridged;
           } catch (e) {
             lastErr = e;
+            const bridged = await fetchBundledSf2ViaBridge(p);
+            if (bridged && bridged.buf) return bridged;
           }
         }
         throw lastErr || new Error('SoundFont fetch failed');
