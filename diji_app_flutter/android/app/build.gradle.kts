@@ -1,3 +1,5 @@
+import com.android.build.gradle.AppExtension
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -54,8 +56,55 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    // Release APK name includes semver + build number from pubspec (e.g. diji_app_flutter-1.0.2-2-release.apk).
+    @Suppress("DEPRECATION")
+    applicationVariants.configureEach {
+        val variant = this
+        outputs.configureEach {
+            val output = this as com.android.build.gradle.api.ApkVariantOutput
+            output.outputFileName =
+                "diji_app_flutter-${variant.versionName}-${variant.versionCode}-${variant.buildType.name}.apk"
+        }
+    }
 }
 
 flutter {
     source = "../.."
+}
+
+// Flutter always copies the built APK to `outputs/flutter-apk/app[-abi]-release.apk`. Duplicate those
+// files with the pubspec version in the name so `flutter build apk` leaves easy-to-archive artifacts.
+tasks.register("copyVersionedReleaseApks") {
+    group = "build"
+    description =
+        "After release assemble, writes diji_app_flutter-<versionName>-<versionCode>-….apk next to Flutter's app-…-release.apk."
+    doLast {
+        val ext = project.extensions.getByType(AppExtension::class.java)
+        val vName = ext.defaultConfig.versionName ?: "unknown"
+        val vCode = ext.defaultConfig.versionCode ?: 0
+        val flutterApkDir = layout.buildDirectory.dir("outputs/flutter-apk").get().asFile
+        if (!flutterApkDir.isDirectory) {
+            logger.warn("copyVersionedReleaseApks: missing ${flutterApkDir.path}")
+            return@doLast
+        }
+        flutterApkDir
+            .listFiles { f: File ->
+                f.isFile &&
+                    f.name.endsWith("-release.apk") &&
+                    f.name.startsWith("app") &&
+                    !f.name.startsWith("diji_app_flutter-")
+            }
+            ?.forEach { src ->
+                val stem = src.name.removeSuffix(".apk")
+                val tail = stem.removePrefix("app")
+                val dest = flutterApkDir.resolve("diji_app_flutter-${vName}-${vCode}${tail}.apk")
+                src.copyTo(dest, overwrite = true)
+                logger.lifecycle("Versioned APK: ${dest.name}")
+            }
+    }
+}
+
+afterEvaluate {
+    tasks.named("assembleRelease").configure { finalizedBy("copyVersionedReleaseApks") }
 }
