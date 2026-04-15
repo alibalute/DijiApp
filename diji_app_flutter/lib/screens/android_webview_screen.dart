@@ -42,9 +42,6 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
   /// Set after [_assetServer] starts; WebView loads [qui-skinned.html] from this origin.
   String? _webEntryUrl;
 
-  /// Horizontal accumulation for edge swipe zones (center WebView stays free for sliders).
-  double _edgeDragDx = 0;
-
   /// Same workaround as [WebScreen]: on Android, [onLoadStop] can be late; never block UI forever.
   static const Duration _maxSpinnerDuration = Duration(milliseconds: 2500);
 
@@ -301,7 +298,7 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
     }
   }
 
-  /// Playback tab: load .mid into WebView list (same Storage Access Framework path as [pickSoundfont]).
+  /// Play tab: load .mid into WebView list (same Storage Access Framework path as [pickSoundfont]).
   Future<String> _midiLibraryManifestForWebView(
       InAppWebViewController controller) async {
     try {
@@ -374,40 +371,6 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
         );
       }
     }
-  }
-
-  /// [delta] +1 = next tab, -1 = previous (wraps).
-  void _nudgeTab(int delta) {
-    final c = _controller;
-    if (c == null) return;
-    c.evaluateJavascript(source: '''
-(function(){
-  var n=document.querySelectorAll('.tab').length;
-  if(n<2||typeof openTab!=='function')return;
-  var i=typeof currentTabIndex!=='undefined'?currentTabIndex:0;
-  openTab((i+$delta+n)%n);
-})()
-''');
-  }
-
-  void _onEdgeHorizontalDragEnd(DragEndDetails details) {
-    final v = details.primaryVelocity ?? 0;
-    const vTh = 280.0;
-    const dTh = 72.0;
-    if (v.abs() >= vTh) {
-      if (v < 0) {
-        _nudgeTab(1);
-      } else {
-        _nudgeTab(-1);
-      }
-    } else if (_edgeDragDx.abs() >= dTh) {
-      if (_edgeDragDx < 0) {
-        _nudgeTab(1);
-      } else {
-        _nudgeTab(-1);
-      }
-    }
-    _edgeDragDx = 0;
   }
 
   void _injectLogo() {
@@ -858,33 +821,6 @@ class _AndroidWebViewScreenState extends State<AndroidWebViewScreen> {
                         debugPrint('WebView error: ${error.description}');
                         if (mounted) setState(() => _loading = false);
                       },
-                    ),
-                  ),
-                  // Narrow strips only: avoids stealing horizontal drags from <input type="range"> in the WebView.
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: 40,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onHorizontalDragStart: (_) => _edgeDragDx = 0,
-                      onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
-                      onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
-                      child: const ColoredBox(color: Color(0x00000000)),
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: 40,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onHorizontalDragStart: (_) => _edgeDragDx = 0,
-                      onHorizontalDragUpdate: (d) => _edgeDragDx += d.delta.dx,
-                      onHorizontalDragEnd: _onEdgeHorizontalDragEnd,
-                      child: const ColoredBox(color: Color(0x00000000)),
                     ),
                   ),
                   if (_loading)

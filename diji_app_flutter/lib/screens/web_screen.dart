@@ -309,7 +309,7 @@ class _WebScreenState extends State<WebScreen> {
     }
   }
 
-  /// Playback tab: load .mid into WebView list (same [FilePicker] path as soundfont on iOS/desktop embedder).
+  /// Play tab: load .mid into WebView list (same [FilePicker] path as soundfont on iOS/desktop embedder).
   Future<String> _midiLibraryManifestForWebView(
       InAppWebViewController controller) async {
     try {
